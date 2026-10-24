@@ -1,24 +1,24 @@
-import java.text.NumberFormat;
-import java.util.Locale;
 
 public abstract class SanPham {
     private String maSP;
     private String tenSP;
     private double donGia; // price
     private int soLuongTon;
+    private String donViTinh;
 
     // Constructor
     public SanPham(String maSP, String tenSP,
-                   double donGia, int soLuongTon) {
+                   double donGia, int soLuongTon,
+                   String donViTinh) {
 
         if (maSP == null || maSP.isBlank()) {
             throw new IllegalArgumentException(
-                    "Ma san pham khong duoc de trong");
+                    "Ma san pham khong hop le");
         }
 
         if (tenSP == null || tenSP.isBlank()) {
             throw new IllegalArgumentException(
-                    "Ten san pham khong duoc de trong");
+                    "Ten san pham khong hop le");
         }
 
         if (!Double.isFinite(donGia) || donGia < 0) {
@@ -31,19 +31,25 @@ public abstract class SanPham {
                     "So luong ton khong hop le");
         }
 
+        if (donViTinh == null || donViTinh.isBlank()) {
+            throw new IllegalArgumentException(
+                    "Don vi tinh khong hop le");
+        }
+
         this.maSP = maSP.trim();
         this.tenSP = tenSP.trim();
         this.donGia = donGia;
         this.soLuongTon = soLuongTon;
+        this.donViTinh = donViTinh.trim();
     }
-
+    
     public abstract String getLoai();
 
-    // Tang ton kho khi nhap them hang
+    // Tang ton kho khi nhap hang
     public void tangTon(int soLuong) {
         if (soLuong <= 0) {
             throw new IllegalArgumentException(
-                    "So luong tang phai > 0");
+                    "So luong phai > 0");
         }
 
         if (soLuong > Integer.MAX_VALUE - soLuongTon) {
@@ -54,11 +60,11 @@ public abstract class SanPham {
         soLuongTon += soLuong;
     }
 
-    // Giam ton kho khi xuat hang / ban hang
+    // Giam ton kho khi xuat hang
     public void giamTon(int soLuong) {
         if (soLuong <= 0) {
             throw new IllegalArgumentException(
-                    "So luong giam phai > 0");
+                    "So luong phai > 0");
         }
 
         if (soLuong > soLuongTon) {
@@ -86,11 +92,15 @@ public abstract class SanPham {
         return soLuongTon;
     }
 
+    public String getDonViTinh() {
+        return donViTinh;
+    }
+
     // Setter
     public void setTenSP(String tenSP) {
         if (tenSP == null || tenSP.isBlank()) {
             throw new IllegalArgumentException(
-                    "Ten san pham khong duoc de trong");
+                    "Ten san pham khong hop le");
         }
 
         this.tenSP = tenSP.trim();
@@ -105,21 +115,27 @@ public abstract class SanPham {
         this.donGia = donGia;
     }
 
+    public void setDonViTinh(String donViTinh) {
+        if (donViTinh == null || donViTinh.isBlank()) {
+            throw new IllegalArgumentException(
+                    "Don vi tinh khong hop le");
+        }
+
+        this.donViTinh = donViTinh.trim();
+    }
+
     // Hien thi thong tin san pham
     @Override
     public String toString() {
-        NumberFormat dinhDangTien =
-                NumberFormat.getNumberInstance(
-                        Locale.forLanguageTag("vi-VN"));
-        dinhDangTien.setMaximumFractionDigits(0);
-
         return String.format(
-                "[%s] %-8s | %-15s | Gia ban: %s VND | Ton: %d",
+                "[%s] %s | %-20s | Gia ban: %,.0f VND"
+                        + " | Ton: %d %s",
                 getLoai(),
                 maSP,
                 tenSP,
-                dinhDangTien.format(donGia),
-                soLuongTon
+                donGia,
+                soLuongTon,
+                donViTinh
         );
     }
 }
