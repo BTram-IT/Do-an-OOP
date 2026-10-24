@@ -1,64 +1,67 @@
 import org.w3c.dom.ls.LSOutput;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Scanner;
 
 public class KeToan extends Nhanvien{
-    private String BangCap;
-    private String Chungchi;
+    private DSNhanVien NhanVien;
+    private DSSanPham DSSanPham;
+    private DSHoadon Hoadon;
 
-    public KeToan(String maNV, LocalDate ngaybatdaulam, String chucvu, String Hoten, String SDT, String Email, String Diachi, String bangCap, String chungchi) {
-        super(maNV, ngaybatdaulam, chucvu, Hoten, SDT, Email, Diachi);
-        BangCap = bangCap;
-        Chungchi = chungchi;
+    public KeToan(DSNhanVien nhanVien, DSSanPham DSSanPham, DSHoadon hoadon) {
+        NhanVien = nhanVien;
+        this.DSSanPham = DSSanPham;
+        Hoadon = hoadon;
     }
 
-    public KeToan(String bangCap, String chungchi) {
-        BangCap = bangCap;
-        Chungchi = chungchi;
+    public KeToan(String maNV, LocalDate ngaybatdaulam, String Vitri, String Hoten, String SDT, String Email, String Diachi, DSNhanVien nhanVien, DSSanPham DSSanPham, DSHoadon hoadon) {
+        super(maNV, ngaybatdaulam, Vitri, Hoten, SDT, Email, Diachi);
+        NhanVien = nhanVien;
+        this.DSSanPham = DSSanPham;
+        Hoadon = hoadon;
     }
 
     public KeToan() {
         super();
-        BangCap = "";
-        Chungchi = "";
+        NhanVien = new DSNhanVien();
+        DSSanPham = new DSSanPham();
+        Hoadon = new DSHoadon();
     }
 
-    public String getBangCap() {
-        return BangCap;
+    public DSNhanVien getNhanVien() {
+        return NhanVien;
     }
 
-    public void setBangCap(String bangCap) {
-        BangCap = bangCap;
+    public void setNhanVien(DSNhanVien nhanVien) {
+        NhanVien = nhanVien;
     }
 
-    public String getChungchi() {
-        return Chungchi;
+    public DSSanPham getDSSanPham() {
+        return DSSanPham;
     }
 
-    public void setChungchi(String chungchi) {
-        Chungchi = chungchi;
+    public void setDSSanPham(DSSanPham DSSanPham) {
+        this.DSSanPham = DSSanPham;
     }
 
-    Scanner sc = new Scanner(System.in);
-    public void Nhap() {
-        super.Nhap();
-        System.out.println("Nhập bằng cấp: ");
-        BangCap = sc.nextLine();
-        System.out.println("Nhập chứng chỉ: ");
-        Chungchi = sc.nextLine();
-    }
-    public void Xuat() {
-        super.Xuat();
+    public DSHoadon getHoadon() {
+        return Hoadon;
     }
 
-    @Override
-    public String toString() {
-        return "KeToan{" +
-                "BangCap='" + BangCap + '\'' +
-                ", Chungchi='" + Chungchi + '\'' +
-                ", sc=" + sc +
-                '}';
+    public void setHoadon(DSHoadon hoadon) {
+        Hoadon = hoadon;
     }
 
+
+    public void tinhTongThueTheoThang() {}
+    public void tinhDoanhThuTheoThang() {}
+    public void tinhDoanhThuTheoQuy() {}
+    public void tinhDoanhThuTheoNam() {}
+    public void tinhLoiNhuanTheoThang() {}
+    public void tinhLoiNhuanTheoQuy() {}
+    public void tinhLoiNhuanTheoNam() {}
+    public void tinhBangLuong() {}
+    public void baoCaoSanPhamBanChay() {}
+    public void inBaoCaoTaiChinh() {}
 }
