@@ -42,7 +42,7 @@ public abstract class SanPham {
         this.soLuongTon = soLuongTon;
         this.donViTinh = donViTinh.trim();
     }
-    
+
     public abstract String getLoai();
 
     // Tang ton kho khi nhap hang
