@@ -4,7 +4,6 @@ import java.util.Locale;
 public class ThucAn extends SanPham {
 
     public static final String TIEN_TO_MA = "TA";
-    /** Bộ đếm mã tự động (chỉ dùng sinh mã, không lưu dữ liệu nghiệp vụ). */
     private static int boDem = 0;
 
     private String nhaSanXuat;
@@ -15,7 +14,7 @@ public class ThucAn extends SanPham {
         super(maSP, tenSP, giaBan, soLuongTon, donViTinh, thueSuat);
         this.nhaSanXuat = kiemTraVanBan(nhaSanXuat, "Nhà sản xuất");
         this.hanSuDung = kiemTraHan(hanSuDung);
-        // Đồng bộ bộ đếm để mã tự động không trùng với mã đã tạo hoặc đọc từ file
+
         boDem = Math.max(boDem, laySoTuMa(chuanHoaMa(maSP), TIEN_TO_MA));
     }
 
@@ -51,7 +50,6 @@ public class ThucAn extends SanPham {
         return "Thức ăn";
     }
 
-    /** Hết hạn khi ngày kiểm tra SAU ngày hạn sử dụng. */
     @Override
     public boolean isHetHan(LocalDate ngay) {
         return hanSuDung.isBefore(ngay);
