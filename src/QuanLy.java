@@ -2,7 +2,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
 
-public class QuanLyCuaHang extends NhanVien {
+public class QuanLyCuaHang extends Nhanvien {
 
     public QuanLyCuaHang() {
         this("", "", "", "", "", 0);
@@ -26,16 +26,16 @@ public class QuanLyCuaHang extends NhanVien {
         if (nv == null || ds.tim(nv.getMa()) != null) {
             return false;
         }
-        ds.them(nv);
+//        ds.them(nv);
         return true;
     }
 
-    public boolean xoaNhanVien(DSNhanVien ds, String ma) {
-        if (ma.equalsIgnoreCase(getMa())) {
-            return false;
-        }
-        return ds.xoa(ma);
-    }
+//    public boolean xoaNhanVien(DSNhanVien ds, String ma) {
+//        if (ma.equalsIgnoreCase(getMa())) {
+//            return false;
+//        }
+//        return ds.xoa(ma);
+//    }
 
     public ChamCong chamCongVao(List<ChamCong> ds, NhanVien nv, CaLam ca, LocalDate ngay, LocalTime gio) {
         for (ChamCong cc : ds) {
