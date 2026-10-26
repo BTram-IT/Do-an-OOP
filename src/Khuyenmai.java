@@ -1,63 +1,145 @@
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Scanner;
 
-public class Khuyenmai {
+public abstract class Khuyenmai {
+    private String maKM;
+    private String tenKM;
 
-    public abstract class KhuyenMai {
-        protected String maKM;
-        protected String tenKM;
-        protected double mucGiam;
-
-        protected List<String> dieuKienApDung = new ArrayList<>();
-
-        public KhuyenMai(String maKM, String tenKM, double mucGiam) {
-            this.maKM = maKM;
-            this.tenKM = tenKM;
-            this.mucGiam = mucGiam;
-        }
-
-        public abstract double tinhTienGiam(double tongTien);
+    public Khuyenmai() {
+        this.maKM = "KM00";
+        this.tenKM = "Khong KM";
     }
 
-    // 1. Khuy3n mai theo phan tram
-    class KhuyenMaiTheoPhanTram extends KhuyenMai {
-        private double phanTram;
-
-        public KhuyenMaiTheoPhanTram(String maKM, String tenKM, double phanTram) {
-            super(maKM, tenKM, phanTram);
-            this.phanTram = phanTram;
-        }
-
-        @Override
-        public double tinhTienGiam(double tongTien) {
-            return tongTien * (phanTram / 100.0);
-        }
+    public Khuyenmai(String maKM, String tenKM) {
+        this.maKM = maKM;
+        this.tenKM = tenKM;
     }
 
-    // 2. Khuyen mai giam truc tiep so tien
-    class KhuyenMaiGiamTructiep extends KhuyenMai {
-        private double soTienGiam;
-
-        public KhuyenMaiGiamTructiep(String maKM, String tenKM, double soTienGiam) {
-            super(maKM, tenKM, soTienGiam);
-            this.soTienGiam = soTienGiam;
-        }
-
-        @Override
-        public double tinhTienGiam(double tongTien) {
-            return Math.min(tongTien, soTienGiam); // Ko giam qua tien goc
-        }
+    public Khuyenmai(Khuyenmai other) {
+        this.maKM = other.maKM;
+        this.tenKM = other.tenKM;
     }
 
-    // 3. Khuyen mai mua tang (tang gia tri co dinh or voucher)
-    class KhuyenMaiMuaTang extends KhuyenMai {
-        public KhuyenMaiMuaTang(String maKM, String tenKM) {
-            super(maKM, tenKM, 20000); // mac dinh tang tuong duong
-        }
+    public String getMaKM() { return maKM; }
+    public void setMaKM(String maKM) { this.maKM = maKM; }
+    public String getTenKM() { return tenKM; }
+    public void setTenKM(String tenKM) { this.tenKM = tenKM; }
 
-        @Override
-        public double tinhTienGiam(double tongTien) {
-            return 20000; // Tru truc tiep qua tang vao HD
-        }
+    public void nhap() {
+        Scanner sc = new Scanner(System.in);
+        System.out.print("Nhap ma KM: ");
+        this.maKM = sc.nextLine();
+        System.out.print("Nhap ten chuong trinh KM: ");
+        this.tenKM = sc.nextLine();
+    }
+
+    public void xuat() {
+        System.out.printf("KM: [%s] %s", maKM, tenKM);
+    }
+
+    public abstract double tinhTienGiam(double tongTienHang);
+}
+
+class TheoPhanTram extends Khuyenmai {
+    private double phanTram;
+
+    public TheoPhanTram() {
+        super();
+        this.phanTram = 10;
+    }
+
+    public TheoPhanTram(String maKM, String tenKM, double phanTram) {
+        super(maKM, tenKM);
+        this.phanTram = phanTram;
+    }
+
+    public TheoPhanTram(TheoPhanTram other) {
+        super(other);
+        this.phanTram = other.phanTram;
+    }
+
+    public double getPhanTram() { return phanTram; }
+    public void setPhanTram(double phanTram) { this.phanTram = phanTram; }
+
+    @Override
+    public void nhap() {
+        Scanner sc = new Scanner(System.in);
+        super.nhap();
+        System.out.print("Nhap phan tram giam (%): ");
+        this.phanTram = Double.parseDouble(sc.nextLine());
+    }
+
+    @Override
+    public double tinhTienGiam(double tongTienHang) {
+        return tongTienHang * (phanTram / 100.0);
+    }
+}
+
+class GiamTrucTiep extends Khuyenmai {
+    private double soTienGiam;
+
+    public GiamTrucTiep() {
+        super();
+        this.soTienGiam = 10000;
+    }
+
+    public GiamTrucTiep(String maKM, String tenKM, double soTienGiam) {
+        super(maKM, tenKM);
+        this.soTienGiam = soTienGiam;
+    }
+
+    public GiamTrucTiep(GiamTrucTiep other) {
+        super(other);
+        this.soTienGiam = other.soTienGiam;
+    }
+
+    public double getSoTienGiam() { return soTienGiam; }
+    public void setSoTienGiam(double soTienGiam) { this.soTienGiam = soTienGiam; }
+
+    @Override
+    public void nhap() {
+        Scanner sc = new Scanner(System.in);
+        super.nhap();
+        System.out.print("Nhap so tien giam truc tiep: ");
+        this.soTienGiam = Double.parseDouble(sc.nextLine());
+    }
+
+    @Override
+    public double tinhTienGiam(double tongTienHang) {
+        return Math.min(soTienGiam, tongTienHang);
+    }
+}
+
+class MuaTang extends Khuyenmai {
+    private double giaTriQuaTang;
+
+    public MuaTang() {
+        super();
+        this.giaTriQuaTang = 15000;
+    }
+
+    public MuaTang(String maKM, String tenKM, double giaTriQuaTang) {
+        super(maKM, tenKM);
+        this.giaTriQuaTang = giaTriQuaTang;
+    }
+
+    public MuaTang(MuaTang other) {
+        super(other);
+        this.giaTriQuaTang = other.giaTriQuaTang;
+    }
+
+    public double getGiaTriQuaTang() { return giaTriQuaTang; }
+    public void setGiaTriQuaTang(double giaTriQuaTang) { this.giaTriQuaTang = giaTriQuaTang; }
+
+    @Override
+    public void nhap() {
+        Scanner sc = new Scanner(System.in);
+        super.nhap();
+        System.out.print("Nhap gia tri san pham tang kem: ");
+        this.giaTriQuaTang = Double.parseDouble(sc.nextLine());
+    }
+
+    @Override
+    public double tinhTienGiam(double tongTienHang) {
+        return tongTienHang >= 40000 ? giaTriQuaTang : 0;
     }
 }

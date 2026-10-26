@@ -1,7 +1,8 @@
-public class ThuNgan {
+public class ThuNgan extends Nhanvien {
     private String maTN;
     private String tenThuNgan;
     private String chucVu;
+
 
     private String[] caLamViec = {"Ca Sang", "Ca Chieu", "Ca Toi"};
 

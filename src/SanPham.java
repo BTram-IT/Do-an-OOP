@@ -6,6 +6,12 @@ public abstract class SanPham {
     private String tenSP;
     private double donGia; // Gia ban
     private int soLuongTon;
+<<<<<<< Updated upstream
+=======
+    private String donViTinh;
+    private double giaNhap;
+    private double giaBan;
+>>>>>>> Stashed changes
 
     // Constructor
     public SanPham(String maSP, String tenSP,
@@ -87,6 +93,21 @@ public abstract class SanPham {
         return soLuongTon;
     }
 
+<<<<<<< Updated upstream
+=======
+    public String getDonViTinh() {
+        return donViTinh;
+    }
+
+    public double getGiaNhap() {
+        return giaNhap;
+    }
+
+    public double getGiaBan() {
+        return giaBan;
+    }
+
+>>>>>>> Stashed changes
     // Setter
     public void setTenSP(String tenSP) {
         if (tenSP == null || tenSP.isBlank()) {
@@ -106,6 +127,26 @@ public abstract class SanPham {
         this.donGia = donGia;
     }
 
+<<<<<<< Updated upstream
+=======
+    public void setDonViTinh(String donViTinh) {
+        if (donViTinh == null || donViTinh.isBlank()) {
+            throw new IllegalArgumentException(
+                    "Don vi tinh khong hop le");
+        }
+
+        this.donViTinh = donViTinh.trim();
+    }
+
+    public void setGiaBan(double giaBan) {
+        this.giaBan = giaBan;
+    }
+
+    public void setGiaNhap(double giaNhap) {
+        this.giaNhap = giaNhap;
+    }
+
+>>>>>>> Stashed changes
     // Hien thi thong tin san pham
     @Override
     public String toString() {
@@ -123,4 +164,15 @@ public abstract class SanPham {
                 soLuongTon
         );
     }
+<<<<<<< Updated upstream
 }
+=======
+    public abstract double tinhThue();
+    public abstract String layLoaiSP();
+    public abstract void xuat();
+
+    public double tinhGiaSauThue() {
+        return giaBan + tinhThue();
+    }
+}
+>>>>>>> Stashed changes
