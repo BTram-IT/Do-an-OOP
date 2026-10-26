@@ -93,3 +93,4 @@ public class QuanLyCuaHang extends Nhanvien {
         return new BaoCaoTaiChinh(ky, banHang, thuKhac, chiNhap, chiLuong, chiKhac, thue);
     }
 }
+
