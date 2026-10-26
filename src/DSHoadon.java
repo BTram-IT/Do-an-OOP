@@ -1,77 +1,45 @@
-import java.util.Scanner;
+import java.util.ArrayList;
 
 public class DSHoadon {
-    private static final int MAX = 100;
-    private HoaDon[] ds;
-    private int n;
+    private ArrayList<HoaDon> ds;
 
     // Constructor mac dinh
     public DSHoadon() {
-        ds = new HoaDon[MAX];
-        n = 0;
+        ds = new ArrayList<>();
     }
 
-    // Constructor co tham so
-    public DSHoadon(HoaDon[] ds, int n) {
-        this.ds = new HoaDon[MAX];
-        this.n = 0;
-
-        if (ds != null && n >= 0 && n <= ds.length) {
-            int soLuong = Math.min(n, MAX);
-
-            for (int i = 0; i < soLuong; i++) {
-                if (ds[i] != null) {
-                    this.ds[this.n] = ds[i];
-                    this.n++;
-                }
-            }
-        }
-    }
-
+    // lấy sl hóa đơn
     public int getSoLuong() {
-        return n;
+        return ds.size();
     }
 
-    public HoaDon[] getDanhSach() {
-        HoaDon[] ketQua = new HoaDon[n];
-
-        for (int i = 0; i < n; i++) {
-            ketQua[i] = ds[i];
-        }
-
-        return ketQua;
+    // Lấy ds hóa đơn
+    public ArrayList<HoaDon> getDanhSach() {
+        return new ArrayList<>(ds);
     }
 
-    public void setDs(HoaDon[] ds) {
-        this.ds = ds;
-    }
-
-    public void setN(int n) {
-        this.n = n;
-    }
-
-    // Tim hoa don theo ma
+    // Tiìm hđ theo mã
     public HoaDon timTheoMa(String maHD) {
-        if (maHD == null) {
+        if (maHD == null || maHD.trim().isEmpty()) {
             return null;
         }
 
-        for (int i = 0; i < n; i++) {
-            if (ds[i].getMaHD() != null
-                    && ds[i].getMaHD()
-                    .equalsIgnoreCase(maHD.trim())) {
-                return ds[i];
+        for (HoaDon hd : ds) {
+            if (hd.getMaHD() != null
+                    && hd.getMaHD().equalsIgnoreCase(maHD.trim())) {
+                return hd;
             }
         }
 
         return null;
     }
 
+    // ktr hóa đơn tôồn tại k
     public boolean daTonTaiMa(String maHD) {
         return timTheoMa(maHD) != null;
     }
 
-    // Them hoa don da tao
+    // Them hoa don
     public boolean them(HoaDon hd) {
         if (hd == null) {
             System.out.println("Hoa don khong hop le!");
@@ -89,31 +57,37 @@ public class DSHoadon {
             return false;
         }
 
-        if (n >= MAX) {
-            System.out.println("Danh sach hoa don da day!");
-            return false;
-        }
-
-        ds[n] = hd;
-        n++;
-
+        ds.add(hd);
         System.out.println("Them hoa don thanh cong!");
         return true;
     }
 
-    // Xuat danh sach hoa don
+
     public void xuatDS() {
-        if (n == 0) {
+        if (ds.isEmpty()) {
             System.out.println("Danh sach hoa don dang trong!");
             return;
         }
 
-        for (int i = 0; i < n; i++) {
-            ds[i].inhoadon();
+        for (HoaDon hd : ds) {
+            hd.inhoadon();
         }
     }
 
-    // Xoa hoa don theo ma
+    // xuất hđ theo mã
+    public boolean xuatTheoMa(String maHD) {
+        HoaDon hd = timTheoMa(maHD);
+
+        if (hd == null) {
+            System.out.println("Khong tim thay hoa don!");
+            return false;
+        }
+
+        hd.inhoadon();
+        return true;
+    }
+
+    // xóa hđ theo mã
     public boolean xoa(String maHD) {
         HoaDon hd = timTheoMa(maHD);
 
@@ -129,40 +103,49 @@ public class DSHoadon {
             return false;
         }
 
-        int viTri = -1;
-
-        for (int i = 0; i < n; i++) {
-            if (ds[i] == hd) {
-                viTri = i;
-                break;
-            }
-        }
-
-        if (viTri == -1) {
-            return false;
-        }
-
-        for (int i = viTri; i < n - 1; i++) {
-            ds[i] = ds[i + 1];
-        }
-
-        ds[n - 1] = null;
-        n--;
-
+        ds.remove(hd);
         System.out.println("Xoa hoa don thanh cong!");
         return true;
     }
 
-    // Tim va xuat mot hoa don
-    public boolean xuatTheoMa(String maHD) {
-        HoaDon hd = timTheoMa(maHD);
+    // sửa hóa đơn theo mã
+    public boolean sua(String maHD, HoaDon hdMoi) {
+        if (hdMoi == null) {
+            System.out.println("Hoa don moi khong hop le!");
+            return false;
+        }
 
-        if (hd == null) {
+        HoaDon hdCu = timTheoMa(maHD);
+
+        if (hdCu == null) {
             System.out.println("Khong tim thay hoa don!");
             return false;
         }
 
-        hd.inhoadon();
+        if (hdCu.isDaThanhToan()) {
+            System.out.println(
+                    "Khong the sua hoa don da thanh toan!"
+            );
+            return false;
+        }
+
+        if (hdMoi.getMaHD() == null
+                || hdMoi.getMaHD().trim().isEmpty()) {
+            System.out.println("Ma hoa don khong duoc de trong!");
+            return false;
+        }
+
+        // Kiem tra ma moi co bi trung khong
+        if (!hdCu.getMaHD().equalsIgnoreCase(hdMoi.getMaHD().trim())
+                && daTonTaiMa(hdMoi.getMaHD())) {
+            System.out.println("Ma hoa don moi da ton tai!");
+            return false;
+        }
+
+        int viTri = ds.indexOf(hdCu);
+        ds.set(viTri, hdMoi);
+
+        System.out.println("Sua hoa don thanh cong!");
         return true;
     }
 }
