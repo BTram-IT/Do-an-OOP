@@ -14,7 +14,6 @@ public abstract class SanPham {
     private final String donViTinh;
     private double thueSuat;
 
-<<<<<<< HEAD
 
     private String donViTinh;
     private double giaNhap;
@@ -40,13 +39,12 @@ public abstract class SanPham {
                     "Don gia khong hop le");
         }
 
-=======
     protected SanPham(String maSP, String tenSP, long giaBan, int soLuongTon,
                       String donViTinh, double thueSuat) {
         this.maSP = chuanHoaMa(kiemTraVanBan(maSP, "Mã sản phẩm"));
         this.tenSP = kiemTraVanBan(tenSP, "Tên sản phẩm");
         this.giaBan = kiemTraGiaBan(giaBan);
->>>>>>> eb9cee74752e1a680a97917521bd2ed15690713d
+
         if (soLuongTon < 0) {
             throw new IllegalArgumentException("Số lượng tồn không được âm.");
         }
@@ -196,8 +194,6 @@ public abstract class SanPham {
         return soLuongTon;
     }
 
-<<<<<<< HEAD
-
     public String getDonViTinh() {
         return donViTinh;
     }
@@ -219,17 +215,17 @@ public abstract class SanPham {
         }
 
         this.tenSP = tenSP.trim();
-=======
+
     public String getDonViTinh() {
         return donViTinh;
->>>>>>> eb9cee74752e1a680a97917521bd2ed15690713d
+
     }
 
     public double getThueSuat() {
         return thueSuat;
     }
 
-<<<<<<< HEAD
+
 
     public void setDonViTinh(String donViTinh) {
         if (donViTinh == null || donViTinh.isBlank()) {
@@ -277,9 +273,7 @@ public abstract class SanPham {
 }
 
 
-=======
     public void setThueSuat(double thueSuat) {
         this.thueSuat = kiemTraThueSuat(thueSuat);
     }
 }
->>>>>>> eb9cee74752e1a680a97917521bd2ed15690713d
