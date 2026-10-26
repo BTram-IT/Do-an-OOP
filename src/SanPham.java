@@ -4,7 +4,6 @@ import java.util.Locale;
 public abstract class SanPham {
 
     public static final long GIA_TOI_DA = 1_000_000_000L;
-
     public static final double THUE_SUAT_TOI_DA = 100.0;
 
     private final String maSP;
@@ -14,31 +13,7 @@ public abstract class SanPham {
     private final String donViTinh;
     private double thueSuat;
 
-
-    private String donViTinh;
-    private double giaNhap;
-    private double giaBan;
-
-
     // Constructor
-    public SanPham(String maSP, String tenSP,
-                   double donGia, int soLuongTon) {
-
-        if (maSP == null || maSP.isBlank()) {
-            throw new IllegalArgumentException(
-                    "Ma san pham khong duoc de trong");
-        }
-
-        if (tenSP == null || tenSP.isBlank()) {
-            throw new IllegalArgumentException(
-                    "Ten san pham khong duoc de trong");
-        }
-
-        if (!Double.isFinite(donGia) || donGia < 0) {
-            throw new IllegalArgumentException(
-                    "Don gia khong hop le");
-        }
-
     protected SanPham(String maSP, String tenSP, long giaBan, int soLuongTon,
                       String donViTinh, double thueSuat) {
         this.maSP = chuanHoaMa(kiemTraVanBan(maSP, "Mã sản phẩm"));
@@ -52,7 +27,6 @@ public abstract class SanPham {
         this.donViTinh = kiemTraVanBan(donViTinh, "Đơn vị tính");
         this.thueSuat = kiemTraThueSuat(thueSuat);
     }
-
 
     protected static String kiemTraVanBan(String giaTri, String tenTruong) {
         if (giaTri == null || giaTri.trim().isEmpty()) {
@@ -73,7 +47,6 @@ public abstract class SanPham {
     }
 
     protected static double kiemTraThueSuat(double thueSuat) {
-        // Viết kiểu này để số NaN cũng bị loại
         if (!(thueSuat >= 0 && thueSuat <= THUE_SUAT_TOI_DA)) {
             throw new IllegalArgumentException("Thuế suất là phần trăm, phải nằm trong khoảng 0 đến " + THUE_SUAT_TOI_DA + ".");
         }
@@ -108,6 +81,7 @@ public abstract class SanPham {
 
     protected abstract void capNhatThongTinRieng(SanPham nguon);
 
+    public abstract double tinhThue();
 
     public boolean isHetHan() {
         return isHetHan(LocalDate.now());
@@ -136,7 +110,7 @@ public abstract class SanPham {
         if (soLuong <= 0) {
             throw new IllegalArgumentException("Số lượng nhập kho phải lớn hơn 0.");
         }
-        if (soLuong > Integer.MAX_VALUE - soLuongTon) {
+        if ((long) soLuongTon + soLuong > Integer.MAX_VALUE) {
             throw new IllegalStateException("Tồn kho của " + maSP + " vượt quá giới hạn cho phép.");
         }
         soLuongTon += soLuong;
@@ -163,13 +137,16 @@ public abstract class SanPham {
 
     protected String thongTinChung() {
         return "[" + maSP + "] " + tenSP + " | " + getLoai()
-                + " | Giá bán: " + TienIch.dinhDangTien(giaBan) + "/" + donViTinh
+                + " | Giá bán: " + giaBan + " VND/" + donViTinh
                 + " | Tồn: " + soLuongTon
                 + " | Thuế bán: " + thueSuat + "%";
     }
 
+    public double tinhGiaSauThue() {
+        return giaBan + tinhThue();
+    }
 
-
+    // Getters and Setters
     public String getMaSP() {
         return maSP;
     }
@@ -198,82 +175,16 @@ public abstract class SanPham {
         return donViTinh;
     }
 
-    public double getGiaNhap() {
-        return giaNhap;
-    }
-
-    public double getGiaBan() {
-        return giaBan;
-    }
-
-
-    // Setter
-    public void setTenSP(String tenSP) {
-        if (tenSP == null || tenSP.isBlank()) {
-            throw new IllegalArgumentException(
-                    "Ten san pham khong duoc de trong");
-        }
-
-        this.tenSP = tenSP.trim();
-
-    public String getDonViTinh() {
-        return donViTinh;
-
-    }
-
     public double getThueSuat() {
         return thueSuat;
     }
 
-
-
-    public void setDonViTinh(String donViTinh) {
-        if (donViTinh == null || donViTinh.isBlank()) {
-            throw new IllegalArgumentException(
-                    "Don vi tinh khong hop le");
-        }
-
-        this.donViTinh = donViTinh.trim();
-    }
-
-    public void setGiaBan(double giaBan) {
-        this.giaBan = giaBan;
-    }
-
-    public void setGiaNhap(double giaNhap) {
-        this.giaNhap = giaNhap;
-    }
-
-
-    // Hien thi thong tin san pham
-    @Override
-    public String toString() {
-        NumberFormat dinhDangTien =
-                NumberFormat.getNumberInstance(
-                        Locale.forLanguageTag("vi-VN"));
-        dinhDangTien.setMaximumFractionDigits(0);
-
-        return String.format(
-                "[%s] %-8s | %-15s | Gia ban: %s VND | Ton: %d",
-                getLoai(),
-                maSP,
-                tenSP,
-                dinhDangTien.format(donGia),
-                soLuongTon
-        );
-    }
-
-    public abstract double tinhThue();
-    public abstract String layLoaiSP();
-    public abstract void xuat();
-
-    public double tinhGiaSauThue() {
-        return giaBan + tinhThue();
-    }
-}
-
-
     public void setThueSuat(double thueSuat) {
         this.thueSuat = kiemTraThueSuat(thueSuat);
+    }
+
+    @Override
+    public String toString() {
+        return thongTinChung();
     }
 }
