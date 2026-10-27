@@ -138,12 +138,29 @@ public class KeToan extends Nhanvien implements Thongke{
     }
 
     public double tinhTongGiavonHangdaban(int thang, int nam) {
-        double tongthue=0;
+        double tongvon=0;
+        for( HoaDon hd : HoaDon.getDs()) {
+            if(hd instanceof Hoadonban) {
+                Hoadonban hb = (Hoadonban) hd;
 
+                if(hd.getThoigianin().getMonthValue()==thang
+                && hd.getThoigianin().getYear()==nam) {
+                    for(CTHoaDon ct : hb.getCTHoaDon()) {
+                        SanPham sp=DSSanPham.TimSPtheoMa(ct.getMaSP());
+
+                        if(sp != null) {
+                            tongvon+=sp.getGiaNhap()*ct.getSoluong();
+                        }
+                    }
+                }
+            }
+        }
+        return tongvon;
     }
     @Override
     public double tinhLoiNhuanTheoThang(int thang, int nam) {
-        return 0;
+        double loinhuan=tinhDoanhThuTheoThang(thang, nam)-tinhTongGiavonHangdaban(thang, nam);
+        return loinhuan;
     }
 
     @Override

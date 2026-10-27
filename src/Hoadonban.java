@@ -20,5 +20,13 @@ public class Hoadonban extends HoaDon {
         return 0;
     }
 
+    public Hoadonban(String maKH, ArrayList<CTHoaDon> CTHoaDon, ThanhToan thanhtoan) {
+        MaKH = maKH;
+        this.CTHoaDon = CTHoaDon;
+        this.thanhtoan = thanhtoan;
+    }
 
+    public ArrayList<CTHoaDon> getCTHoaDon() {
+        return CTHoaDon;
+    }
 }
