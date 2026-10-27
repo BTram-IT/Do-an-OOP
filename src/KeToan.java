@@ -7,30 +7,32 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.HashMap;
 import java.util.Map;
+import java.time.LocalDate;
 
-public class KeToan extends Nhanvien{
+public class KeToan extends Nhanvien implements Thongke{
     private DSNhanVien NhanVien;
     private DSSanPham DSSanPham;
-    private DSHoadon Hoadon;
+    private DSHoadon HoaDon;
+
 
     public KeToan(DSNhanVien nhanVien, DSSanPham DSSanPham, DSHoadon hoadon) {
         NhanVien = nhanVien;
         this.DSSanPham = DSSanPham;
-        Hoadon = hoadon;
+        HoaDon = hoadon;
     }
 
     public KeToan(String maNV, LocalDate ngaybatdaulam, String Vitri, String Hoten, String SDT, String Email, String Diachi, DSNhanVien nhanVien, DSSanPham DSSanPham, DSHoadon hoadon) {
         super(maNV, ngaybatdaulam, Vitri, Hoten, SDT, Email, Diachi);
         NhanVien = nhanVien;
         this.DSSanPham = DSSanPham;
-        Hoadon = hoadon;
+        HoaDon = hoadon;
     }
 
     public KeToan() {
         super();
         NhanVien = new DSNhanVien();
         DSSanPham = new DSSanPham();
-        Hoadon = new DSHoadon();
+        HoaDon = new DSHoadon();
     }
 
     public DSNhanVien getNhanVien() {
@@ -50,97 +52,127 @@ public class KeToan extends Nhanvien{
     }
 
     public DSHoadon getHoadon() {
-        return Hoadon;
+        return HoaDon;
     }
 
     public void setHoadon(DSHoadon hoadon) {
-        Hoadon = hoadon;
+        HoaDon = hoadon;
     }
 
 
-    public void tinhTongThueTheoThang() {
-    }
-    public void tinhDoanhThuTheoThang() {
-        Scanner sc = new Scanner(System.in);
+    private Scanner sc = new Scanner(System.in);
 
-        System.out.print("Nhap thang: ");
-        int thang = Integer.parseInt(sc.nextLine());
 
-        System.out.print("Nhap nam: ");
-        int nam = Integer.parseInt(sc.nextLine());
-
-        if (thang < 1 || thang > 12) {
-            System.out.println("Thang khong hop le!");
-            return;
-        }
-
-        double doanhThu = 0;
-
-        for (HoaDon hd : Hoadon.getHoaDon()) {
-            LocalDate ngay = LocalDate.from(hd.getThoiGianTao());
-
-            if (ngay.getMonthValue() == thang
-                    && ngay.getYear() == nam) {
-                doanhThu += hd.tinhTongThanhToan();
+    @Override
+    public double tinhDoanhThuTheoThang(int thang, int nam) {
+        double doanthu=0;
+        for(HoaDon hd : HoaDon.getDs()) {
+            if(hd.getThoigianin()!=null
+                    && hd.getThoigianin().getMonthValue()==thang
+                    &&hd.getThoigianin().getYear()==nam) {
+                doanthu+=hd.Tongtienhoadon();
             }
         }
-
-        System.out.println("Doanh thu thang " + thang
-                + "/" + nam + ": " + doanhThu);
+        return doanthu;
     }
-    public void tinhDoanhThuTheoQuy() {
-        Scanner sc = new Scanner(System.in);
 
-        System.out.print("Nhap quy (1-4): ");
-        int quy = Integer.parseInt(sc.nextLine());
-
-        System.out.print("Nhap nam: ");
-        int nam = Integer.parseInt(sc.nextLine());
-
-        if (quy < 1 || quy > 4) {
-            System.out.println("Quy khong hop le!");
-            return;
+    @Override
+    public double tinhDoanhThuTheoQuy(int quy, int nam) {
+        if(quy<1 || quy >4) {
+            return 0;
         }
 
-        int thangBatDau = (quy - 1) * 3 + 1;
-        int thangKetThuc = thangBatDau + 2;
+        double doanhthu=0;
+        int thangbatdau=(quy-1)*3+1;
+        for(HoaDon hd : HoaDon.getDs()) {
+            if(hd.getThoigianin()!=null) {
+                int thang=hd.getThoigianin().getMonthValue();
+                int namHD=hd.getThoigianin().getYear();
 
-        double doanhThu = 0;
-
-        for (HoaDon hd : Hoadon.getHoaDon()) {
-            LocalDate ngay = LocalDate.from(hd.getThoiGianTao());
-
-            if (ngay.getYear() == nam
-                    && ngay.getMonthValue() >= thangBatDau
-                    && ngay.getMonthValue() <= thangKetThuc) {
-                doanhThu += hd.tinhTongThanhToan();
+                if(namHD==nam
+                && thang>=thangbatdau && thang<thangbatdau+3) {
+                    doanhthu+=hd.Tongtienhoadon();
+                }
             }
         }
-
-        System.out.println("Doanh thu quy " + quy
-                + " nam " + nam + ": " + doanhThu);
+        return doanhthu;
     }
-    public void tinhDoanhThuTheoNam() {
-        Scanner sc = new Scanner(System.in);
 
-        System.out.print("Nhap nam: ");
-        int nam = Integer.parseInt(sc.nextLine());
 
-        double doanhThu = 0;
-
-        for (HoaDon hd : Hoadon.getHoaDon()) {
-            if (hd.getThoiGianTao().getYear() == nam) {
-                doanhThu += hd.tinhTongThanhToan();
+    @Override
+    public double tinhDoanhThuTheoNam(int nam) {
+        double doanthu=0;
+        for(HoaDon hd : HoaDon.getDs()) {
+            if(hd.getThoigianin()!=null && hd.getThoigianin().getYear()==nam) {
+                doanthu+=hd.Tongtienhoadon();
             }
         }
-
-        System.out.println("Doanh thu nam " + nam
-                + ": " + doanhThu);
+        return doanthu;
     }
-    public void tinhLoiNhuanTheoThang() {}
-    public void tinhLoiNhuanTheoQuy() {}
-    public void tinhLoiNhuanTheoNam() {}
-    public void tinhBangLuong() {}
-    public void baoCaoSanPhamBanChay() {}
-    public void inBaoCaoTaiChinh() {}
+
+    public double Thuetheothang(int thang,int nam){
+        double tongthue=0;
+        for(HoaDon hd : HoaDon.getDs()) {
+            if(hd instanceof Hoadonban) {
+                Hoadonban hb = (Hoadonban) hd;
+                if(hd.getThoigianin().getMonthValue()==thang
+                        && hd.getThoigianin().getYear()==nam) {
+                    tongthue+= hb.Tongthuedonhang(DSSanPham);          }
+            }
+        }
+        return tongthue;
+    }
+    public double ThuetheoNam(int nam){
+        double tongthue=0;
+
+        for(HoaDon hd : HoaDon.getDs()) {
+            if(hd instanceof Hoadonban) {
+                Hoadonban hb = (Hoadonban) hd;
+
+                if(hd.getThoigianin().getYear()==nam) {
+                    tongthue+=hb.Tongthuedonhang(DSSanPham);
+                }
+            }
+        }
+        return tongthue;
+    }
+    @Override
+    public double tinhLoiNhuanTheoThang(int thang, int nam) {
+        return 0;
+    }
+
+    @Override
+    public double tinhLoiNhuanTheoQuy(int quy, int nam) {
+        return 0;
+    }
+
+    @Override
+    public double tinhLoiNhuanTheoNam(int nam) {
+        return 0;
+    }
+
+    @Override
+    public double thongKeThueTheoThang(int thang, int nam) {
+        return 0;
+    }
+
+    @Override
+    public double thongKeThueTheoNam(int nam) {
+        return 0;
+    }
+
+    @Override
+    public void thongKeSanPhamBanDuoc() {
+
+    }
+
+    @Override
+    public void thongKeSanPhamBanRa() {
+
+    }
+
+    @Override
+    public void thongKeLuong() {
+
+    }
 }
