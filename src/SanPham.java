@@ -9,6 +9,7 @@ public abstract class SanPham {
     private final String maSP;
     private String tenSP;
     private long giaBan;
+    private long giaNhap;
     private int soLuongTon;
     private final String donViTinh;
     private double thueSuat;
@@ -19,6 +20,7 @@ public abstract class SanPham {
         this.maSP = chuanHoaMa(kiemTraVanBan(maSP, "Mã sản phẩm"));
         this.tenSP = kiemTraVanBan(tenSP, "Tên sản phẩm");
         this.giaBan = kiemTraGiaBan(giaBan);
+
 
         if (soLuongTon < 0) {
             throw new IllegalArgumentException("Số lượng tồn không được âm.");
@@ -147,6 +149,16 @@ public abstract class SanPham {
     }
 
     // Getters and Setters
+
+
+    public long getGiaNhap() {
+        return giaNhap;
+    }
+
+    public void setGiaNhap(long giaNhap) {
+        this.giaNhap = giaNhap;
+    }
+
     public String getMaSP() {
         return maSP;
     }

@@ -68,6 +68,11 @@ public class ThucAn extends SanPham {
     }
 
     @Override
+    public double tinhThue() {
+        return 0;
+    }
+
+    @Override
     public String toString() {
         return thongTinChung() + " | NSX: " + nhaSanXuat
                 + " | HSD: " + TienIch.dinhDangNgay(hanSuDung) + (isHetHan() ? " (HẾT HẠN)" : "");

@@ -136,6 +136,11 @@ public class KeToan extends Nhanvien implements Thongke{
         }
         return tongthue;
     }
+
+    public double tinhTongGiavonHangdaban(int thang, int nam) {
+        double tongthue=0;
+
+    }
     @Override
     public double tinhLoiNhuanTheoThang(int thang, int nam) {
         return 0;
