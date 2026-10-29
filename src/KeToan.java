@@ -459,7 +459,7 @@ public class KeToan extends Nhanvien implements Thongke {
     //======================================================================================
 
     //Menu doanh thu
-    private void menuDoanhThu() {
+    public void menuDoanhThu() {
         int chon;
 
         do {
@@ -523,7 +523,7 @@ public class KeToan extends Nhanvien implements Thongke {
     }
     // Menu lợi nhuận
 
-    private void menuLoiNhuan() {
+    public void menuLoiNhuan() {
         int chon;
 
         do {
@@ -803,7 +803,7 @@ public class KeToan extends Nhanvien implements Thongke {
     }
 
     //Menu lương
-    private void menuLuong() {
+    public void menuLuong() {
         int chon;
 
         do {
