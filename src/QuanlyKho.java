@@ -23,7 +23,7 @@ public class QuanlyKho {
     public static final String TEN_FILE_HOA_DON_NHAP = "hoa_don_nhap.txt";
 
     private IDanhSachSanPham dsSanPham;
-    private ArrayList<HoaDonNhap> dsHoaDonNhap = new ArrayList<>();
+    private ArrayList<HoadonNhap> dsHoaDonNhap = new ArrayList<>();
     private DSNhaCungCap dsNhaCungCap;
 
     public QuanlyKho(DSNhaCungCap dsNhaCungCap) {
@@ -85,7 +85,7 @@ public class QuanlyKho {
         if (!dsSanPham.tonTaiMa(maChuan)) {
             throw new IllegalArgumentException("Không tìm thấy sản phẩm có mã: " + ma);
         }
-        for (HoaDonNhap phieu : dsHoaDonNhap) {
+        for (HoadonNhap phieu : dsHoaDonNhap) {
             if (phieu.coSanPham(maChuan)) {
                 throw new IllegalStateException("Không thể xóa " + maChuan + ": sản phẩm đã có trong phiếu nhập "
                         + phieu.getMaHoaDon() + " (cần giữ lịch sử nhập hàng).");
@@ -331,7 +331,7 @@ public class QuanlyKho {
 
     // Tạo hóa đơn nhập mới (chờ xác nhận) với mã tự sinh, ví dụ HDN001; maNhanVien là nhân viên lập hóa đơn.
     // Nhà cung cấp phải CÓ TRONG DSNhaCungCap; phiếu lưu mã của nhà cung cấp đó. Ngày nhập không được ở tương lai.
-    public HoaDonNhap taoHoaDonNhap(String maNhanVien, String maNhaCungCap, LocalDate ngayNhap) {
+    public HoadonNhap taoHoaDonNhap(String maNhanVien, String maNhaCungCap, LocalDate ngayNhap) {
         NhaCungCap ncc = dsNhaCungCap.timTheoMa(maNhaCungCap);
         if (ncc == null) {
             throw new IllegalArgumentException("Nhà cung cấp '" + maNhaCungCap
@@ -343,7 +343,7 @@ public class QuanlyKho {
         if (ngayNhap.isAfter(LocalDate.now())) {
             throw new IllegalArgumentException("Ngày nhập không được ở tương lai.");
         }
-        HoaDonNhap phieu = new HoaDonNhap(HoaDonNhap.maKeTiep(), maNhanVien, ngayNhap, ncc.getMa());
+        HoadonNhap phieu = new HoadonNhap(HoadonNhap.maKeTiep(), maNhanVien, ngayNhap, ncc.getMa());
         dsHoaDonNhap.add(phieu);
         return phieu;
     }
@@ -366,13 +366,13 @@ public class QuanlyKho {
 
     public void themChiTietPhieu(String maPhieu, String maSP, int soLuong, long giaNhap,
                                  double thueSuatNhap, LocalDate hanSuDung) {
-        HoaDonNhap phieu = layPhieu(maPhieu);
+        HoadonNhap phieu = layPhieu(maPhieu);
         SanPham sp = dsSanPham.timTheoMa(maSP);
         if (sp == null) {
             throw new IllegalArgumentException("Sản phẩm " + maSP + " chưa có trong danh mục, hãy thêm sản phẩm trước khi nhập hàng.");
         }
         sp.kiemTraCoTheNhapLo(hanSuDung, soLuong);
-        phieu.themChiTiet(new ChiTietPhieuNhap(sp.getMaSP(), sp.getTenSP(), soLuong, giaNhap, thueSuatNhap, hanSuDung));
+        phieu.themChiTiet(new CTHDonNhap(sp.getMaSP(), sp.getTenSP(), soLuong, giaNhap, thueSuatNhap, hanSuDung));
     }
 
     public void xacNhanHoaDonNhap(String maPhieu) {
@@ -384,9 +384,9 @@ public class QuanlyKho {
     }
 
     // Trả về phiếu hoặc null nếu không có
-    public HoaDonNhap timHoaDonNhap(String maPhieu) {
+    public HoadonNhap timHoaDonNhap(String maPhieu) {
         String maChuan = SanPham.chuanHoaMa(maPhieu);
-        for (HoaDonNhap phieu : dsHoaDonNhap) {
+        for (HoadonNhap phieu : dsHoaDonNhap) {
             if (phieu.getMaHoaDon().equals(maChuan)) {
                 return phieu;
             }
@@ -394,8 +394,8 @@ public class QuanlyKho {
         return null;
     }
 
-    private HoaDonNhap layPhieu(String maPhieu) {
-        HoaDonNhap phieu = timHoaDonNhap(maPhieu);
+    private HoadonNhap layPhieu(String maPhieu) {
+        HoadonNhap phieu = timHoaDonNhap(maPhieu);
         if (phieu == null) {
             throw new IllegalArgumentException("Không tìm thấy phiếu nhập có mã: " + maPhieu);
         }
@@ -403,8 +403,8 @@ public class QuanlyKho {
     }
 
     // Bản sao danh sách phiếu nhập (Kế toán dùng để lấy tổng tiền, thuế suất nhập, ngày, nhà cung cấp)
-    public ArrayList<HoaDonNhap> layDanhSachHoaDonNhap() {
-        return new ArrayList<HoaDonNhap>(dsHoaDonNhap);
+    public ArrayList<HoadonNhap> layDanhSachHoaDonNhap() {
+        return new ArrayList<HoadonNhap>(dsHoaDonNhap);
     }
 
     // Giá vốn của một lần xuất (kết quả xuatKho/xuatKhoNhieu): tổng soLuong x giaNhap THỰC TẾ của từng lô đã xuất.
@@ -445,7 +445,7 @@ public class QuanlyKho {
     public long tongTienNhap(LocalDate tuNgay, LocalDate denNgay) {
         kiemTraKhoangNgay(tuNgay, denNgay);
         long tong = 0;
-        for (HoaDonNhap phieu : dsHoaDonNhap) {
+        for (HoadonNhap phieu : dsHoaDonNhap) {
             if (trongKhoang(phieu, tuNgay, denNgay)) {
                 tong += phieu.tinhTongTien();
             }
@@ -458,7 +458,7 @@ public class QuanlyKho {
         String ketQua = "===== NHẬP KHO TỪ " + TienIch.dinhDangNgay(tuNgay) + " ĐẾN " + TienIch.dinhDangNgay(denNgay)
                 + " (phiếu đã xác nhận) =====\n";
         int soPhieu = 0;
-        for (HoaDonNhap phieu : dsHoaDonNhap) {
+        for (HoadonNhap phieu : dsHoaDonNhap) {
             if (trongKhoang(phieu, tuNgay, denNgay)) {
                 ketQua += phieu.moTaDayDu(nhanNhaCungCap(phieu.getMaNCC())) + "\n";
                 soPhieu++;
@@ -475,8 +475,8 @@ public class QuanlyKho {
         }
     }
 
-    private boolean trongKhoang(HoaDonNhap phieu, LocalDate tuNgay, LocalDate denNgay) {
-        return phieu.getTrangThai() == HoaDonNhap.TrangThai.DA_XAC_NHAN
+    private boolean trongKhoang(HoadonNhap phieu, LocalDate tuNgay, LocalDate denNgay) {
+        return phieu.getTrangThai() == HoadonNhap.TrangThai.DA_XAC_NHAN
                 && !phieu.getNgayNhap().isBefore(tuNgay)
                 && !phieu.getNgayNhap().isAfter(denNgay);
     }
@@ -510,7 +510,7 @@ public class QuanlyKho {
             ghi.newLine();
             ghi.write("# CT|maSP|tenSP|soLuongNhap|giaNhap|thueSuatNhap(%)|hanSuDung");
             ghi.newLine();
-            for (HoaDonNhap phieu : dsHoaDonNhap) {
+            for (HoadonNhap phieu : dsHoaDonNhap) {
                 for (String dong : phieu.toCacDongFile()) {
                     ghi.write(dong);
                     ghi.newLine();
@@ -525,7 +525,7 @@ public class QuanlyKho {
     // Mã nhà cung cấp trong mỗi phiếu phải có trong DSNhaCungCap hiện tại: hãy nạp danh sách nhà cung cấp TRƯỚC khi đọc kho.
     public void docDuLieu(String thuMuc) throws IOException {
         File dir = new File(thuMuc);
-        ArrayList<HoaDonNhap> phieuMoi = docFileHoaDonNhap(new File(dir, TEN_FILE_HOA_DON_NHAP));
+        ArrayList<HoadonNhap> phieuMoi = docFileHoaDonNhap(new File(dir, TEN_FILE_HOA_DON_NHAP));
         ArrayList<SanPham> sanPhamMoi = dsSanPham.docSanPhamTuFile(new File(dir, TEN_FILE_SAN_PHAM).getPath());
         kiemTraLienKet(sanPhamMoi, phieuMoi);
         dsSanPham.thayTheBang(sanPhamMoi);
@@ -535,19 +535,19 @@ public class QuanlyKho {
     // Quy tắc liên kết: mỗi dòng của phiếu ĐÃ XÁC NHẬN có đúng một lô khớp (số lượng nhập, hạn, ngày nhập);
     // mỗi lô phải thuộc một phiếu đã xác nhận có dòng của đúng sản phẩm đó; mọi dòng phiếu phải có sản phẩm trong file;
     // mỗi phiếu phải có nhà cung cấp tồn tại trong danh sách nhà cung cấp.
-    private void kiemTraLienKet(ArrayList<SanPham> dsSP, ArrayList<HoaDonNhap> dsPhieu) throws IOException {
-        for (HoaDonNhap phieu : dsPhieu) {
+    private void kiemTraLienKet(ArrayList<SanPham> dsSP, ArrayList<HoadonNhap> dsPhieu) throws IOException {
+        for (HoadonNhap phieu : dsPhieu) {
             if (!dsNhaCungCap.tonTai(phieu.getMaNCC())) {
                 throw new IOException("Dữ liệu không khớp: phiếu " + phieu.getMaHoaDon() + " có nhà cung cấp "
                         + phieu.getMaNCC() + " không có trong danh sách nhà cung cấp (hãy nạp danh sách nhà cung cấp trước khi đọc kho).");
             }
-            for (ChiTietPhieuNhap ct : phieu.getChiTiet()) {
+            for (CTHDonNhap ct : phieu.getChiTiet()) {
                 SanPham sp = timTrong(dsSP, ct.getMaSP());
                 if (sp == null) {
                     throw new IOException("Dữ liệu không khớp: phiếu " + phieu.getMaHoaDon() + " có sản phẩm "
                             + ct.getMaSP() + " không tồn tại trong file sản phẩm.");
                 }
-                if (phieu.getTrangThai() == HoaDonNhap.TrangThai.DA_XAC_NHAN && sp.timLoTheoHoaDonNhap(phieu.getMaHoaDon()) == null) {
+                if (phieu.getTrangThai() == HoadonNhap.TrangThai.DA_XAC_NHAN && sp.timLoTheoHoaDonNhap(phieu.getMaHoaDon()) == null) {
                     throw new IOException("Dữ liệu không khớp: phiếu " + phieu.getMaHoaDon() + " đã xác nhận nhưng "
                             + ct.getMaSP() + " không có lô tương ứng.");
                 }
@@ -555,12 +555,12 @@ public class QuanlyKho {
         }
         for (SanPham sp : dsSP) {
             for (LoHang lo : sp.getCacLo()) {
-                HoaDonNhap phieu = timPhieuTrong(dsPhieu, lo.getMaHoaDonNhap());
+                HoadonNhap phieu = timPhieuTrong(dsPhieu, lo.getMaHoaDonNhap());
                 if (phieu == null) {
                     throw new IOException("Dữ liệu không khớp: lô " + lo.getMaLo() + " thuộc phiếu "
                             + lo.getMaHoaDonNhap() + " không tồn tại.");
                 }
-                if (phieu.getTrangThai() != HoaDonNhap.TrangThai.DA_XAC_NHAN) {
+                if (phieu.getTrangThai() != HoadonNhap.TrangThai.DA_XAC_NHAN) {
                     throw new IOException("Dữ liệu không khớp: lô " + lo.getMaLo() + " thuộc phiếu "
                             + phieu.getMaHoaDon() + " đang ở trạng thái '" + phieu.getTrangThai().getNhan() + "'.");
                 }
@@ -568,8 +568,8 @@ public class QuanlyKho {
                     throw new IOException("Dữ liệu không khớp: sản phẩm " + sp.getMaSP() + " có hai lô cùng thuộc phiếu "
                             + lo.getMaHoaDonNhap() + ".");
                 }
-                ChiTietPhieuNhap ct = null;
-                for (ChiTietPhieuNhap dong : phieu.getChiTiet()) {
+                CTHDonNhap ct = null;
+                for (CTHDonNhap dong : phieu.getChiTiet()) {
                     if (dong.getMaSP().equals(sp.getMaSP())) {
                         ct = dong;
                     }
@@ -598,8 +598,8 @@ public class QuanlyKho {
         return null;
     }
 
-    private HoaDonNhap timPhieuTrong(ArrayList<HoaDonNhap> ds, String ma) {
-        for (HoaDonNhap phieu : ds) {
+    private HoadonNhap timPhieuTrong(ArrayList<HoadonNhap> ds, String ma) {
+        for (HoadonNhap phieu : ds) {
             if (phieu.getMaHoaDon().equals(SanPham.chuanHoaMa(ma))) {
                 return phieu;
             }
@@ -607,11 +607,11 @@ public class QuanlyKho {
         return null;
     }
 
-    private ArrayList<HoaDonNhap> docFileHoaDonNhap(File file) throws IOException {
-        ArrayList<HoaDonNhap> ketQua = new ArrayList<>();
+    private ArrayList<HoadonNhap> docFileHoaDonNhap(File file) throws IOException {
+        ArrayList<HoadonNhap> ketQua = new ArrayList<>();
         String[] dauPhieu = null;
         boolean dungPhienBan = false;
-        ArrayList<ChiTietPhieuNhap> chiTietDangDoc = new ArrayList<>();
+        ArrayList<CTHDonNhap> chiTietDangDoc = new ArrayList<>();
         try (BufferedReader doc = new BufferedReader(
                 new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8))) {
             String dong;
@@ -642,7 +642,7 @@ public class QuanlyKho {
                         if (dauPhieu == null) {
                             throw new IllegalArgumentException("Dòng CT xuất hiện trước dòng HDN.");
                         }
-                        chiTietDangDoc.add(ChiTietPhieuNhap.tuDongFile(dong));
+                        chiTietDangDoc.add(CTHDonNhap.tuDongFile(dong));
                     } else {
                         throw new IllegalArgumentException("Dòng phải bắt đầu bằng HDN| hoặc CT|.");
                     }
@@ -664,16 +664,16 @@ public class QuanlyKho {
     }
 
     // Dựng phiếu từ dòng PN và các dòng CT đã đọc rồi thêm vào kết quả
-    private void chotPhieuDaDoc(ArrayList<HoaDonNhap> ketQua, String[] dauPhieu, ArrayList<ChiTietPhieuNhap> chiTiet) {
+    private void chotPhieuDaDoc(ArrayList<HoadonNhap> ketQua, String[] dauPhieu, ArrayList<CTHDonNhap> chiTiet) {
         if (dauPhieu == null) {
             return;
         }
         if (dauPhieu.length != 7) {
             throw new IllegalArgumentException("Dòng HDN cần 7 trường (HDN|maHoaDon|maNV|thoiGianLap|ngayNhap|maNhaCungCap|trangThai).");
         }
-        HoaDonNhap phieu = new HoaDonNhap(dauPhieu[1], dauPhieu[2], LocalDateTime.parse(dauPhieu[3]),
-                LocalDate.parse(dauPhieu[4]), dauPhieu[5], HoaDonNhap.TrangThai.valueOf(dauPhieu[6]), chiTiet);
-        for (HoaDonNhap daCo : ketQua) {
+        HoadonNhap phieu = new HoadonNhap(dauPhieu[1], dauPhieu[2], LocalDateTime.parse(dauPhieu[3]),
+                LocalDate.parse(dauPhieu[4]), dauPhieu[5], HoadonNhap.TrangThai.valueOf(dauPhieu[6]), chiTiet);
+        for (HoadonNhap daCo : ketQua) {
             if (daCo.getMaHoaDon().equals(phieu.getMaHoaDon())) {
                 throw new IllegalArgumentException("Mã phiếu bị trùng trong file: " + phieu.getMaHoaDon());
             }
@@ -923,7 +923,7 @@ public class QuanlyKho {
                 throw new IllegalArgumentException("Ngày không hợp lệ, cần dạng dd/MM/yyyy.");
             }
         }
-        HoaDonNhap phieu = taoHoaDonNhap(maNv, maNcc, ngay);
+        HoadonNhap phieu = taoHoaDonNhap(maNv, maNcc, ngay);
         System.out.println("Đã tạo " + phieu + ". Dùng chức năng 12 để thêm chi tiết.");
     }
 
@@ -953,7 +953,7 @@ public class QuanlyKho {
             System.out.println("(Chưa có phiếu nhập nào)");
             return;
         }
-        for (HoaDonNhap phieu : dsHoaDonNhap) {
+        for (HoadonNhap phieu : dsHoaDonNhap) {
             System.out.println(phieu.moTaDayDu(nhanNhaCungCap(phieu.getMaNCC())));
         }
     }

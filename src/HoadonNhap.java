@@ -3,7 +3,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Locale;
 
-public class HoaDonNhap extends HoaDon {
+public class HoadonNhap extends HoaDon {
 
     public enum TrangThai {
         CHO_XAC_NHAN("Chờ xác nhận"),
@@ -26,30 +26,30 @@ public class HoaDonNhap extends HoaDon {
 
     private LocalDate ngayNhap;
     private String maNhaCungCap;
-    private ArrayList<ChiTietPhieuNhap> chiTiet = new ArrayList<>();
+    private ArrayList<CTHDonNhap> chiTiet = new ArrayList<>();
     private TrangThai trangThai;
 
     // Tạo phiếu mới, ở trạng thái chờ xác nhận
-    public HoaDonNhap(String maHoaDon, String maNhanVien, LocalDate ngayNhap, String maNhaCungCap) {
+    public HoadonNhap(String maHoaDon, String maNhanVien, LocalDate ngayNhap, String maNhaCungCap) {
         this(maHoaDon, maNhanVien, LocalDateTime.now(), ngayNhap, maNhaCungCap,
-                TrangThai.CHO_XAC_NHAN, new ArrayList<ChiTietPhieuNhap>());
+                TrangThai.CHO_XAC_NHAN, new ArrayList<CTHDonNhap>());
     }
 
     // Dùng khi đọc file: giữ nguyên trạng thái và các dòng chi tiết đã lưu, KHÔNG đụng tới tồn kho
-    public HoaDonNhap(String maHoaDon, String maNhanVien, LocalDateTime thoiGianLap, LocalDate ngayNhap,
-                      String maNhaCungCap, TrangThai trangThai, ArrayList<ChiTietPhieuNhap> cacDong) {
-        
-            super();
-            
-            setMaHD(SanPham.chuanHoaMa(
+    public HoadonNhap(String maHoaDon, String maNhanVien, LocalDateTime thoiGianLap, LocalDate ngayNhap,
+                      String maNhaCungCap, TrangThai trangThai, ArrayList<CTHDonNhap> cacDong) {
+
+        super();
+
+        setMaHD(SanPham.chuanHoaMa(
                 SanPham.kiemTraVanBan(maHoaDon, "Mã hóa đơn nhập")
-            ));
-            
-            setMaNV(SanPham.chuanHoaMa(
+        ));
+
+        setMaNV(SanPham.chuanHoaMa(
                 SanPham.kiemTraVanBan(maNhanVien, "Mã nhân viên")
-            ));
-            
-            setThoigianin(thoiGianLap);
+        ));
+
+        setThoigianin(thoiGianLap);
 
         if (thoiGianLap == null) {
             throw new IllegalArgumentException("Thời gian lập hóa đơn không được null.");
@@ -63,7 +63,7 @@ public class HoaDonNhap extends HoaDon {
             throw new IllegalArgumentException("Trạng thái phiếu không được null.");
         }
         this.trangThai = trangThai;
-        for (ChiTietPhieuNhap ct : cacDong) {
+        for (CTHDonNhap ct : cacDong) {
             kiemTraChiTiet(ct);
             chiTiet.add(ct);
         }
@@ -74,8 +74,8 @@ public class HoaDonNhap extends HoaDon {
         return String.format(Locale.ROOT, "%s%03d", TIEN_TO_MA, boDem + 1);
     }
 
-    // Mỗi sản phẩm một dòng; hạn sử dụng không được trước ngày nhập 
-    private void kiemTraChiTiet(ChiTietPhieuNhap ct) {
+    // Mỗi sản phẩm một dòng; hạn sử dụng không được trước ngày nhập
+    private void kiemTraChiTiet(CTHDonNhap ct) {
         if (ct.getHanSuDung() != null && ct.getHanSuDung().isBefore(ngayNhap)) {
             throw new IllegalArgumentException("Dòng " + ct.getMaSP() + ": hạn sử dụng không được trước ngày nhập "
                     + TienIch.dinhDangNgay(ngayNhap) + ".");
@@ -88,7 +88,7 @@ public class HoaDonNhap extends HoaDon {
 
     // ===================== CHI TIẾT =====================
 
-    public void themChiTiet(ChiTietPhieuNhap ct) {
+    public void themChiTiet(CTHDonNhap ct) {
         kiemTraConSua();
         if (ct == null) {
             throw new IllegalArgumentException("Chi tiết phiếu nhập không được null.");
@@ -116,7 +116,7 @@ public class HoaDonNhap extends HoaDon {
 
     private boolean daCoMa(String maSP) {
         String maChuan = SanPham.chuanHoaMa(maSP);
-        for (ChiTietPhieuNhap ct : chiTiet) {
+        for (CTHDonNhap ct : chiTiet) {
             if (ct.getMaSP().equals(maChuan)) {
                 return true;
             }
@@ -127,7 +127,7 @@ public class HoaDonNhap extends HoaDon {
     // Tổng tiền hàng của phiếu, CHƯA thuế (Kế toán tính thuế nhập từ thueSuatNhap của từng dòng)
     public long tinhTongTien() {
         long tong = 0;
-        for (ChiTietPhieuNhap ct : chiTiet) {
+        for (CTHDonNhap ct : chiTiet) {
             tong = Math.addExact(tong, ct.getThanhTien());
         }
         return tong;
@@ -136,14 +136,13 @@ public class HoaDonNhap extends HoaDon {
     // Tổng thuế nhập của cả hóa đơn (cộng thuế từng dòng)
     public long tinhTongThue() {
         long tong = 0;
-        for (ChiTietPhieuNhap ct : chiTiet) {
+        for (CTHDonNhap ct : chiTiet) {
             tong = Math.addExact(tong, ct.tienThueNhap());
         }
         return tong;
     }
 
     // Tổng thanh toán cho nhà cung cấp = tiền hàng + thuế nhập.
-    // [HoaDon-thật] nhóm cần xác nhận Tongtienhoadon() của hóa đơn nhập có gồm thuế hay không (ở đây: có).
     @Override
     public double Tongtienhoadon() {
         return (double) (tinhTongTien() + tinhTongThue());
@@ -164,9 +163,6 @@ public class HoaDonNhap extends HoaDon {
 
     // ===================== XÁC NHẬN / HỦY =====================
 
-    // Xác nhận phiếu: mỗi dòng tạo một lô hàng mới trong sản phẩm tương ứng.
-    // Bước 1: kiểm tra TẤT CẢ dòng (chưa đổi gì). Bước 2: mới tạo lô.
-
     public void xacNhan(IDanhSachSanPham kho) {
         if (kho == null) {
             throw new IllegalArgumentException("Cần cung cấp kho để xác nhận phiếu.");
@@ -178,14 +174,14 @@ public class HoaDonNhap extends HoaDon {
         if (chiTiet.isEmpty()) {
             throw new IllegalStateException("Hóa đơn nhập " + getMaHD() + " chưa có dòng chi tiết nào.");
         }
-        for (ChiTietPhieuNhap ct : chiTiet) {
+        for (CTHDonNhap ct : chiTiet) {
             SanPham sp = kho.timTheoMa(ct.getMaSP());
             if (sp == null) {
                 throw new IllegalArgumentException("Sản phẩm " + ct.getMaSP() + " không có trong kho, không thể xác nhận phiếu " + getMaHD() + ".");
             }
             sp.kiemTraCoTheNhapLo(ct.getHanSuDung(), ct.getSoLuongNhap());
         }
-        for (ChiTietPhieuNhap ct : chiTiet) {
+        for (CTHDonNhap ct : chiTiet) {
             LoHang lo = new LoHang(LoHang.maKeTiep(), ct.getMaSP(), getMaHD(), ngayNhap,
                     ct.getHanSuDung(), ct.getSoLuongNhap(), ct.getSoLuongNhap(), ct.getGiaNhap());
             kho.timTheoMa(ct.getMaSP()).themLo(lo);
@@ -193,10 +189,6 @@ public class HoaDonNhap extends HoaDon {
         trangThai = TrangThai.DA_XAC_NHAN;
     }
 
-    // Hủy phiếu.
-    // - Chờ xác nhận: chỉ đổi trạng thái (chưa có lô nào).
-    // - Đã xác nhận: xóa các lô của phiếu khỏi kho. Chỉ được nếu MỌI lô còn nguyên chưa bị xuất;
-    //   hàng đã bán mất thì từ chối. Kiểm tra hết rồi mới xóa.
     public void huy(IDanhSachSanPham kho) {
         if (trangThai == TrangThai.DA_HUY) {
             throw new IllegalStateException("Hóa đơn nhập " + getMaHD() + " đã bị hủy trước đó.");
@@ -208,7 +200,7 @@ public class HoaDonNhap extends HoaDon {
         if (kho == null) {
             throw new IllegalArgumentException("Cần cung cấp kho để hủy phiếu đã xác nhận.");
         }
-        for (ChiTietPhieuNhap ct : chiTiet) {
+        for (CTHDonNhap ct : chiTiet) {
             SanPham sp = kho.timTheoMa(ct.getMaSP());
             if (sp == null) {
                 throw new IllegalStateException("Không thể hủy phiếu " + getMaHD() + ": sản phẩm "
@@ -225,7 +217,7 @@ public class HoaDonNhap extends HoaDon {
                         + " trên " + lo.getSoLuongNhap() + " (hàng đã bán).");
             }
         }
-        for (ChiTietPhieuNhap ct : chiTiet) {
+        for (CTHDonNhap ct : chiTiet) {
             SanPham sp = kho.timTheoMa(ct.getMaSP());
             sp.xoaLo(sp.timLoTheoHoaDonNhap(getMaHD()).getMaLo());
         }
@@ -259,27 +251,25 @@ public class HoaDonNhap extends HoaDon {
     }
 
     // Trả về bản sao, bên ngoài sửa danh sách này không ảnh hưởng phiếu
-    public ArrayList<ChiTietPhieuNhap> getChiTiet() {
-        return new ArrayList<ChiTietPhieuNhap>(chiTiet);
+    public ArrayList<CTHDonNhap> getChiTiet() {
+        return new ArrayList<CTHDonNhap>(chiTiet);
     }
 
     // ===================== FILE / HIỂN THỊ =====================
 
-    // Dòng HDN|maHoaDon|maNV|thoiGianLap|ngayNhap|maNhaCungCap|trangThai rồi các dòng CT
     public ArrayList<String> toCacDongFile() {
         ArrayList<String> cacDong = new ArrayList<>();
         cacDong.add("HDN|" + getMaHD() + "|" + getMaNV() + "|" + getThoigianin() + "|" + ngayNhap
                 + "|" + maNhaCungCap + "|" + trangThai.name());
-        for (ChiTietPhieuNhap ct : chiTiet) {
+        for (CTHDonNhap ct : chiTiet) {
             cacDong.add(ct.toDongFile());
         }
         return cacDong;
     }
 
-    //(QuanlyKho truyền "mã - tên")
     public String moTaDayDu(String nhanNhaCungCap) {
         String ketQua = moTa(nhanNhaCungCap);
-        for (ChiTietPhieuNhap ct : chiTiet) {
+        for (CTHDonNhap ct : chiTiet) {
             ketQua += "\n    + " + ct;
         }
         return ketQua;
