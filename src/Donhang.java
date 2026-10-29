@@ -101,7 +101,7 @@ public class Donhang {
     }
 
     // Them mon vao don hang, chua tru kho
-    public boolean themMon( sp, int soLuong) {
+    public boolean themMon(SanPham sp, int soLuong) {
         if (daXacNhan || daHuy) {
             System.out.println(
                     "Don hang khong con o trang thai tao moi!"
