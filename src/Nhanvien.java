@@ -79,4 +79,12 @@ public class Nhanvien extends Nguoidung {
                 ", sc=" + sc +
                 '}';
     }
+
+    public double Tinhluong(LocalDate ngayTinh) {
+        return Luong;
+    }
+
+    public double Tinhluong() {
+        return Luong;
+    }
 }
