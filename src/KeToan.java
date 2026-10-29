@@ -110,40 +110,14 @@ public class KeToan extends Nhanvien implements Thongke{
         return doanthu;
     }
 
-    public double Thuetheothang(int thang,int nam){
-        double tongthue=0;
-        for(HoaDon hd : HoaDon.getDs()) {
-            if(hd instanceof Hoadonban) {
-                Hoadonban hb = (Hoadonban) hd;
-                if(hd.getThoigianin().getMonthValue()==thang
-                        && hd.getThoigianin().getYear()==nam) {
-                    tongthue+= hb.Tongthuedonhang(DSSanPham);          }
-            }
-        }
-        return tongthue;
-    }
-    public double ThuetheoNam(int nam){
-        double tongthue=0;
-
-        for(HoaDon hd : HoaDon.getDs()) {
-            if(hd instanceof Hoadonban) {
-                Hoadonban hb = (Hoadonban) hd;
-
-                if(hd.getThoigianin().getYear()==nam) {
-                    tongthue+=hb.Tongthuedonhang(DSSanPham);
-                }
-            }
-        }
-        return tongthue;
-    }
-
-    public double tinhTongGiavonHangdaban(int thang, int nam) {
+    public double TongGiavonHangdabantheoThang(int thang, int nam) {
         double tongvon=0;
         for( HoaDon hd : HoaDon.getDs()) {
             if(hd instanceof Hoadonban) {
                 Hoadonban hb = (Hoadonban) hd;
 
-                if(hd.getThoigianin().getMonthValue()==thang
+                if(hd.getThoigianin() != null
+                        &&hd.getThoigianin().getMonthValue()==thang
                 && hd.getThoigianin().getYear()==nam) {
                     for(CTHoaDon ct : hb.getCTHoaDon()) {
                         SanPham sp=DSSanPham.TimSPtheoMa(ct.getMaSP());
@@ -157,44 +131,117 @@ public class KeToan extends Nhanvien implements Thongke{
         }
         return tongvon;
     }
+
+    public double TongGiavonTheoQuy(int quy, int nam) {
+        if (quy < 1 || quy > 4) {
+            return 0;
+        }
+
+        double tongvon = 0;
+        int thangbatdau = (quy - 1) * 3 + 1;
+
+        for (int thang = thangbatdau; thang < thangbatdau + 3; thang++) {
+            tongvon += TongGiavonHangdabantheoThang(thang, nam);
+        }
+
+        return tongvon;
+    }
+    public double TongGiavonHangdabantheoNam(int nam) {
+        double tongvon = 0;
+
+        for (int thang = 1; thang <= 12; thang++) {
+            tongvon += TongGiavonHangdabantheoThang(thang, nam);
+        }
+
+        return tongvon;
+    }
     @Override
     public double tinhLoiNhuanTheoThang(int thang, int nam) {
-        double loinhuan=tinhDoanhThuTheoThang(thang, nam)-tinhTongGiavonHangdaban(thang, nam);
+        double loinhuan=tinhDoanhThuTheoThang(thang, nam)-TongGiavonHangdabantheoThang(thang, nam);
         return loinhuan;
     }
 
     @Override
     public double tinhLoiNhuanTheoQuy(int quy, int nam) {
-        return 0;
+        double loinhuan=tinhDoanhThuTheoQuy(quy, nam)-TongGiavonTheoQuy(quy, nam);
+        return loinhuan;
     }
 
     @Override
     public double tinhLoiNhuanTheoNam(int nam) {
-        return 0;
+        double loinhuan=tinhDoanhThuTheoNam(nam)-TongGiavonHangdabantheoNam(nam);
+        return loinhuan;
     }
 
     @Override
     public double thongKeThueTheoThang(int thang, int nam) {
-        return 0;
+        double tongthue=0;
+        for(HoaDon hd : HoaDon.getDs()) {
+            if(hd instanceof Hoadonban) {
+                Hoadonban hb = (Hoadonban) hd;
+                if(hd.getThoigianin() != null
+                        &&hd.getThoigianin().getMonthValue()==thang
+                        && hd.getThoigianin().getYear()==nam) {
+                    tongthue+= hb.Tongthuedonhang(DSSanPham);          }
+            }
+        }
+        return tongthue;
     }
 
     @Override
     public double thongKeThueTheoNam(int nam) {
-        return 0;
-    }
+        double tongthue=0;
 
-    @Override
-    public void thongKeSanPhamBanDuoc() {
+        for(HoaDon hd : HoaDon.getDs()) {
+            if(hd instanceof Hoadonban) {
+                Hoadonban hb = (Hoadonban) hd;
 
-    }
-
-    @Override
-    public void thongKeSanPhamBanRa() {
-
+                if(hd.getThoigianin() != null && hd.getThoigianin().getYear()==nam) {
+                    tongthue+=hb.Tongthuedonhang(DSSanPham);
+                }
+            }
+        }
+        return tongthue;
     }
 
     @Override
     public void thongKeLuong() {
+
+    }
+
+    @Override
+    public void thongKeSanPhamBanDuocTheoThang(int thang, int nam) {
+
+    }
+
+
+    @Override
+    public void thongKeSanPhamBanDuocTheoQuy() {
+
+    }
+
+    @Override
+    public void thongKeSanPhamBanDuocTheoNam() {
+
+    }
+
+    @Override
+    public void thongKeSanPhamBanRaTheoThang() {
+        
+    }
+
+    @Override
+    public void thongKeSanPhamBanRaTheoThang(int thang, int nam) {
+
+    }
+
+    @Override
+    public void thongKeSanPhamBanRaTheoQuy() {
+
+    }
+
+    @Override
+    public void thongKeSanPhamBanRaTheoNam() {
 
     }
 }
