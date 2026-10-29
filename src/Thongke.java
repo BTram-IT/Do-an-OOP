@@ -19,10 +19,10 @@ public interface Thongke {
     public abstract void thongKeLuong();
 
     public abstract void thongKeSanPhamBanDuocTheoThang(int thang, int nam);
-    public abstract void thongKeSanPhamBanDuocTheoQuy();
-    public abstract void thongKeSanPhamBanDuocTheoNam();
-    public abstract void thongKeSanPhamBanRaTheoThang();
-    public abstract void thongKeSanPhamBanRaTheoQuy();
-    public abstract void thongKeSanPhamBanRaTheoNam();
+    public abstract void thongKeSanPhamBanDuocTheoQuy(int quy, int nam);
+    public abstract void thongKeSanPhamBanDuocTheoNam(int nam);
+    public abstract void thongKeSanPhamBanRaTheoThang(int thang, int nam);
+    public abstract void thongKeSanPhamBanRaTheoQuy(int quy, int nam);
+    public abstract void thongKeSanPhamBanRaTheoNam(int nam);
 
 }
