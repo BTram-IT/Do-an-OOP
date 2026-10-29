@@ -332,11 +332,13 @@ public abstract class SanPham {
                 + " | Thuế bán: " + thueSuat + "%";
     }
 
-    // Tiền thuế của 1 đơn vị = giá bán x thuế suất / 100 (không làm tròn).
-    // Cả ThucAn và DoUong tính giống nhau nên viết ở lớp cha; lớp con nào có cách tính khác thì override.
-    public double tinhThue() {
+    // Hàm hỗ trợ cho lớp con tính thuế theo mức đã khai báo của từng sản phẩm.
+    protected final double tinhThueTheoSuat() {
         return giaBan * thueSuat / 100.0;
     }
+
+    // Mỗi loại sản phẩm tự cài đặt cách tính thuế.
+    public abstract double tinhThue();
 
     // Giá khách phải trả cho 1 đơn vị (đã cộng thuế)
     public double tinhGiaSauThue() {
