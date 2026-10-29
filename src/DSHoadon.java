@@ -18,6 +18,10 @@ public class DSHoadon {
         return new ArrayList<>(ds);
     }
 
+    public ArrayList<HoaDon> getDs() {
+        return ds;
+    }
+
     // Tiìm hđ theo mã
     public HoaDon timTheoMa(String maHD) {
         if (maHD == null || maHD.trim().isEmpty()) {

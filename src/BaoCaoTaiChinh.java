@@ -70,7 +70,7 @@ public class BaoCaoTaiChinh {
     }
 
     // Hàm tự động lấy số liệu từ danh sách Hóa đơn, Phiếu nhập, Chấm công (Bạn có thể điều chỉnh tên hàm cho khớp với project)
-    public void tongHopSoLieu(HoaDon[] dsHoaDon, Phieunhap[] dsPhieuNhap, ChamCong[] dsChamCong) {
+    public void tongHopSoLieu(HoaDon[] dsHoaDon, HoadonNhap[] dsPhieuNhap, ChamCong[] dsChamCong) {
         this.tongDoanhThu = 0;
         if (dsHoaDon != null) {
             for (HoaDon hd : dsHoaDon) {
@@ -83,7 +83,7 @@ public class BaoCaoTaiChinh {
 
         this.tongChiPhiNhapHang = 0;
         if (dsPhieuNhap != null) {
-            for (Phieunhap pn : dsPhieuNhap) {
+            for (HoadonNhap pn : dsPhieuNhap) {
                 if (pn != null) {
                     // Giả sử lớp Phieunhap của bạn có hàm getTongTien()
                     // this.tongChiPhiNhapHang += pn.getTongTien();
