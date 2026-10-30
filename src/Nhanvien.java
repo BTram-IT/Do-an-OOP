@@ -1,90 +1,65 @@
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.Scanner;
 
-public class Nhanvien extends Nguoidung {
-    private String MaNV;
-    private LocalDate Ngaybatdaulam;
-    private double Luong=6000000;
-    private String Vitri;
+public class NhanVien extends Nguoidung {
+    private String maNV;
+    private double luongCoBan;
+    private LocalDate ngayVaoLam;
+    private int kinhNghiem; // tính theo năm hoặc số tháng
+    private String chucVu; // Thu ngan, Quan ly kho, Bep, Phuc vu
+    private int soCaLam; // Số ca làm trong tháng
 
-
-    public Nhanvien(String maNV, LocalDate ngaybatdaulam, String Vitri, String Hoten, String SDT, String Email, String Diachi) {
-        super(Hoten,SDT,Email,Diachi);
-        MaNV = maNV;
-        Ngaybatdaulam = ngaybatdaulam;
-        Vitri = Vitri;
-    }
-
-    public Nhanvien() {
+    public NhanVien() {
         super();
-        MaNV = "";
-        Ngaybatdaulam = null;
-        Vitri = "";
+        this.maNV = "";
+        this.luongCoBan = 5000000;
+        this.ngayVaoLam = LocalDate.now();
+        this.kinhNghiem = 0;
+        this.chucVu = "Nhan vien";
+        this.soCaLam = 26;
     }
 
-    public String getMaNV() {
-        return MaNV;
+    public NhanVien(String ten, String sdt, String diaChi, String email, LocalDate ngaySinh,
+                    String maNV, double luongCoBan, LocalDate ngayVaoLam, int kinhNghiem, String chucVu) {
+        super(ten, sdt, diaChi, email, ngaySinh);
+        this.maNV = maNV;
+        this.luongCoBan = luongCoBan;
+        this.ngayVaoLam = ngayVaoLam;
+        this.kinhNghiem = kinhNghiem;
+        this.chucVu = chucVu;
+        this.soCaLam = 26;
     }
 
-    public void setMaNV(String maNV) {
-        MaNV = maNV;
+    public String getMaNV() { return maNV; }
+    public void setMaNV(String maNV) { this.maNV = maNV; }
+
+    public double getLuongCoBan() { return luongCoBan; }
+    public void setLuongCoBan(double luongCoBan) { this.luongCoBan = luongCoBan; }
+
+    public String getChucVu() { return chucVu; }
+    public void setChucVu(String chucVu) { this.chucVu = chucVu; }
+
+    public int getSoCaLam() { return soCaLam; }
+    public void setSoCaLam(int soCaLam) { this.soCaLam = soCaLam; }
+
+    public double tinhLuong() {
+        // Lương = lương cơ bản + phụ cấp kinh nghiệm (500k/năm) + lương ca làm
+        double phuCap = kinhNghiem * 500000;
+        return luongCoBan + phuCap + (soCaLam * 150000);
     }
 
-    public LocalDate getNgaybatdaulam() {
-        return Ngaybatdaulam;
-    }
-
-    public void setNgaybatdaulam(LocalDate ngaybatdaulam) {
-        Ngaybatdaulam = ngaybatdaulam;
-    }
-
-    public void setLuong(float luong) {
-        Luong = luong;
-    }
-
-    public String getVitri() {
-        return Vitri;
-    }
-
-    public void setVitri(String Vitri) {
-        this.Vitri = Vitri;
-    }
-
-    Scanner sc = new Scanner(System.in);
-    // Nhập nhân viên
-    public void Nhap() {
-        super.Nhap();
-        System.out.println("Nhập mã nhân viên: ");
-        MaNV = sc.nextLine();
-        System.out.println("Nhập ngày vào làm: ");
-        String ngay = sc.nextLine();
-        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-        Ngaybatdaulam=LocalDate.parse(ngay,dtf);
-        System.out.println("Nhập chức vụ: ");
-        Vitri = sc.nextLine();
-    }
-
-    public void Xuat() {
-        super.Xuat();
+    @Override
+    public void nhap(Scanner sc) {
+        this.maNV = Ktradulieu.nhapChuoi(sc, "Nhap Ma NV: ");
+        super.nhap(sc);
+        this.luongCoBan = Ktradulieu.nhapSoDuong(sc, "Nhap Luong Co Ban: ");
+        this.kinhNghiem = Ktradulieu.nhapSoNguyenDuong(sc, "Nhap Kinh Nghiem (nam): ");
+        this.chucVu = Ktradulieu.nhapChuoi(sc, "Nhap Chuc Vu: ");
+        this.ngayVaoLam = LocalDate.now();
     }
 
     @Override
     public String toString() {
-        return "Nhanvien{" +
-                "MaNV='" + MaNV + '\'' +
-                ", Ngaybatdaulam=" + Ngaybatdaulam +
-                ", Luong=" + Luong +
-                ", Chucvu='" + Vitri + '\'' +
-                ", sc=" + sc +
-                '}';
-    }
-
-    public double Tinhluong(LocalDate ngayTinh) {
-        return Luong;
-    }
-
-    public double Tinhluong() {
-        return Luong;
+        return super.toString() + " | MaNV: " + maNV + " | Chuc vu: " + chucVu + " | Luong thuc nhan: " + String.format("%,.0f", tinhLuong()) + " VND";
     }
 }
