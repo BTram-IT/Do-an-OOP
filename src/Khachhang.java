@@ -1,95 +1,85 @@
+import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Scanner;
 
-public class Khachhang extends Nguoidung {
+public class KhachHang extends Nguoidung {
     private String maKH;
-    private int diemTichLuy;
-    private String hangThanhVien;
+    private String thuHang; // Dong, Bac, Vang, Kim Cuong
+    private LocalDate ngayDangKy;
+    private double tongTienMua;
+    private ArrayList<String> lichSuMuaHang; // Lưu danh sách mã đơn / hóa đơn đã mua (mảng động)
 
-    public Khachhang() {
+    public KhachHang() {
         super();
         this.maKH = "";
-        this.diemTichLuy = 0;
-        this.hangThanhVien = "Thuong";
+        this.thuHang = "Dong";
+        this.ngayDangKy = LocalDate.now();
+        this.tongTienMua = 0;
+        this.lichSuMuaHang = new ArrayList<>();
     }
 
-    public Khachhang(String maKH, String hoten, String sdt, String email, String diachi) {
-        super(hoten, sdt, email, diachi);
+    public KhachHang(String ten, String sdt, String diaChi, String email, LocalDate ngaySinh,
+                     String maKH, LocalDate ngayDangKy, double tongTienMua) {
+        super(ten, sdt, diaChi, email, ngaySinh);
         this.maKH = maKH;
-        this.diemTichLuy = 0;
-        this.hangThanhVien = "Thuong";
+        this.ngayDangKy = ngayDangKy;
+        this.tongTienMua = tongTienMua;
+        this.lichSuMuaHang = new ArrayList<>();
+        capNhatThuHang();
     }
 
-    public Khachhang(String maKH, String hoten, String sdt, String email, String diachi, int diemTichLuy) {
-        super(hoten, sdt, email, diachi);
-        this.maKH = maKH;
-        this.diemTichLuy = Math.max(0, diemTichLuy);
-        capNhatHangThanhVien();
-    }
+    public String getMaKH() { return maKH; }
+    public void setMaKH(String maKH) { this.maKH = maKH; }
 
-    public void congDiem(int diem) {
-        if (diem > 0) {
-            this.diemTichLuy += diem;
-            capNhatHangThanhVien();
-        }
-    }
+    public String getThuHang() { return thuHang; }
+    public LocalDate getNgayDangKy() { return ngayDangKy; }
+    public double getTongTienMua() { return tongTienMua; }
 
-    private void capNhatHangThanhVien() {
-        if (diemTichLuy >= 1000) {
-            hangThanhVien = "Kim Cuong";
-        } else if (diemTichLuy >= 500) {
-            hangThanhVien = "Vang";
-        } else if (diemTichLuy >= 200) {
-            hangThanhVien = "Bac";
+    public void capNhatThuHang() {
+        if (tongTienMua >= 10000000) {
+            this.thuHang = "Kim Cuong";
+        } else if (tongTienMua >= 5000000) {
+            this.thuHang = "Vang";
+        } else if (tongTienMua >= 2000000) {
+            this.thuHang = "Bac";
         } else {
-            hangThanhVien = "Thuong";
+            this.thuHang = "Dong";
         }
     }
 
-    public String getMaKH() {
-        return maKH;
+    public void themLichSu(String maHD, double tien) {
+        lichSuMuaHang.add(maHD + " (Tong: " + tien + " VND)");
+        this.tongTienMua += tien;
+        capNhatThuHang();
     }
 
-    public void setMaKH(String maKH) {
-        this.maKH = maKH;
-    }
-
-    public int getDiemTichLuy() {
-        return diemTichLuy;
-    }
-
-    public void setDiemTichLuy(int diemTichLuy) {
-        this.diemTichLuy = Math.max(0, diemTichLuy);
-        capNhatHangThanhVien();
-    }
-
-    public String getHangThanhVien() {
-        return hangThanhVien;
-    }
-
-    @Override
-    public void Nhap() {
-        Scanner sc = new Scanner(System.in);
-        System.out.print("Nhap ma khach hang: ");
-        this.maKH = sc.nextLine();
-        super.Nhap();
-        System.out.print("Nhap diem tich luy: ");
-        try {
-            this.diemTichLuy = Integer.parseInt(sc.nextLine());
-        } catch (NumberFormatException e) {
-            this.diemTichLuy = 0;
+    public void xemLichSuMuaHang() {
+        System.out.println("=== LICH SU MUA HANG CUA KH: " + maKH + " - " + ten + " ===");
+        if (lichSuMuaHang.isEmpty()) {
+            System.out.println("Chua co giao dich nao.");
+        } else {
+            for (String item : lichSuMuaHang) {
+                System.out.println("- " + item);
+            }
         }
-        capNhatHangThanhVien();
+    }
+
+    public void xemHanThanhVien() {
+        LocalDate han = ngayDangKy.plusYears(1);
+        System.out.println("Han the thanh vien: Den ngay " + han);
     }
 
     @Override
-    public void Xuat() {
-        System.out.printf("Ma KH: %-8s | Hang: %-10s | Diem: %-6d | ", maKH, hangThanhVien, diemTichLuy);
-        super.Xuat();
+    public void nhap(Scanner sc) {
+        this.maKH = Ktradulieu.nhapChuoi(sc, "Nhap Ma KH: ");
+        super.nhap(sc);
+        this.ngayDangKy = LocalDate.now();
+        this.tongTienMua = 0;
+        this.thuHang = "Dong";
     }
 
     @Override
     public String toString() {
-        return String.format("Khachhang[MaKH=%s, HoTen=%s, SDT=%s, Hang=%s, Diem=%d]",
-                maKH, hoten, sdt, hangThanhVien, diemTichLuy);
+        return super.toString() + " | MaKH: " + maKH + " | Hang: " + thuHang + " | Tong chi: " + String.format("%,.0f", tongTienMua) + " VND";
     }
 }
