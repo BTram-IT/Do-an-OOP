@@ -1,81 +1,54 @@
+import java.time.LocalDate;
 import java.util.Scanner;
 
-public class Nguoidung {
-    protected String hoten;
+public abstract class Nguoidung {
+    protected String ten;
     protected String sdt;
+    protected String diaChi;
     protected String email;
-    protected String diachi;
+    protected LocalDate ngaySinh;
 
     public Nguoidung() {
-        this.hoten = "";
+        this.ten = "";
         this.sdt = "";
+        this.diaChi = "";
         this.email = "";
-        this.diachi = "";
+        this.ngaySinh = LocalDate.now();
     }
 
-    public Nguoidung(String hoten, String sdt, String email, String diachi) {
-        this.hoten = hoten;
+    public Nguoidung(String ten, String sdt, String diaChi, String email, LocalDate ngaySinh) {
+        this.ten = ten;
         this.sdt = sdt;
+        this.diaChi = diaChi;
         this.email = email;
-        this.diachi = diachi;
+        this.ngaySinh = ngaySinh;
     }
 
-    public String getHoten() {
-        return hoten;
-    }
+    public String getTen() { return ten; }
+    public void setTen(String ten) { this.ten = ten; }
 
-    public void setHoten(String hoten) {
-        this.hoten = hoten;
-    }
+    public String getSdt() { return sdt; }
+    public void setSdt(String sdt) { this.sdt = sdt; }
 
-    public String getSdt() {
-        return sdt;
-    }
+    public String getDiaChi() { return diaChi; }
+    public void setDiaChi(String diaChi) { this.diaChi = diaChi; }
 
-    public void setSdt(String sdt) {
-        this.sdt = sdt;
-    }
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
 
-    public String getEmail() {
-        return email;
-    }
+    public LocalDate getNgaySinh() { return ngaySinh; }
+    public void setNgaySinh(LocalDate ngaySinh) { this.ngaySinh = ngaySinh; }
 
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getDiachi() {
-        return diachi;
-    }
-
-    public void setDiachi(String diachi) {
-        this.diachi = diachi;
-    }
-
-    public void Nhap() {
-        Scanner sc = new Scanner(System.in);
-        System.out.print("Nhap ho ten: ");
-        this.hoten = sc.nextLine();
-        System.out.print("Nhap so dien thoai: ");
-        this.sdt = sc.nextLine();
-        System.out.print("Nhap email: ");
-        this.email = sc.nextLine();
-        System.out.print("Nhap dia chi: ");
-        this.diachi = sc.nextLine();
-    }
-
-    public void Xuat() {
-        System.out.printf("Ho ten: %-20s | SDT: %-12s | Email: %-22s | Dia chi: %s%n",
-                hoten, sdt, email, diachi);
+    public void nhap(Scanner sc) {
+        this.ten = Ktradulieu.nhapChuoi(sc, "Nhap ho ten: ");
+        this.sdt = Ktradulieu.nhapSDT(sc, "Nhap SDT: ");
+        this.diaChi = Ktradulieu.nhapChuoi(sc, "Nhap dia chi: ");
+        this.email = Ktradulieu.nhapEmail(sc, "Nhap email: ");
+        this.ngaySinh = Ktradulieu.nhapNgay(sc, "Nhap ngay sinh (yyyy-MM-dd): ");
     }
 
     @Override
     public String toString() {
-        return "Nguoidung{" +
-                "hoten='" + hoten + '\'' +
-                ", sdt='" + sdt + '\'' +
-                ", email='" + email + '\'' +
-                ", diachi='" + diachi + '\'' +
-                '}';
+        return "Ten: " + ten + " | SDT: " + sdt + " | Dia Chi: " + diaChi + " | Email: " + email + " | Ngay sinh: " + ngaySinh;
     }
 }
