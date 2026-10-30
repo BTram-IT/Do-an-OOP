@@ -1,55 +1,57 @@
+package src;
+
+import java.time.LocalTime;
 import java.util.Scanner;
 
 public class CaLam {
     private String maCa;
-    private String tenCa;
-    private String gioBatDau;
-    private String gioKetThuc;
-    private double luongTheoCa;
+    private String tenCa;       // Ca Sang, Ca Chieu, Ca Toi
+    private LocalTime gioBatDau;
+    private LocalTime gioKetThuc;
+    private double heSoLuongCa; // vd ca toi he so 1.2
 
     public CaLam() {
+        this.maCa = "";
+        this.tenCa = "";
+        this.gioBatDau = LocalTime.of(6, 0);
+        this.gioKetThuc = LocalTime.of(14, 0);
+        this.heSoLuongCa = 1.0;
     }
 
-    public CaLam(String maCa, String tenCa, String gioBatDau, String gioKetThuc, double luongTheoCa) {
+    public CaLam(String maCa, String tenCa, LocalTime gioBatDau, LocalTime gioKetThuc, double heSoLuongCa) {
         this.maCa = maCa;
         this.tenCa = tenCa;
         this.gioBatDau = gioBatDau;
         this.gioKetThuc = gioKetThuc;
-        this.luongTheoCa = luongTheoCa;
+        this.heSoLuongCa = heSoLuongCa;
     }
 
-    // Getters và Setters
     public String getMaCa() { return maCa; }
     public void setMaCa(String maCa) { this.maCa = maCa; }
 
     public String getTenCa() { return tenCa; }
     public void setTenCa(String tenCa) { this.tenCa = tenCa; }
 
-    public String getGioBatDau() { return gioBatDau; }
-    public void setGioBatDau(String gioBatDau) { this.gioBatDau = gioBatDau; }
+    public LocalTime getGioBatDau() { return gioBatDau; }
+    public LocalTime getGioKetThuc() { return gioKetThuc; }
+    public double getHeSoLuongCa() { return heSoLuongCa; }
 
-    public String getGioKetThuc() { return gioKetThuc; }
-    public void setGioKetThuc(String gioKetThuc) { this.gioKetThuc = gioKetThuc; }
-
-    public double getLuongTheoCa() { return luongTheoCa; }
-    public void setLuongTheoCa(double luongTheoCa) { this.luongTheoCa = luongTheoCa; }
-
-    public void nhap() {
-        Scanner sc = new Scanner(System.in);
-        System.out.print("Nhap ma ca (VD: CA1, CA2): ");
+    public void nhap(Scanner sc) {
+        System.out.print("Nhap Ma Ca: ");
         this.maCa = sc.nextLine();
-        System.out.print("Nhap ten ca (Ca sang / Ca chieu / Ca toi): ");
+        System.out.print("Nhap Ten Ca (Sang/Chieu/Toi): ");
         this.tenCa = sc.nextLine();
-        System.out.print("Nhap gio bat dau (VD: 07:00): ");
-        this.gioBatDau = sc.nextLine();
-        System.out.print("Nhap gio ket thuc (VD: 12:00): ");
-        this.gioKetThuc = sc.nextLine();
-        System.out.print("Nhap muc luong cua ca: ");
-        this.luongTheoCa = Double.parseDouble(sc.nextLine());
+        System.out.print("Nhap Gio bat dau (HH:mm, vd 06:00): ");
+        this.gioBatDau = LocalTime.parse(sc.nextLine());
+        System.out.print("Nhap Gio ket thuc (HH:mm, vd 14:00): ");
+        this.gioKetThuc = LocalTime.parse(sc.nextLine());
+        System.out.print("Nhap He so luong ca (vd 1.0 hoac 1.2): ");
+        this.heSoLuongCa = Double.parseDouble(sc.nextLine());
     }
 
-    public void xuat() {
-        System.out.printf("| %-8s | %-15s | %-10s - %-10s | %,.0f VND |\n", 
-                maCa, tenCa, gioBatDau, gioKetThuc, luongTheoCa);
+    @Override
+    public String toString() {
+        return String.format("[%s] %-10s | %s -> %s | He so: %.1f",
+                maCa, tenCa, gioBatDau, gioKetThuc, heSoLuongCa);
     }
 }
