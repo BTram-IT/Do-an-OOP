@@ -1,5 +1,3 @@
-package src;
-
 import java.time.LocalTime;
 import java.util.Scanner;
 
