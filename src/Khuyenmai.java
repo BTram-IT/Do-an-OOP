@@ -1,145 +1,125 @@
+import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Scanner;
 
 public abstract class Khuyenmai {
-    private String maKM;
-    private String tenKM;
+    private String MaKM, LoaiKM;
+    private LocalDate NgayBatDau, NgayKetThuc;
+    private long MucChiToiThieu;
+    Scanner sc = new Scanner(System.in);
+    private ArrayList<SanPham> DanhsachKM;
 
     public Khuyenmai() {
-        this.maKM = "KM00";
-        this.tenKM = "Khong KM";
+        MaKM = LoaiKM = "";
+        NgayBatDau = NgayKetThuc = LocalDate.now();
+        MucChiToiThieu = 0;
+        DanhsachKM = new ArrayList<>();
     }
 
-    public Khuyenmai(String maKM, String tenKM) {
-        this.maKM = maKM;
-        this.tenKM = tenKM;
+    public Khuyenmai(String maKM, String loaiKM, LocalDate ngayBatDau, LocalDate ngayKetThuc, long mucChiToiThieu, ArrayList<SanPham> danhsachKM) {
+        MaKM = maKM;
+        LoaiKM = loaiKM;
+        NgayBatDau = ngayBatDau;
+        NgayKetThuc = ngayKetThuc;
+        MucChiToiThieu = mucChiToiThieu;
+        DanhsachKM = (danhsachKM == null) ? new ArrayList<>() : danhsachKM;
     }
 
-    public Khuyenmai(Khuyenmai other) {
-        this.maKM = other.maKM;
-        this.tenKM = other.tenKM;
+    public void thietlapKM() {
+        MaKM = Ktradulieu.taoMa("KM", 1);
+        LoaiKM = Ktradulieu.nhapChuoi(sc, "Nhập loại khuyến mãi: ", ".+", "Không được để trống!");
+
+        NgayBatDau = Ktradulieu.nhapNgaySinh(sc, "Nhập ngày bắt đầu (yyyy-MM-dd): ");
+        NgayKetThuc = Ktradulieu.nhapNgaySinh(sc, "Nhập ngày kết thúc (yyyy-MM-dd): ");
+
+        while (!NgayKetThuc.isAfter(NgayBatDau)) {
+            System.out.println("Ngày kết thúc phải sau ngày bắt đầu!");
+            NgayKetThuc = Ktradulieu.nhapNgaySinh(sc, "Nhập lại ngày kết thúc: ");
+        }
+
+        MucChiToiThieu = Ktradulieu.nhapSoNguyen(sc, "Nhập mức chi tối thiểu: ");
     }
 
-    public String getMaKM() { return maKM; }
-    public void setMaKM(String maKM) { this.maKM = maKM; }
-    public String getTenKM() { return tenKM; }
-    public void setTenKM(String tenKM) { this.tenKM = tenKM; }
+    public void InDanhSachSPKM() {
+        if (DanhsachKM.isEmpty()) {
+            System.out.println("Danh sách sản phẩm khuyến mãi trống!");
+            return;
+        }
 
-    public void nhap() {
-        Scanner sc = new Scanner(System.in);
-        System.out.print("Nhap ma KM: ");
-        this.maKM = sc.nextLine();
-        System.out.print("Nhap ten chuong trinh KM: ");
-        this.tenKM = sc.nextLine();
+        for (SanPham sp : DanhsachKM) {
+            System.out.println(sp);
+        }
     }
 
-    public void xuat() {
-        System.out.printf("KM: [%s] %s", maKM, tenKM);
+    public void ThemSP(SanPham sp) {
+        if (sp == null) {
+            System.out.println("Sản phẩm không hợp lệ!");
+            return;
+        }
+
+        if (TimKiemSP(sp.getMaSP()) != -1) {
+            System.out.println("Sản phẩm đã tồn tại trong khuyến mãi!");
+            return;
+        }
+
+        DanhsachKM.add(sp);
+        System.out.println("Thêm sản phẩm thành công!");
     }
 
-    public abstract double tinhTienGiam(double tongTienHang);
-}
+    public void XoaSP(String maSP) {
+        int vitri = TimKiemSP(maSP);
 
-class TheoPhanTram extends Khuyenmai {
-    private double phanTram;
+        if (vitri == -1) {
+            System.out.println("Không tìm thấy sản phẩm!");
+            return;
+        }
 
-    public TheoPhanTram() {
-        super();
-        this.phanTram = 10;
+        DanhsachKM.remove(vitri);
+        System.out.println("Xóa sản phẩm thành công!");
     }
 
-    public TheoPhanTram(String maKM, String tenKM, double phanTram) {
-        super(maKM, tenKM);
-        this.phanTram = phanTram;
+    public void SuaSP(String maSP, SanPham spMoi) {
+        int vitri = TimKiemSP(maSP);
+
+        if (vitri == -1) {
+            System.out.println("Không tìm thấy sản phẩm!");
+            return;
+        }
+
+        if (spMoi == null) {
+            System.out.println("Sản phẩm mới không hợp lệ!");
+            return;
+        }
+
+        int viTriTrung = TimKiemSP(spMoi.getMaSP());
+
+        if (viTriTrung != -1 && viTriTrung != vitri) {
+            System.out.println("Mã sản phẩm mới đã tồn tại!");
+            return;
+        }
+
+        DanhsachKM.set(vitri, spMoi);
+        System.out.println("Sửa sản phẩm thành công!");
     }
 
-    public TheoPhanTram(TheoPhanTram other) {
-        super(other);
-        this.phanTram = other.phanTram;
+    public int TimKiemSP(String maSP) {
+        for (int i = 0; i < DanhsachKM.size(); i++) {
+            if (DanhsachKM.get(i).getMaSP().equalsIgnoreCase(maSP)) {
+                return i;
+            }
+        }
+        return -1;
     }
 
-    public double getPhanTram() { return phanTram; }
-    public void setPhanTram(double phanTram) { this.phanTram = phanTram; }
-
-    @Override
-    public void nhap() {
-        Scanner sc = new Scanner(System.in);
-        super.nhap();
-        System.out.print("Nhap phan tram giam (%): ");
-        this.phanTram = Double.parseDouble(sc.nextLine());
+    public LocalDate getNgayBatDau() {
+        return NgayBatDau;
     }
 
-    @Override
-    public double tinhTienGiam(double tongTienHang) {
-        return tongTienHang * (phanTram / 100.0);
-    }
-}
-
-class GiamTrucTiep extends Khuyenmai {
-    private double soTienGiam;
-
-    public GiamTrucTiep() {
-        super();
-        this.soTienGiam = 10000;
+    public ArrayList<SanPham> getDanhsachKM() {
+        return DanhsachKM;
     }
 
-    public GiamTrucTiep(String maKM, String tenKM, double soTienGiam) {
-        super(maKM, tenKM);
-        this.soTienGiam = soTienGiam;
-    }
-
-    public GiamTrucTiep(GiamTrucTiep other) {
-        super(other);
-        this.soTienGiam = other.soTienGiam;
-    }
-
-    public double getSoTienGiam() { return soTienGiam; }
-    public void setSoTienGiam(double soTienGiam) { this.soTienGiam = soTienGiam; }
-
-    @Override
-    public void nhap() {
-        Scanner sc = new Scanner(System.in);
-        super.nhap();
-        System.out.print("Nhap so tien giam truc tiep: ");
-        this.soTienGiam = Double.parseDouble(sc.nextLine());
-    }
-
-    @Override
-    public double tinhTienGiam(double tongTienHang) {
-        return Math.min(soTienGiam, tongTienHang);
-    }
-}
-
-class MuaTang extends Khuyenmai {
-    private double giaTriQuaTang;
-
-    public MuaTang() {
-        super();
-        this.giaTriQuaTang = 15000;
-    }
-
-    public MuaTang(String maKM, String tenKM, double giaTriQuaTang) {
-        super(maKM, tenKM);
-        this.giaTriQuaTang = giaTriQuaTang;
-    }
-
-    public MuaTang(MuaTang other) {
-        super(other);
-        this.giaTriQuaTang = other.giaTriQuaTang;
-    }
-
-    public double getGiaTriQuaTang() { return giaTriQuaTang; }
-    public void setGiaTriQuaTang(double giaTriQuaTang) { this.giaTriQuaTang = giaTriQuaTang; }
-
-    @Override
-    public void nhap() {
-        Scanner sc = new Scanner(System.in);
-        super.nhap();
-        System.out.print("Nhap gia tri san pham tang kem: ");
-        this.giaTriQuaTang = Double.parseDouble(sc.nextLine());
-    }
-
-    @Override
-    public double tinhTienGiam(double tongTienHang) {
-        return tongTienHang >= 40000 ? giaTriQuaTang : 0;
+    public void setDanhsachKM(ArrayList<SanPham> danhsachKM) {
+        DanhsachKM = (danhsachKM == null) ? new ArrayList<>() : danhsachKM;
     }
 }

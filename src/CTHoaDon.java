@@ -62,7 +62,7 @@ public class CTHoaDon {
 
     // Tiền hàng trước giảm
     public double tinhTienHang(){
-        return 0;
+        return Soluong * Giaban;
     }
 
     public double Apmagiamgia(){

@@ -40,11 +40,11 @@ public abstract class Nguoidung {
     public void setNgaySinh(LocalDate ngaySinh) { this.ngaySinh = ngaySinh; }
 
     public void nhap(Scanner sc) {
-        this.ten = Ktradulieu.nhapChuoi(sc, "Nhap ho ten: ");
-        this.sdt = Ktradulieu.nhapSDT(sc, "Nhap SDT: ");
-        this.diaChi = Ktradulieu.nhapChuoi(sc, "Nhap dia chi: ");
-        this.email = Ktradulieu.nhapEmail(sc, "Nhap email: ");
-        this.ngaySinh = Ktradulieu.nhapNgay(sc, "Nhap ngay sinh (yyyy-MM-dd): ");
+        this.ten = Ktradulieu.nhapChuoi(sc, "Nhap ho ten: ","^[\\p{L}]+(?:\\s[\\p{L}]+)*$","Họ tên không hợp lệ, vui lòng nhập lại!");
+        this.sdt = Ktradulieu.nhapChuoi(sc, "Nhap SDT: ",Ktradulieu.phoneRegex,"Số điện thoại không hợp lệ, vui lòng nhập lại!");
+        this.diaChi = Ktradulieu.nhapChuoi(sc, "Nhap dia chi: ",Ktradulieu.diaChiRegex,"Địa chỉ không được để trống, vui lòng nhập lại!");
+        this.email = Ktradulieu.nhapChuoi(sc, "Nhap email: ",Ktradulieu.emailRegex,"Email không hợp lệ, vui lòng nhập lại!");
+        this.ngaySinh = Ktradulieu.nhapNgaySinh(sc, "Nhap ngay sinh (yyyy-MM-dd): ");
     }
 
     @Override

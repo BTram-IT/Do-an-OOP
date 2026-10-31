@@ -50,11 +50,11 @@ public class NhanVien extends Nguoidung {
 
     @Override
     public void nhap(Scanner sc) {
-        this.maNV = Ktradulieu.nhapChuoi(sc, "Nhap Ma NV: ");
+        this.maNV = Ktradulieu.nhapChuoi(sc, "Nhap Ma NV: ",Ktradulieu.taoMa("NV%03d", 1),"Mã nhân viên không hợp lệ! Ví dụ: NV001");
         super.nhap(sc);
-        this.luongCoBan = Ktradulieu.nhapSoDuong(sc, "Nhap Luong Co Ban: ");
-        this.kinhNghiem = Ktradulieu.nhapSoNguyenDuong(sc, "Nhap Kinh Nghiem (nam): ");
-        this.chucVu = Ktradulieu.nhapChuoi(sc, "Nhap Chuc Vu: ");
+        this.luongCoBan = Ktradulieu.nhapSoNguyen(sc, "Nhap Luong Co Ban: ");
+        this.kinhNghiem = Math.toIntExact(Ktradulieu.nhapSoNguyen(sc, "Nhap Kinh Nghiem (nam): "));
+        this.chucVu = Ktradulieu.nhapChuoi(sc, "Nhap Chuc Vu: ","^[\\p{L}]+(?:\\s[\\p{L}]+)*$","Nhập chức vụ không hợp lệ, vui lòng nhập lại!");
         this.ngayVaoLam = LocalDate.now();
     }
 

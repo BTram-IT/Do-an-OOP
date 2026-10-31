@@ -71,7 +71,7 @@ public class KhachHang extends Nguoidung {
 
     @Override
     public void nhap(Scanner sc) {
-        this.maKH = Ktradulieu.nhapChuoi(sc, "Nhap Ma KH: ");
+        this.maKH = Ktradulieu.taoMa("KH%03d", 1);
         super.nhap(sc);
         this.ngayDangKy = LocalDate.now();
         this.tongTienMua = 0;

@@ -5,6 +5,8 @@ import java.util.ArrayList;
 public class DSSanPham extends DanhSachSanPhamCoSo {
 
     private ArrayList<SanPham> danhSach = new ArrayList<>();
+    public void Timtheoma() {
+    }
 
     @Override
     public int soLuong() {

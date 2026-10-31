@@ -6,7 +6,7 @@ import java.util.Scanner;
 
 
 
-public class KeToan extends Nhanvien implements Thongke {
+public class KeToan extends NhanVien implements Thongke {
     private DSNhanVien NhanVien;
     private DSSanPham DSSanPham;
     private DSHoadon HoaDon;
@@ -229,8 +229,8 @@ public class KeToan extends Nhanvien implements Thongke {
 
         double tongLuong = 0;
 
-        for (Nhanvien nv : NhanVien.getDsNhanVien()) {
-            LocalDate ngayBatDau = nv.getNgaybatdaulam();
+        for (NhanVien nv : NhanVien.getDsNhanVien()) {
+            LocalDate ngayBatDau = nv.();
 
             if (ngayBatDau == null || ngayBatDau.isAfter(ngayKetThuc)) {
                 continue;
@@ -297,10 +297,10 @@ public class KeToan extends Nhanvien implements Thongke {
         System.out.println("===== THONG KE LUONG THANG "
                 + thang + "/" + nam + " =====");
 
-        for (Nhanvien nv : NhanVien.getDsNhanVien()) {
+        for (NhanVien nv : NhanVien.getDsNhanVien()) {
             System.out.println("Ma nhan vien: " + nv.getMaNV());
-            System.out.println("Chuc vu: " + nv.getVitri());
-            System.out.println("Luong: " + nv.Tinhluong(homNay));
+            System.out.println("Chuc vu: " + nv.getChucVu());
+            System.out.println("Luong: " + nv.tinhLuong(homNay));
             System.out.println("-----------------------------");
         }
 
@@ -868,54 +868,54 @@ public class KeToan extends Nhanvien implements Thongke {
         } while (chon != 0);
     }
 
-    //MENU CHÍNH
-    public void menu() {
-        Scanner sc = new Scanner(System.in);
-        int chon;
-
-        do {
-            System.out.println("\n===== MENU KẾ TOÁN =====");
-            System.out.println("1. Thống kê doanh thu");
-            System.out.println("2. Thống kê lợi nhuận");
-            System.out.println("3. Thống kê thuế");
-            System.out.println("4. Thống kê sản phẩm bán được");
-            System.out.println("5. Thống kê lương nhân viên");
-            System.out.println("0. Quay lại");
-            System.out.print("Chọn chức năng: ");
-
-            chon = Integer.parseInt(sc.nextLine());
-
-            switch (chon) {
-                case 1:
-                    menuDoanhThu();
-                    break;
-
-                case 2:
-                    menuLoiNhuan();
-                    break;
-
-                case 3:
-                    menuThue();
-                    break;
-
-                case 4:
-                    menuSanPhamBanDuoc();
-                    break;
-
-                case 5:
-                    menuLuong();
-                    break;
-
-                case 0:
-                    System.out.println("Quay lại màn hình đăng nhập!");
-                    break;
-
-                default:
-                    System.out.println("Lựa chọn không hợp lệ!");
-            }
-
-        } while (chon != 0);
-    }
+//    //MENU CHÍNH
+//    public void menu() {
+//        Scanner sc = new Scanner(System.in);
+//        int chon;
+//
+//        do {
+//            System.out.println("\n===== MENU KẾ TOÁN =====");
+//            System.out.println("1. Thống kê doanh thu");
+//            System.out.println("2. Thống kê lợi nhuận");
+//            System.out.println("3. Thống kê thuế");
+//            System.out.println("4. Thống kê sản phẩm bán được");
+//            System.out.println("5. Thống kê lương nhân viên");
+//            System.out.println("0. Quay lại");
+//            System.out.print("Chọn chức năng: ");
+//
+//            chon = Integer.parseInt(sc.nextLine());
+//
+//            switch (chon) {
+//                case 1:
+//                    menuDoanhThu();
+//                    break;
+//
+//                case 2:
+//                    menuLoiNhuan();
+//                    break;
+//
+//                case 3:
+//                    menuThue();
+//                    break;
+//
+//                case 4:
+//                    menuSanPhamBanDuoc();
+//                    break;
+//
+//                case 5:
+//                    menuLuong();
+//                    break;
+//
+//                case 0:
+//                    System.out.println("Quay lại màn hình đăng nhập!");
+//                    break;
+//
+//                default:
+//                    System.out.println("Lựa chọn không hợp lệ!");
+//            }
+//
+//        } while (chon != 0);
+//    }
 }
 
 
