@@ -142,7 +142,7 @@ public static void menuQuanLyCuaHang() {
 public static void menuKeToan() {
     System.out.println("\n  Bạn đã vào chức năng Kế toán.");
     KeToan keToan = new KeToan();
-    keToan.menu();
+
 }
 
 // Menu thu ngân

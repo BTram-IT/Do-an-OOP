@@ -130,9 +130,11 @@ public class LoHang {
 
     // Cộng hàng trả lại vào lô, không vượt số lượng nhập ban đầu (chỉ SanPham gọi)
     void tang(int soLuong) {
-        if (soLuong <= 0 || soLuongCon + soLuong > soLuongNhap) {
-            throw new IllegalStateException("Lô " + maLo + " không nhận thêm " + soLuong
-                    + " được (còn " + soLuongCon + ", nhập ban đầu " + soLuongNhap + ").");
+        if (soLuong <= 0 ||
+                (long) soLuongCon + soLuong > soLuongNhap) {
+            throw new IllegalStateException(
+                    "Lô " + maLo + " không nhận thêm " + soLuong
+            );
         }
         soLuongCon += soLuong;
     }

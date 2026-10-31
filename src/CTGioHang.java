@@ -4,7 +4,7 @@ public class CTGioHang {
     private String MaSP;
     private String TenSP;
     private int Soluong;
-    private double DonGia;
+    private long DonGia;
 
     // Constructor mặc định
     public CTGioHang() {
@@ -15,80 +15,135 @@ public class CTGioHang {
     }
 
     // Constructor có tham số
-    public CTGioHang(String maSP, String tenSP, int soluong, double donGia) {
-        MaSP = maSP;
-        TenSP = tenSP;
-        Soluong = soluong;
-        DonGia = donGia;
+    public CTGioHang(String maSP, String tenSP, int soluong, long donGia) {
+        setMaSP(maSP);
+        setTenSP(tenSP);
+        setSoluong(soluong);
+        setDonGia(donGia);
     }
 
-    // Getter và Setter
+    // Getter
     public String getMaSP() {
         return MaSP;
-    }
-
-    public void setMaSP(String maSP) {
-        MaSP = maSP;
     }
 
     public String getTenSP() {
         return TenSP;
     }
 
-    public void setTenSP(String tenSP) {
-        TenSP = tenSP;
-    }
-
     public int getSoluong() {
         return Soluong;
     }
 
-    public void setSoluong(int soluong) {
-        Soluong = soluong;
-    }
-
-    public double getDonGia() {
+    public long getDonGia() {
         return DonGia;
     }
 
-    public void setDonGia(double donGia) {
-        DonGia = donGia;
+    // Setter
+    public void setMaSP(String maSP) {
+        if (maSP == null || maSP.trim().isEmpty()) {
+            throw new IllegalArgumentException(
+                    "Mã sản phẩm không được để trống."
+            );
+        }
+
+        this.MaSP = SanPham.chuanHoaMa(maSP);
     }
 
-    // Tính tổng tiền của sản phẩm
-    public double TongTien() {
-        return Soluong * DonGia;
+    public void setTenSP(String tenSP) {
+        if (tenSP == null || tenSP.trim().isEmpty()) {
+            throw new IllegalArgumentException(
+                    "Tên sản phẩm không được để trống."
+            );
+        }
+
+        this.TenSP = tenSP.trim();
+    }
+
+    public void setSoluong(int soluong) {
+        if (soluong <= 0) {
+            throw new IllegalArgumentException(
+                    "Số lượng phải lớn hơn 0."
+            );
+        }
+
+        this.Soluong = soluong;
+    }
+
+    public void setDonGia(long donGia) {
+        if (donGia <= 0 || donGia > SanPham.GIA_TOI_DA) {
+            throw new IllegalArgumentException(
+                    "Đơn giá phải lớn hơn 0 và không vượt quá "
+                            + SanPham.GIA_TOI_DA + " đồng."
+            );
+        }
+
+        this.DonGia = donGia;
+    }
+
+    // Tính tổng tiền sản phẩm (chưa thuế)
+    public long TongTien() {
+        return Math.multiplyExact((long) Soluong, DonGia);
     }
 
     // Nhập chi tiết giỏ hàng
     public void Nhap(Scanner sc, DSSanPham dsSP) {
+        if (sc == null || dsSP == null) {
+            throw new IllegalArgumentException(
+                    "Scanner và danh sách sản phẩm không được null."
+            );
+        }
+
         SanPham sp;
 
+        // Nhập và tìm sản phẩm
         while (true) {
-            MaSP = Ktradulieu.nhapChuoi(
+            String ma = Ktradulieu.nhapChuoi(
                     sc,
                     "Nhập mã sản phẩm: ",
                     "^SP\\d{3}$",
                     "Mã sản phẩm không đúng định dạng!"
             );
 
-            sp = dsSP.timTheoMa(MaSP);
+            ma = SanPham.chuanHoaMa(ma);
+
+            sp = dsSP.timTheoMa(ma);
 
             if (sp != null) {
                 break;
             }
 
-            System.out.println("Không tìm thấy sản phẩm! Vui lòng nhập lại.");
+            System.out.println(
+                    "Không tìm thấy sản phẩm! Vui lòng nhập lại."
+            );
         }
 
-        // Lấy thông tin từ sản phẩm
-        TenSP = sp.getTenSP();
-        DonGia = sp.getGiaBan();
+        // Lấy thông tin sản phẩm
+        setMaSP(sp.getMaSP());
+        setTenSP(sp.getTenSP());
+        setDonGia(sp.getGiaBan());
 
-        // Nhập số lượng
-        Soluong = (int) Ktradulieu.nhapSoNguyen(
-                sc, "Nhập số lượng: "
-        );
+        // Nhập số lượng và kiểm tra tồn kho
+        while (true) {
+            int soLuong = (int) Ktradulieu.nhapSoNguyen(
+                    sc,
+                    "Nhập số lượng: "
+            );
+
+            if (sp.kiemTraTonKho(soLuong)) {
+                setSoluong(soLuong);
+                break;
+            }
+
+            System.out.println(
+                    "Số lượng không hợp lệ hoặc không đủ hàng còn hạn!"
+            );
+
+            System.out.println(
+                    "Số lượng hiện có thể bán: "
+                            + sp.getSoLuongBanDuoc(java.time.LocalDate.now())
+            );
+        }
     }
 
     // Hiển thị chi tiết giỏ hàng
@@ -96,7 +151,15 @@ public class CTGioHang {
         System.out.println("Mã sản phẩm: " + MaSP);
         System.out.println("Tên sản phẩm: " + TenSP);
         System.out.println("Số lượng: " + Soluong);
-        System.out.println("Đơn giá: " + DonGia);
-        System.out.println("Thành tiền: " + TongTien());
+        System.out.println("Đơn giá: " + TienIch.dinhDangTien(DonGia));
+        System.out.println("Thành tiền: " + TienIch.dinhDangTien(TongTien()));
+    }
+
+    @Override
+    public String toString() {
+        return MaSP + " | " + TenSP
+                + " | Số lượng: " + Soluong
+                + " | Đơn giá: " + TienIch.dinhDangTien(DonGia)
+                + " | Thành tiền: " + TienIch.dinhDangTien(TongTien());
     }
 }

@@ -3,123 +3,174 @@ import java.util.ArrayList;
 import java.util.Scanner;
 
 public abstract class Khuyenmai {
-    private String MaKM, LoaiKM;
-    private LocalDate NgayBatDau, NgayKetThuc;
-    private long MucChiToiThieu;
-    Scanner sc = new Scanner(System.in);
-    private ArrayList<SanPham> DanhsachKM;
+    private String maKM;
+    private String loaiKM;
+    private LocalDate ngayBatDau;
+    private LocalDate ngayKetThuc;
+    private long mucChiToiThieu;
+    protected static final Scanner sc = new Scanner(System.in);
+    private ArrayList<SanPham> danhSachKM;
 
     public Khuyenmai() {
-        MaKM = LoaiKM = "";
-        NgayBatDau = NgayKetThuc = LocalDate.now();
-        MucChiToiThieu = 0;
-        DanhsachKM = new ArrayList<>();
+        maKM = "";
+        loaiKM = "";
+        ngayBatDau = LocalDate.now();
+        ngayKetThuc = LocalDate.now();
+        mucChiToiThieu = 0;
+        danhSachKM = new ArrayList<>();
     }
 
-    public Khuyenmai(String maKM, String loaiKM, LocalDate ngayBatDau, LocalDate ngayKetThuc, long mucChiToiThieu, ArrayList<SanPham> danhsachKM) {
-        MaKM = maKM;
-        LoaiKM = loaiKM;
-        NgayBatDau = ngayBatDau;
-        NgayKetThuc = ngayKetThuc;
-        MucChiToiThieu = mucChiToiThieu;
-        DanhsachKM = (danhsachKM == null) ? new ArrayList<>() : danhsachKM;
+    public Khuyenmai(String maKM, String loaiKM,
+                     LocalDate ngayBatDau, LocalDate ngayKetThuc,
+                     long mucChiToiThieu, ArrayList<SanPham> danhSachKM) {
+        this.maKM = maKM;
+        this.loaiKM = loaiKM;
+        this.ngayBatDau = ngayBatDau;
+        this.ngayKetThuc = ngayKetThuc;
+        this.mucChiToiThieu = mucChiToiThieu;
+        this.danhSachKM = danhSachKM;
     }
 
-    public void thietlapKM() {
-        MaKM = Ktradulieu.taoMa("KM", 1);
-        LoaiKM = Ktradulieu.nhapChuoi(sc, "Nhập loại khuyến mãi: ", ".+", "Không được để trống!");
+    public void setKM() {
+        maKM = Ktradulieu.nhapChuoi(
+                sc, "Nhập mã khuyến mãi: ", ".+",
+                "Mã khuyến mãi không được để trống!");
 
-        NgayBatDau = Ktradulieu.nhapNgaySinh(sc, "Nhập ngày bắt đầu (yyyy-MM-dd): ");
-        NgayKetThuc = Ktradulieu.nhapNgaySinh(sc, "Nhập ngày kết thúc (yyyy-MM-dd): ");
+        ngayBatDau = Ktradulieu.nhapNgaySinh(
+                sc, "Nhập ngày bắt đầu (yyyy-MM-dd): ");
 
-        while (!NgayKetThuc.isAfter(NgayBatDau)) {
-            System.out.println("Ngày kết thúc phải sau ngày bắt đầu!");
-            NgayKetThuc = Ktradulieu.nhapNgaySinh(sc, "Nhập lại ngày kết thúc: ");
-        }
+        do {
+            ngayKetThuc = Ktradulieu.nhapNgaySinh(
+                    sc, "Nhập ngày kết thúc (yyyy-MM-dd): ");
 
-        MucChiToiThieu = Ktradulieu.nhapSoNguyen(sc, "Nhập mức chi tối thiểu: ");
+            if (ngayKetThuc.isBefore(ngayBatDau)) {
+                System.out.println("Ngày kết thúc phải sau hoặc bằng ngày bắt đầu!");
+            }
+        } while (ngayKetThuc.isBefore(ngayBatDau));
+
+        mucChiToiThieu = Ktradulieu.nhapSoNguyen(
+                sc, "Nhập mức chi tiêu tối thiểu: ");
     }
 
-    public void InDanhSachSPKM() {
-        if (DanhsachKM.isEmpty()) {
-            System.out.println("Danh sách sản phẩm khuyến mãi trống!");
+    public void inDanhSachSPKM() {
+        if (danhSachKM.isEmpty()) {
+            System.out.println("Danh sách sản phẩm khuyến mãi đang trống!");
             return;
         }
 
-        for (SanPham sp : DanhsachKM) {
+        for (SanPham sp : danhSachKM) {
             System.out.println(sp);
         }
     }
 
-    public void ThemSP(SanPham sp) {
+    public void themSP(SanPham sp) {
         if (sp == null) {
-            System.out.println("Sản phẩm không hợp lệ!");
+            System.out.println("Sản phẩm không tồn tại!");
             return;
         }
 
-        if (TimKiemSP(sp.getMaSP()) != -1) {
-            System.out.println("Sản phẩm đã tồn tại trong khuyến mãi!");
+        if (timKiemSP(sp.getMaSP()) != -1) {
+            System.out.println("Sản phẩm đã có trong danh sách khuyến mãi!");
             return;
         }
 
-        DanhsachKM.add(sp);
+        danhSachKM.add(sp);
         System.out.println("Thêm sản phẩm thành công!");
     }
 
-    public void XoaSP(String maSP) {
-        int vitri = TimKiemSP(maSP);
+    public void xoaSP(String maSP) {
+        int viTri = timKiemSP(maSP);
 
-        if (vitri == -1) {
+        if (viTri == -1) {
             System.out.println("Không tìm thấy sản phẩm!");
             return;
         }
 
-        DanhsachKM.remove(vitri);
+        danhSachKM.remove(viTri);
         System.out.println("Xóa sản phẩm thành công!");
     }
 
-    public void SuaSP(String maSP, SanPham spMoi) {
-        int vitri = TimKiemSP(maSP);
-
-        if (vitri == -1) {
-            System.out.println("Không tìm thấy sản phẩm!");
-            return;
-        }
-
-        if (spMoi == null) {
-            System.out.println("Sản phẩm mới không hợp lệ!");
-            return;
-        }
-
-        int viTriTrung = TimKiemSP(spMoi.getMaSP());
-
-        if (viTriTrung != -1 && viTriTrung != vitri) {
-            System.out.println("Mã sản phẩm mới đã tồn tại!");
-            return;
-        }
-
-        DanhsachKM.set(vitri, spMoi);
-        System.out.println("Sửa sản phẩm thành công!");
-    }
-
-    public int TimKiemSP(String maSP) {
-        for (int i = 0; i < DanhsachKM.size(); i++) {
-            if (DanhsachKM.get(i).getMaSP().equalsIgnoreCase(maSP)) {
+    public int timKiemSP(String maSP) {
+        for (int i = 0; i < danhSachKM.size(); i++) {
+            if (danhSachKM.get(i).getMaSP().equalsIgnoreCase(maSP)) {
                 return i;
             }
         }
         return -1;
     }
 
+    public boolean kiemTraThoiHan() {
+        LocalDate homNay = LocalDate.now();
+
+        return !homNay.isBefore(ngayBatDau)
+                && !homNay.isAfter(ngayKetThuc);
+    }
+
+    public boolean kiemTraApDung(String maSP, double tongTien) {
+        if (!kiemTraThoiHan() || tongTien < mucChiToiThieu) {
+            return false;
+        }
+
+        return danhSachKM.isEmpty() || timKiemSP(maSP) != -1;
+    }
+
+    public String getMaKM() {
+        return maKM;
+    }
+
+    public String getLoaiKM() {
+        return loaiKM;
+    }
+
     public LocalDate getNgayBatDau() {
-        return NgayBatDau;
+        return ngayBatDau;
     }
 
-    public ArrayList<SanPham> getDanhsachKM() {
-        return DanhsachKM;
+    public LocalDate getNgayKetThuc() {
+        return ngayKetThuc;
     }
 
-    public void setDanhsachKM(ArrayList<SanPham> danhsachKM) {
-        DanhsachKM = (danhsachKM == null) ? new ArrayList<>() : danhsachKM;
+    public long getMucChiToiThieu() {
+        return mucChiToiThieu;
+    }
+
+    public ArrayList<SanPham> getDanhSachKM() {
+        return danhSachKM;
+    }
+
+    public void setMaKM(String maKM) {
+        this.maKM = maKM;
+    }
+
+    public void setLoaiKM(String loaiKM) {
+        this.loaiKM = loaiKM;
+    }
+
+    public void setNgayBatDau(LocalDate ngayBatDau) {
+        this.ngayBatDau = ngayBatDau;
+    }
+
+    public void setNgayKetThuc(LocalDate ngayKetThuc) {
+        this.ngayKetThuc = ngayKetThuc;
+    }
+
+    public void setMucChiToiThieu(long mucChiToiThieu) {
+        this.mucChiToiThieu = mucChiToiThieu;
+    }
+
+    public void setDanhSachKM(ArrayList<SanPham> danhSachKM) {
+        this.danhSachKM = danhSachKM;
+    }
+
+    public abstract double traCuuGiaSanPhamSauKM(String maSP);
+
+    @Override
+    public String toString() {
+        return "Mã khuyến mãi: " + maKM
+                + " | Loại khuyến mãi: " + loaiKM
+                + " | Ngày bắt đầu: " + ngayBatDau
+                + " | Ngày kết thúc: " + ngayKetThuc
+                + " | Mức chi tiêu tối thiểu: " + mucChiToiThieu;
     }
 }
+

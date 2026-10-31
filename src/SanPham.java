@@ -124,6 +124,9 @@ public abstract class SanPham {
     // Số lượng còn dùng/bán được vào ngày đã cho (không tính lô hết hạn)
     public int getSoLuongBanDuoc(LocalDate ngay) {
         int tong = 0;
+        if (ngay == null) {
+            throw new IllegalArgumentException("Ngày không được null.");
+        }
         for (LoHang lo : cacLo) {
             if (!lo.isHetHan(ngay)) {
                 tong += lo.getSoLuongCon();
@@ -266,7 +269,7 @@ public abstract class SanPham {
         if (lo == null) {
             throw new IllegalArgumentException("Sản phẩm " + maSP + " không có lô " + maLo + ".");
         }
-        if (lo.getSoLuongCon() + soLuong > lo.getSoLuongNhap()) {
+        if ((long)lo.getSoLuongCon() + soLuong > lo.getSoLuongNhap()) {
             throw new IllegalStateException("Không hoàn " + soLuong + " vào lô " + lo.getMaLo() + ": lô nhập "
                     + lo.getSoLuongNhap() + ", hiện còn " + lo.getSoLuongCon() + " (hoàn thêm sẽ vượt số đã nhập).");
         }

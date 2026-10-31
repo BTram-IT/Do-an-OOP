@@ -1,5 +1,7 @@
-public class TienMat implements ThanhToan {
+import java.util.Scanner;
 
+public class TienMat implements ThanhToan {
+    Scanner sc = new Scanner(System.in);
     private double tienKhachDua;
 
     public TienMat() {
@@ -10,6 +12,12 @@ public class TienMat implements ThanhToan {
         this.tienKhachDua = tienKhachDua;
     }
 
+    public void nhap(Scanner sc) {
+        tienKhachDua = Ktradulieu.nhapSoThuc(
+                sc, "Nhập tiền khách đưa: "
+        );
+    }
+
     @Override
     public boolean thanhToan(double soTien) {
         return tienKhachDua >= soTien;
@@ -17,7 +25,7 @@ public class TienMat implements ThanhToan {
 
     @Override
     public String getPhuongThuc() {
-        return "Tien mat";
+        return "Tiền mặt";
     }
 
     public double tienThua(double soTien) {

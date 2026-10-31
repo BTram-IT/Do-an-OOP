@@ -1,43 +1,65 @@
-import org.w3c.dom.ls.LSOutput;
-
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.Scanner;
-
-
-
+import java.util.ArrayList;
 
 public class KeToan extends NhanVien implements Thongke {
+
     private DSNhanVien NhanVien;
     private DSSanPham DSSanPham;
     private DSHoadon HoaDon;
+    private QuanlyKho quanLyKho;
 
+    private Scanner sc = new Scanner(System.in);
 
-    public KeToan(DSNhanVien nhanVien, DSSanPham DSSanPham, DSHoadon hoadon) {
-        NhanVien = nhanVien;
-        this.DSSanPham = DSSanPham;
-        HoaDon = hoadon;
-    }
-
-    public KeToan(String maNV, LocalDate ngaybatdaulam, String Vitri, String Hoten, String SDT, String Email, String Diachi, DSNhanVien nhanVien, DSSanPham DSSanPham, DSHoadon hoadon) {
-        super(maNV, ngaybatdaulam, Vitri, Hoten, SDT, Email, Diachi);
-        NhanVien = nhanVien;
-        this.DSSanPham = DSSanPham;
-        HoaDon = hoadon;
-    }
-
+    // Constructor mac dinh
     public KeToan() {
         super();
-        NhanVien = new DSNhanVien();
-        DSSanPham = new DSSanPham();
-        HoaDon = new DSHoadon();
+
+        this.NhanVien = new DSNhanVien();
+        this.DSSanPham = new DSSanPham();
+        this.HoaDon = new DSHoadon();
+        this.quanLyKho = null;
     }
 
+    // Constructor ket noi cac danh sach
+    public KeToan(DSNhanVien nhanVien,
+                  DSSanPham DSSanPham,
+                  DSHoadon hoadon) {
+
+        super();
+
+        this.NhanVien = nhanVien;
+        this.DSSanPham = DSSanPham;
+        this.HoaDon = hoadon;
+        this.quanLyKho = null;
+    }
+
+    // Constructor day du
+    public KeToan(String ten, String sdt, String diaChi,
+                  String email, LocalDate ngaySinh,
+                  String maNV, double luongCoBan,
+                  LocalDate ngayVaoLam, String chucVu,
+                  DSNhanVien nhanVien,
+                  DSSanPham DSSanPham,
+                  DSHoadon hoadon) {
+
+        super(ten, sdt, diaChi, email, ngaySinh,
+                maNV, luongCoBan, ngayVaoLam, chucVu);
+
+        this.NhanVien = nhanVien;
+        this.DSSanPham = DSSanPham;
+        this.HoaDon = hoadon;
+        this.quanLyKho = null;
+    }
+
+    // Getter va Setter
     public DSNhanVien getNhanVien() {
         return NhanVien;
     }
 
     public void setNhanVien(DSNhanVien nhanVien) {
-        NhanVien = nhanVien;
+        this.NhanVien = nhanVien;
     }
 
     public DSSanPham getDSSanPham() {
@@ -53,24 +75,78 @@ public class KeToan extends NhanVien implements Thongke {
     }
 
     public void setHoadon(DSHoadon hoadon) {
-        HoaDon = hoadon;
+        this.HoaDon = hoadon;
     }
 
+    public DSHoadon getHoaDon() {
+        return HoaDon;
+    }
 
-    private Scanner sc = new Scanner(System.in);
+    public void setHoaDon(DSHoadon hoaDon) {
+        this.HoaDon = hoaDon;
+    }
 
+    public QuanlyKho getQuanLyKho() {
+        return quanLyKho;
+    }
+
+    public void setQuanLyKho(QuanlyKho quanLyKho) {
+        this.quanLyKho = quanLyKho;
+    }
+
+    public Scanner getSc() {
+        return sc;
+    }
+
+    public void setSc(Scanner sc) {
+        if (sc == null) {
+            throw new IllegalArgumentException("Scanner khong hop le!");
+        }
+        this.sc = sc;
+    }
+
+    // Kiem tra du lieu ket noi
+    private void kiemTraDuLieu() {
+        if (HoaDon == null) {
+            throw new IllegalStateException("Chua ket noi danh sach hoa don!");
+        }
+
+        if (DSSanPham == null) {
+            throw new IllegalStateException("Chua ket noi danh sach san pham!");
+        }
+
+        if (NhanVien == null) {
+            throw new IllegalStateException("Chua ket noi danh sach nhan vien!");
+        }
+    }
+
+    // =====================================================
+    // 1. THONG KE DOANH THU
+    // =====================================================
 
     @Override
     public double tinhDoanhThuTheoThang(int thang, int nam) {
-        double doanthu = 0;
+        if (thang < 1 || thang > 12) {
+            return 0;
+        }
+
+        kiemTraDuLieu();
+
+        double doanhThu = 0;
+
         for (HoaDon hd : HoaDon.getDs()) {
-            if (hd.getThoigianin() != null
-                    && hd.getThoigianin().getMonthValue() == thang
+            if (hd == null || hd.getThoigianin() == null) {
+                continue;
+            }
+
+            if (hd.getThoigianin().getMonthValue() == thang
                     && hd.getThoigianin().getYear() == nam) {
-                doanthu += hd.Tongtienhoadon();
+
+                doanhThu += hd.Tongtienhoadon();
             }
         }
-        return doanthu;
+
+        return doanhThu;
     }
 
     @Override
@@ -79,54 +155,69 @@ public class KeToan extends NhanVien implements Thongke {
             return 0;
         }
 
-        double doanhthu = 0;
-        int thangbatdau = (quy - 1) * 3 + 1;
-        for (HoaDon hd : HoaDon.getDs()) {
-            if (hd.getThoigianin() != null) {
-                int thang = hd.getThoigianin().getMonthValue();
-                int namHD = hd.getThoigianin().getYear();
+        int thangBatDau = (quy - 1) * 3 + 1;
+        double doanhThu = 0;
 
-                if (namHD == nam
-                        && thang >= thangbatdau && thang < thangbatdau + 3) {
-                    doanhthu += hd.Tongtienhoadon();
-                }
-            }
+        for (int thang = thangBatDau;
+             thang < thangBatDau + 3; thang++) {
+
+            doanhThu += tinhDoanhThuTheoThang(thang, nam);
         }
-        return doanhthu;
-    }
 
+        return doanhThu;
+    }
 
     @Override
     public double tinhDoanhThuTheoNam(int nam) {
-        double doanthu = 0;
-        for (HoaDon hd : HoaDon.getDs()) {
-            if (hd.getThoigianin() != null && hd.getThoigianin().getYear() == nam) {
-                doanthu += hd.Tongtienhoadon();
-            }
+        double doanhThu = 0;
+
+        for (int thang = 1; thang <= 12; thang++) {
+            doanhThu += tinhDoanhThuTheoThang(thang, nam);
         }
-        return doanthu;
+
+        return doanhThu;
     }
 
+    // =====================================================
+    // 2. THONG KE GIA VON
+    // =====================================================
+
     public double TongGiavonHangdabantheoThang(int thang, int nam) {
-        double tongvon = 0;
+        if (thang < 1 || thang > 12) {
+            return 0;
+        }
+
+        kiemTraDuLieu();
+
+        if (quanLyKho == null) {
+            throw new IllegalStateException(
+                    "Chua ket noi QuanlyKho voi KeToan!"
+            );
+        }
+
+        double tongVon = 0;
+
         for (HoaDon hd : HoaDon.getDs()) {
-            if (hd instanceof Hoadonban) {
+            if (!(hd instanceof Hoadonban)) {
+                continue;
+            }
+
+            if (hd.getThoigianin() == null) {
+                continue;
+            }
+
+            if (hd.getThoigianin().getMonthValue() == thang
+                    && hd.getThoigianin().getYear() == nam) {
+
                 Hoadonban hb = (Hoadonban) hd;
 
-                if (hd.getThoigianin() != null
-                        && hd.getThoigianin().getMonthValue() == thang
-                        && hd.getThoigianin().getYear() == nam) {
-                    for (CTHoaDon ct : hb.getCTHoaDon()) {
-                        SanPham sp = DSSanPham.timTheoMa(ct.getMaSP());
-
-                        if (sp != null) {
-                            tongvon += sp.getGiaNhap() * ct.getSoluong();
-                        }
-                    }
-                }
+                tongVon += quanLyKho.tinhGiaVon(
+                        hb.getCacLoDaXuat()
+                );
             }
         }
-        return tongvon;
+
+        return tongVon;
     }
 
     public double TongGiavonTheoQuy(int quy, int nam) {
@@ -134,127 +225,185 @@ public class KeToan extends NhanVien implements Thongke {
             return 0;
         }
 
-        double tongvon = 0;
-        int thangbatdau = (quy - 1) * 3 + 1;
+        double tongVon = 0;
+        int thangBatDau = (quy - 1) * 3 + 1;
 
-        for (int thang = thangbatdau; thang < thangbatdau + 3; thang++) {
-            tongvon += TongGiavonHangdabantheoThang(thang, nam);
+        for (int thang = thangBatDau;
+             thang < thangBatDau + 3; thang++) {
+
+            tongVon += TongGiavonHangdabantheoThang(thang, nam);
         }
 
-        return tongvon;
+        return tongVon;
     }
 
     public double TongGiavonHangdabantheoNam(int nam) {
-        double tongvon = 0;
+        double tongVon = 0;
 
         for (int thang = 1; thang <= 12; thang++) {
-            tongvon += TongGiavonHangdabantheoThang(thang, nam);
+            tongVon += TongGiavonHangdabantheoThang(thang, nam);
         }
 
-        return tongvon;
+        return tongVon;
     }
+
+    // =====================================================
+    // 3. THONG KE LOI NHUAN
+    // =====================================================
+
+    /*
+       Doanh thu hoa don la so tien khach hang thanh toan,
+       da bao gom VAT.
+
+       Loi nhuan uoc tinh =
+       Doanh thu - Thue VAT - Gia von - Luong.
+    */
 
     @Override
     public double tinhLoiNhuanTheoThang(int thang, int nam) {
-        double loinhuan = tinhDoanhThuTheoThang(thang, nam) - TongGiavonHangdabantheoThang(thang, nam) - tinhTongLuongTheoThang(thang, nam);
-        return loinhuan;
+        return tinhDoanhThuTheoThang(thang, nam)
+                - thongKeThueTheoThang(thang, nam)
+                - TongGiavonHangdabantheoThang(thang, nam)
+                - tinhTongLuongTheoThang(thang, nam);
     }
 
     @Override
     public double tinhLoiNhuanTheoQuy(int quy, int nam) {
-        double loinhuan = tinhDoanhThuTheoQuy(quy, nam) - TongGiavonTheoQuy(quy, nam) - tinhTongLuongTheoQuy(quy, nam);
-        return loinhuan;
+        return tinhDoanhThuTheoQuy(quy, nam)
+                - thongKeThueTheoQuy(quy, nam)
+                - TongGiavonTheoQuy(quy, nam)
+                - tinhTongLuongTheoQuy(quy, nam);
     }
 
     @Override
     public double tinhLoiNhuanTheoNam(int nam) {
-        double loinhuan = tinhDoanhThuTheoNam(nam) - TongGiavonHangdabantheoNam(nam) - tinhTongLuongTheoNam(nam);
-        return loinhuan;
+        return tinhDoanhThuTheoNam(nam)
+                - thongKeThueTheoNam(nam)
+                - TongGiavonHangdabantheoNam(nam)
+                - tinhTongLuongTheoNam(nam);
     }
+
+    // =====================================================
+    // 4. THONG KE THUE
+    // =====================================================
 
     @Override
     public double thongKeThueTheoThang(int thang, int nam) {
-        double tongthue = 0;
+        if (thang < 1 || thang > 12) {
+            return 0;
+        }
+
+        kiemTraDuLieu();
+
+        double tongThue = 0;
+
         for (HoaDon hd : HoaDon.getDs()) {
-            if (hd instanceof Hoadonban) {
+            if (!(hd instanceof Hoadonban)) {
+                continue;
+            }
+
+            if (hd.getThoigianin() == null) {
+                continue;
+            }
+
+            if (hd.getThoigianin().getMonthValue() == thang
+                    && hd.getThoigianin().getYear() == nam) {
+
                 Hoadonban hb = (Hoadonban) hd;
-                if (hd.getThoigianin() != null
-                        && hd.getThoigianin().getMonthValue() == thang
-                        && hd.getThoigianin().getYear() == nam) {
-                    tongthue += hb.Tongthuedonhang(DSSanPham);
-                }
+
+                tongThue += hb.Tongthuedonhang(DSSanPham);
             }
         }
-        return tongthue;
+
+        return tongThue;
+    }
+
+    // Thong ke thue theo quy
+    public double thongKeThueTheoQuy(int quy, int nam) {
+        if (quy < 1 || quy > 4) {
+            return 0;
+        }
+
+        double tongThue = 0;
+        int thangBatDau = (quy - 1) * 3 + 1;
+
+        for (int thang = thangBatDau;
+             thang < thangBatDau + 3; thang++) {
+
+            tongThue += thongKeThueTheoThang(thang, nam);
+        }
+
+        return tongThue;
     }
 
     @Override
     public double thongKeThueTheoNam(int nam) {
-        double tongthue = 0;
+        double tongThue = 0;
 
-        for (HoaDon hd : HoaDon.getDs()) {
-            if (hd instanceof Hoadonban) {
-                Hoadonban hb = (Hoadonban) hd;
-
-                if (hd.getThoigianin() != null && hd.getThoigianin().getYear() == nam) {
-                    tongthue += hb.Tongthuedonhang(DSSanPham);
-                }
-            }
+        for (int thang = 1; thang <= 12; thang++) {
+            tongThue += thongKeThueTheoThang(thang, nam);
         }
-        return tongthue;
+
+        return tongThue;
     }
+
+    // =====================================================
+    // 5. THONG KE LUONG
+    // =====================================================
 
     public double tinhTongLuongTheoThang(int thang, int nam) {
         if (thang < 1 || thang > 12) {
             return 0;
         }
 
-        LocalDate ngayDauThang = LocalDate.of(nam, thang, 1);
-        LocalDate ngayCuoiThang = ngayDauThang
-                .withDayOfMonth(ngayDauThang.lengthOfMonth());
+        kiemTraDuLieu();
 
-        // Không tính lương tháng trong tương lai
-        if (ngayDauThang.isAfter(LocalDate.now())) {
+        LocalDate ngayDauThang = LocalDate.of(nam, thang, 1);
+        LocalDate ngayCuoiThang = ngayDauThang.withDayOfMonth(
+                ngayDauThang.lengthOfMonth()
+        );
+
+        LocalDate homNay = LocalDate.now();
+
+        // Khong tinh luong cho thang tuong lai
+        if (ngayDauThang.isAfter(homNay)) {
             return 0;
         }
 
-        // Nếu là tháng hiện tại, chỉ tính đến hôm nay
-        LocalDate ngayKetThuc = ngayCuoiThang;
-        if (ngayKetThuc.isAfter(LocalDate.now())) {
-            ngayKetThuc = LocalDate.now();
+        // Neu la thang hien tai, chi tinh den hom nay
+        if (ngayCuoiThang.isAfter(homNay)) {
+            ngayCuoiThang = homNay;
         }
 
         int soNgayTrongThang = ngayDauThang.lengthOfMonth();
-        int ngayCongChuan = soNgayTrongThang - 3;
 
         double tongLuong = 0;
 
         for (NhanVien nv : NhanVien.getDsNhanVien()) {
-            LocalDate ngayBatDau = nv.();
-
-            if (ngayBatDau == null || ngayBatDau.isAfter(ngayKetThuc)) {
+            if (nv == null) {
                 continue;
             }
 
-            // Ngày bắt đầu được tính lương
-            LocalDate ngayBatDauTinh = ngayBatDau.isAfter(ngayDauThang)
-                    ? ngayBatDau : ngayDauThang;
+            LocalDate ngayVaoLam = nv.getNgayVaoLam();
 
-            // Số ngày từ ngày bắt đầu tính lương đến ngày kết thúc
-            long soNgayLich = java.time.temporal.ChronoUnit.DAYS.between(
-                    ngayBatDauTinh, ngayKetThuc
+            if (ngayVaoLam == null || ngayVaoLam.isAfter(ngayCuoiThang)) {
+                continue;
+            }
+
+            // Neu vao lam giua thang thi tinh tu ngay vao lam
+            LocalDate ngayBatDauTinh = ngayVaoLam.isAfter(ngayDauThang)
+                    ? ngayVaoLam : ngayDauThang;
+
+            long soNgayLam = ChronoUnit.DAYS.between(
+                    ngayBatDauTinh, ngayCuoiThang
             ) + 1;
 
-            // Ước tính số ngày nghỉ theo tỷ lệ thời gian làm việc
-            double soNgayOff = 3.0 * soNgayLich / soNgayTrongThang;
-            double ngayCongThucTe = soNgayLich - soNgayOff;
+            // Luong thang theo kinh nghiem tai ngay ket thuc
+            double luongThang = nv.Tinhluong(ngayCuoiThang);
 
-            // Lương tháng theo mức kinh nghiệm tại ngày kết thúc
-            double luongThang = nv.Tinhluong(ngayKetThuc);
-
-            // Lương thực tế
+            // Tinh luong theo so ngay lam trong thang
             double luongThucTe = luongThang
-                    * ngayCongThucTe / ngayCongChuan;
+                    * soNgayLam / soNgayTrongThang;
 
             tongLuong += luongThucTe;
         }
@@ -264,14 +413,15 @@ public class KeToan extends NhanVien implements Thongke {
 
     public double tinhTongLuongTheoQuy(int quy, int nam) {
         if (quy < 1 || quy > 4) {
-            System.out.println("Quy khong hop le!");
             return 0;
         }
 
         double tongLuong = 0;
         int thangBatDau = (quy - 1) * 3 + 1;
 
-        for (int thang = thangBatDau; thang < thangBatDau + 3; thang++) {
+        for (int thang = thangBatDau;
+             thang < thangBatDau + 3; thang++) {
+
             tongLuong += tinhTongLuongTheoThang(thang, nam);
         }
 
@@ -291,27 +441,41 @@ public class KeToan extends NhanVien implements Thongke {
     @Override
     public void thongKeLuong() {
         LocalDate homNay = LocalDate.now();
-        int thang = homNay.getMonthValue();
-        int nam = homNay.getYear();
 
         System.out.println("===== THONG KE LUONG THANG "
-                + thang + "/" + nam + " =====");
+                + homNay.getMonthValue() + "/" + homNay.getYear()
+                + " =====");
 
         for (NhanVien nv : NhanVien.getDsNhanVien()) {
+            if (nv == null) {
+                continue;
+            }
+
             System.out.println("Ma nhan vien: " + nv.getMaNV());
+            System.out.println("Ho ten: " + nv.getTen());
             System.out.println("Chuc vu: " + nv.getChucVu());
-            System.out.println("Luong: " + nv.tinhLuong(homNay));
+            System.out.println("Luong hien tai: "
+                    + String.format("%,.0f", nv.Tinhluong()));
             System.out.println("-----------------------------");
         }
 
         System.out.println("Tong luong thang: "
-                + tinhTongLuongTheoThang(thang, nam));
+                + String.format("%,.0f",
+                tinhTongLuongTheoThang(
+                        homNay.getMonthValue(),
+                        homNay.getYear()
+                )));
     }
 
+    // =====================================================
+    // 6. THONG KE SAN PHAM BAN DUOC
+    // =====================================================
+
     private boolean thuocKy(HoaDon hd, int ky, int nam, int loai) {
-        if (hd.getThoigianin() == null) {
+        if (hd == null || hd.getThoigianin() == null) {
             return false;
         }
+
         int thang = hd.getThoigianin().getMonthValue();
         int namHD = hd.getThoigianin().getYear();
 
@@ -319,16 +483,16 @@ public class KeToan extends NhanVien implements Thongke {
             return false;
         }
 
-        if (loai == 1) { // Thống kê theo tháng
+        if (loai == 1) {
             return thang == ky;
         }
 
-        if (loai == 2) { // Thống kê theo quý
+        if (loai == 2) {
             int quyHD = (thang - 1) / 3 + 1;
             return quyHD == ky;
         }
 
-        if (loai == 3) { // Thống kê theo năm
+        if (loai == 3) {
             return true;
         }
 
@@ -354,11 +518,14 @@ public class KeToan extends NhanVien implements Thongke {
             Hoadonban hdb = (Hoadonban) hd;
 
             for (CTHoaDon ct : hdb.getCTHoaDon()) {
+                if (ct == null) {
+                    continue;
+                }
+
                 int viTri = -1;
 
-                // Tìm sản phẩm đã có trong mảng chưa
                 for (int i = 0; i < n; i++) {
-                    if (maSP[i].equals(ct.getMaSP())) {
+                    if (maSP[i].equalsIgnoreCase(ct.getMaSP())) {
                         viTri = i;
                         break;
                     }
@@ -368,7 +535,7 @@ public class KeToan extends NhanVien implements Thongke {
                     soLuong[viTri] += ct.getSoluong();
                 } else {
                     if (n >= maSP.length) {
-                        System.out.println("Danh sách sản phẩm đã đầy!");
+                        System.out.println("Danh sach san pham da day!");
                         return;
                     }
 
@@ -380,27 +547,38 @@ public class KeToan extends NhanVien implements Thongke {
             }
         }
 
-        System.out.println("===== THỐNG KÊ SẢN PHẨM =====");
+        System.out.println("===== THONG KE SAN PHAM BAN DUOC =====");
 
         for (int i = 0; i < n; i++) {
             System.out.println(
-                    "Mã SP: " + maSP[i]
-                            + " | Tên: " + tenSP[i]
-                            + " | Số lượng bán: " + soLuong[i]
+                    "Ma SP: " + maSP[i]
+                            + " | Ten: " + tenSP[i]
+                            + " | So luong ban: " + soLuong[i]
             );
         }
 
         if (n == 0) {
-            System.out.println("Không có sản phẩm bán trong kỳ này.");
+            System.out.println("Khong co san pham ban trong ky nay.");
         }
     }
+
     @Override
     public void thongKeSanPhamBanDuocTheoThang(int thang, int nam) {
+        if (thang < 1 || thang > 12) {
+            System.out.println("Thang khong hop le!");
+            return;
+        }
+
         thongKeSoLuongSanPham(thang, nam, 1);
     }
 
     @Override
     public void thongKeSanPhamBanDuocTheoQuy(int quy, int nam) {
+        if (quy < 1 || quy > 4) {
+            System.out.println("Quy khong hop le!");
+            return;
+        }
+
         thongKeSoLuongSanPham(quy, nam, 2);
     }
 
@@ -409,10 +587,14 @@ public class KeToan extends NhanVien implements Thongke {
         thongKeSoLuongSanPham(0, nam, 3);
     }
 
+    // =====================================================
+    // 7. THONG KE CHI TIET SAN PHAM BAN RA
+    // =====================================================
+
     private void thongKeSanPhamBanRa(int ky, int nam, int loai) {
         boolean coSanPham = false;
 
-        System.out.println("===== CHI TIẾT SẢN PHẨM BÁN RA =====");
+        System.out.println("===== CHI TIET SAN PHAM BAN RA =====");
 
         for (HoaDon hd : HoaDon.getDs()) {
             if (!(hd instanceof Hoadonban)) {
@@ -426,27 +608,44 @@ public class KeToan extends NhanVien implements Thongke {
             Hoadonban hdb = (Hoadonban) hd;
 
             for (CTHoaDon ct : hdb.getCTHoaDon()) {
+                if (ct == null) {
+                    continue;
+                }
+
                 coSanPham = true;
 
-                System.out.println("Mã HĐ: " + hd.getMaHD()
-                        + " | Mã SP: " + ct.getMaSP()
-                        + " | Tên SP: " + ct.getTenSP()
-                        + " | Số lượng: " + ct.getSoluong()
-                        + " | Giá bán: " + ct.getGiaban());
+                System.out.println(
+                        "Ma HD: " + hd.getMaHD()
+                                + " | Ma SP: " + ct.getMaSP()
+                                + " | Ten SP: " + ct.getTenSP()
+                                + " | So luong: " + ct.getSoluong()
+                                + " | Gia ban: " + ct.getGiaban()
+                );
             }
         }
 
         if (!coSanPham) {
-            System.out.println("Không có sản phẩm bán trong kỳ này.");
+            System.out.println("Khong co san pham ban trong ky nay.");
         }
     }
+
     @Override
     public void thongKeSanPhamBanRaTheoThang(int thang, int nam) {
+        if (thang < 1 || thang > 12) {
+            System.out.println("Thang khong hop le!");
+            return;
+        }
+
         thongKeSanPhamBanRa(thang, nam, 1);
     }
 
     @Override
     public void thongKeSanPhamBanRaTheoQuy(int quy, int nam) {
+        if (quy < 1 || quy > 4) {
+            System.out.println("Quy khong hop le!");
+            return;
+        }
+
         thongKeSanPhamBanRa(quy, nam, 2);
     }
 
@@ -455,241 +654,291 @@ public class KeToan extends NhanVien implements Thongke {
         thongKeSanPhamBanRa(0, nam, 3);
     }
 
+    // =====================================================
+    // 8. HAM NHAP SO NGUYEN CHO MENU
+    // =====================================================
 
-    //======================================================================================
+    private int nhapSoNguyen(String thongBao) {
+        while (true) {
+            try {
+                System.out.print(thongBao);
+                return Integer.parseInt(sc.nextLine().trim());
+            } catch (NumberFormatException e) {
+                System.out.println("Vui long nhap so nguyen!");
+            }
+        }
+    }
 
-    //Menu doanh thu
+    // =====================================================
+    // 9. MENU DOANH THU
+    // =====================================================
+
     public void menuDoanhThu() {
         int chon;
 
         do {
-            System.out.println("\n===== THỐNG KÊ DOANH THU =====");
-            System.out.println("1. Doanh thu theo tháng");
-            System.out.println("2. Doanh thu theo quý");
-            System.out.println("3. Doanh thu theo năm");
-            System.out.println("0. Quay lại");
-            System.out.print("Chọn: ");
-            chon = sc.nextInt();
+            System.out.println("\n===== THONG KE DOANH THU =====");
+            System.out.println("1. Doanh thu theo thang");
+            System.out.println("2. Doanh thu theo quy");
+            System.out.println("3. Doanh thu theo nam");
+            System.out.println("0. Quay lai");
+
+            chon = nhapSoNguyen("Chon: ");
 
             switch (chon) {
-                case 1:
-                    System.out.print("Nhập tháng: ");
-                    int thang = sc.nextInt();
-                    System.out.print("Nhập năm: ");
-                    int namThang = sc.nextInt();
+                case 1: {
+                    int thang = nhapSoNguyen("Nhap thang: ");
+                    int nam = nhapSoNguyen("Nhap nam: ");
 
                     if (thang < 1 || thang > 12) {
-                        System.out.println("Tháng không hợp lệ!");
+                        System.out.println("Thang khong hop le!");
                         break;
                     }
 
-                    System.out.println("Doanh thu tháng " + thang
-                            + "/" + namThang + ": "
-                            + tinhDoanhThuTheoThang(thang, namThang));
+                    System.out.println("Doanh thu: "
+                            + tinhDoanhThuTheoThang(thang, nam));
                     break;
+                }
 
-                case 2:
-                    System.out.print("Nhập quý (1-4): ");
-                    int quy = sc.nextInt();
-                    System.out.print("Nhập năm: ");
-                    int namQuy = sc.nextInt();
+                case 2: {
+                    int quy = nhapSoNguyen("Nhap quy (1-4): ");
+                    int nam = nhapSoNguyen("Nhap nam: ");
 
                     if (quy < 1 || quy > 4) {
-                        System.out.println("Quý không hợp lệ!");
+                        System.out.println("Quy khong hop le!");
                         break;
                     }
 
-                    System.out.println("Doanh thu quý " + quy
-                            + "/" + namQuy + ": "
-                            + tinhDoanhThuTheoQuy(quy, namQuy));
+                    System.out.println("Doanh thu: "
+                            + tinhDoanhThuTheoQuy(quy, nam));
                     break;
+                }
 
-                case 3:
-                    System.out.print("Nhập năm: ");
-                    int nam = sc.nextInt();
+                case 3: {
+                    int nam = nhapSoNguyen("Nhap nam: ");
 
-                    System.out.println("Doanh thu năm " + nam + ": "
+                    System.out.println("Doanh thu: "
                             + tinhDoanhThuTheoNam(nam));
                     break;
+                }
 
                 case 0:
-                    System.out.println("Quay lại menu kế toán.");
                     break;
 
                 default:
-                    System.out.println("Lựa chọn không hợp lệ!");
+                    System.out.println("Lua chon khong hop le!");
             }
+
         } while (chon != 0);
     }
-    // Menu lợi nhuận
+
+    // =====================================================
+    // 10. MENU LOI NHUAN
+    // =====================================================
 
     public void menuLoiNhuan() {
         int chon;
 
         do {
-            System.out.println("\n===== THỐNG KÊ LỢI NHUẬN =====");
-            System.out.println("1. Lợi nhuận theo tháng");
-            System.out.println("2. Lợi nhuận theo quý");
-            System.out.println("3. Lợi nhuận theo năm");
-            System.out.println("0. Quay lại");
-            System.out.print("Chọn: ");
-            chon = sc.nextInt();
+            System.out.println("\n===== THONG KE LOI NHUAN =====");
+            System.out.println("1. Loi nhuan theo thang");
+            System.out.println("2. Loi nhuan theo quy");
+            System.out.println("3. Loi nhuan theo nam");
+            System.out.println("0. Quay lai");
+
+            chon = nhapSoNguyen("Chon: ");
 
             switch (chon) {
-                case 1:
-                    System.out.print("Nhập tháng: ");
-                    int thang = sc.nextInt();
-                    System.out.print("Nhập năm: ");
-                    int namThang = sc.nextInt();
+                case 1: {
+                    int thang = nhapSoNguyen("Nhap thang: ");
+                    int nam = nhapSoNguyen("Nhap nam: ");
 
                     if (thang < 1 || thang > 12) {
-                        System.out.println("Tháng không hợp lệ!");
+                        System.out.println("Thang khong hop le!");
                         break;
                     }
 
-                    System.out.println("Lợi nhuận tháng " + thang
-                            + "/" + namThang + ": "
-                            + tinhLoiNhuanTheoThang(thang, namThang));
+                    System.out.println("Loi nhuan: "
+                            + tinhLoiNhuanTheoThang(thang, nam));
                     break;
+                }
 
-                case 2:
-                    System.out.print("Nhập quý (1-4): ");
-                    int quy = sc.nextInt();
-                    System.out.print("Nhập năm: ");
-                    int namQuy = sc.nextInt();
+                case 2: {
+                    int quy = nhapSoNguyen("Nhap quy (1-4): ");
+                    int nam = nhapSoNguyen("Nhap nam: ");
 
                     if (quy < 1 || quy > 4) {
-                        System.out.println("Quý không hợp lệ!");
+                        System.out.println("Quy khong hop le!");
                         break;
                     }
 
-                    System.out.println("Lợi nhuận quý " + quy
-                            + "/" + namQuy + ": "
-                            + tinhLoiNhuanTheoQuy(quy, namQuy));
+                    System.out.println("Loi nhuan: "
+                            + tinhLoiNhuanTheoQuy(quy, nam));
                     break;
+                }
 
-                case 3:
-                    System.out.print("Nhập năm: ");
-                    int nam = sc.nextInt();
+                case 3: {
+                    int nam = nhapSoNguyen("Nhap nam: ");
 
-                    System.out.println("Lợi nhuận năm " + nam + ": "
+                    System.out.println("Loi nhuan: "
                             + tinhLoiNhuanTheoNam(nam));
                     break;
+                }
 
                 case 0:
-                    System.out.println("Quay lại menu kế toán.");
                     break;
 
                 default:
-                    System.out.println("Lựa chọn không hợp lệ!");
+                    System.out.println("Lua chon khong hop le!");
             }
+
         } while (chon != 0);
     }
 
-    //Menu thuế
+    // =====================================================
+    // 11. MENU THUE
+    // =====================================================
 
     public void menuThue() {
         int chon;
 
         do {
-            System.out.println("\n===== THỐNG KÊ THUẾ =====");
-            System.out.println("1. Thống kê thuế theo tháng");
-            System.out.println("2. Thống kê thuế theo năm");
-            System.out.println("0. Quay lại");
-            System.out.print("Chọn chức năng: ");
+            System.out.println("\n===== THONG KE THUE =====");
+            System.out.println("1. Thue theo thang");
+            System.out.println("2. Thue theo nam");
+            System.out.println("0. Quay lai");
 
-            chon = Integer.parseInt(sc.nextLine());
+            chon = nhapSoNguyen("Chon: ");
 
             switch (chon) {
-                case 1:
-                    System.out.print("Nhập tháng: ");
-                    int thang = Integer.parseInt(sc.nextLine());
-
-                    System.out.print("Nhập năm: ");
-                    int namThang = Integer.parseInt(sc.nextLine());
+                case 1: {
+                    int thang = nhapSoNguyen("Nhap thang: ");
+                    int nam = nhapSoNguyen("Nhap nam: ");
 
                     if (thang < 1 || thang > 12) {
-                        System.out.println("Tháng không hợp lệ!");
+                        System.out.println("Thang khong hop le!");
                         break;
                     }
 
-                    System.out.println("Tổng thuế tháng "
-                            + thang + "/" + namThang + ": "
-                            + thongKeThueTheoThang(thang, namThang));
+                    System.out.println("Tong thue: "
+                            + thongKeThueTheoThang(thang, nam));
                     break;
+                }
 
-                case 2:
-                    System.out.print("Nhập năm: ");
-                    int nam = Integer.parseInt(sc.nextLine());
+                case 2: {
+                    int nam = nhapSoNguyen("Nhap nam: ");
 
-                    System.out.println("Tổng thuế năm "
-                            + nam + ": "
+                    System.out.println("Tong thue: "
                             + thongKeThueTheoNam(nam));
                     break;
+                }
 
                 case 0:
                     break;
 
                 default:
-                    System.out.println("Lựa chọn không hợp lệ!");
+                    System.out.println("Lua chon khong hop le!");
             }
 
         } while (chon != 0);
     }
 
-    // menu thống kê sản phẩm
+    // =====================================================
+    // 12. MENU LUONG
+    // =====================================================
 
-    // Spham bán được
+    public void menuLuong() {
+        int chon;
+
+        do {
+            System.out.println("\n===== THONG KE LUONG =====");
+            System.out.println("1. Luong theo thang");
+            System.out.println("2. Luong theo quy");
+            System.out.println("3. Luong theo nam");
+            System.out.println("0. Quay lai");
+
+            chon = nhapSoNguyen("Chon: ");
+
+            switch (chon) {
+                case 1: {
+                    int thang = nhapSoNguyen("Nhap thang: ");
+                    int nam = nhapSoNguyen("Nhap nam: ");
+
+                    if (thang < 1 || thang > 12) {
+                        System.out.println("Thang khong hop le!");
+                        break;
+                    }
+
+                    System.out.println("Tong luong: "
+                            + tinhTongLuongTheoThang(thang, nam));
+                    break;
+                }
+
+                case 2: {
+                    int quy = nhapSoNguyen("Nhap quy (1-4): ");
+                    int nam = nhapSoNguyen("Nhap nam: ");
+
+                    if (quy < 1 || quy > 4) {
+                        System.out.println("Quy khong hop le!");
+                        break;
+                    }
+
+                    System.out.println("Tong luong: "
+                            + tinhTongLuongTheoQuy(quy, nam));
+                    break;
+                }
+
+                case 3: {
+                    int nam = nhapSoNguyen("Nhap nam: ");
+
+                    System.out.println("Tong luong: "
+                            + tinhTongLuongTheoNam(nam));
+                    break;
+                }
+
+                case 0:
+                    break;
+
+                default:
+                    System.out.println("Lua chon khong hop le!");
+            }
+
+        } while (chon != 0);
+    }
+
+    // =====================================================
+    // 13. MENU SAN PHAM BAN DUOC
+    // =====================================================
+
     public void menuSanPhamBanDuoc() {
         int chon;
 
         do {
-            System.out.println("\n===== SỐ LƯỢNG SẢN PHẨM BÁN ĐƯỢC =====");
-            System.out.println("1. Theo tháng");
-            System.out.println("2. Theo quý");
-            System.out.println("3. Theo năm");
-            System.out.println("0. Quay lại");
-            System.out.print("Chọn chức năng: ");
+            System.out.println("\n===== SAN PHAM BAN DUOC =====");
+            System.out.println("1. Theo thang");
+            System.out.println("2. Theo quy");
+            System.out.println("3. Theo nam");
+            System.out.println("0. Quay lai");
 
-            chon = Integer.parseInt(sc.nextLine());
+            chon = nhapSoNguyen("Chon: ");
 
             switch (chon) {
                 case 1: {
-                    System.out.print("Nhập tháng: ");
-                    int thang = Integer.parseInt(sc.nextLine());
-
-                    System.out.print("Nhập năm: ");
-                    int nam = Integer.parseInt(sc.nextLine());
-
-                    if (thang < 1 || thang > 12) {
-                        System.out.println("Tháng không hợp lệ!");
-                        break;
-                    }
-
+                    int thang = nhapSoNguyen("Nhap thang: ");
+                    int nam = nhapSoNguyen("Nhap nam: ");
                     thongKeSanPhamBanDuocTheoThang(thang, nam);
                     break;
                 }
 
                 case 2: {
-                    System.out.print("Nhập quý (1-4): ");
-                    int quy = Integer.parseInt(sc.nextLine());
-
-                    System.out.print("Nhập năm: ");
-                    int nam = Integer.parseInt(sc.nextLine());
-
-                    if (quy < 1 || quy > 4) {
-                        System.out.println("Quý không hợp lệ!");
-                        break;
-                    }
-
+                    int quy = nhapSoNguyen("Nhap quy: ");
+                    int nam = nhapSoNguyen("Nhap nam: ");
                     thongKeSanPhamBanDuocTheoQuy(quy, nam);
                     break;
                 }
 
                 case 3: {
-                    System.out.print("Nhập năm: ");
-                    int nam = Integer.parseInt(sc.nextLine());
-
+                    int nam = nhapSoNguyen("Nhap nam: ");
                     thongKeSanPhamBanDuocTheoNam(nam);
                     break;
                 }
@@ -698,63 +947,45 @@ public class KeToan extends NhanVien implements Thongke {
                     break;
 
                 default:
-                    System.out.println("Lựa chọn không hợp lệ!");
+                    System.out.println("Lua chon khong hop le!");
             }
 
         } while (chon != 0);
     }
-    // Spham bán ra
+
+    // =====================================================
+    // 14. MENU SAN PHAM BAN RA
+    // =====================================================
 
     public void menuSanPhamBanRa() {
         int chon;
 
         do {
-            System.out.println("\n===== CHI TIẾT SẢN PHẨM BÁN RA =====");
-            System.out.println("1. Theo tháng");
-            System.out.println("2. Theo quý");
-            System.out.println("3. Theo năm");
-            System.out.println("0. Quay lại");
-            System.out.print("Chọn chức năng: ");
+            System.out.println("\n===== CHI TIET SAN PHAM BAN RA =====");
+            System.out.println("1. Theo thang");
+            System.out.println("2. Theo quy");
+            System.out.println("3. Theo nam");
+            System.out.println("0. Quay lai");
 
-            chon = Integer.parseInt(sc.nextLine());
+            chon = nhapSoNguyen("Chon: ");
 
             switch (chon) {
                 case 1: {
-                    System.out.print("Nhập tháng: ");
-                    int thang = Integer.parseInt(sc.nextLine());
-
-                    System.out.print("Nhập năm: ");
-                    int nam = Integer.parseInt(sc.nextLine());
-
-                    if (thang < 1 || thang > 12) {
-                        System.out.println("Tháng không hợp lệ!");
-                        break;
-                    }
-
+                    int thang = nhapSoNguyen("Nhap thang: ");
+                    int nam = nhapSoNguyen("Nhap nam: ");
                     thongKeSanPhamBanRaTheoThang(thang, nam);
                     break;
                 }
 
                 case 2: {
-                    System.out.print("Nhập quý (1-4): ");
-                    int quy = Integer.parseInt(sc.nextLine());
-
-                    System.out.print("Nhập năm: ");
-                    int nam = Integer.parseInt(sc.nextLine());
-
-                    if (quy < 1 || quy > 4) {
-                        System.out.println("Quý không hợp lệ!");
-                        break;
-                    }
-
+                    int quy = nhapSoNguyen("Nhap quy: ");
+                    int nam = nhapSoNguyen("Nhap nam: ");
                     thongKeSanPhamBanRaTheoQuy(quy, nam);
                     break;
                 }
 
                 case 3: {
-                    System.out.print("Nhập năm: ");
-                    int nam = Integer.parseInt(sc.nextLine());
-
+                    int nam = nhapSoNguyen("Nhap nam: ");
                     thongKeSanPhamBanRaTheoNam(nam);
                     break;
                 }
@@ -763,25 +994,26 @@ public class KeToan extends NhanVien implements Thongke {
                     break;
 
                 default:
-                    System.out.println("Lựa chọn không hợp lệ!");
+                    System.out.println("Lua chon khong hop le!");
             }
 
         } while (chon != 0);
     }
 
+    // =====================================================
+    // 15. MENU THONG KE SAN PHAM
+    // =====================================================
 
-    //
     public void menuThongKeSanPham() {
         int chon;
 
         do {
-            System.out.println("\n===== THỐNG KÊ SẢN PHẨM =====");
-            System.out.println("1. Thống kê số lượng sản phẩm bán được");
-            System.out.println("2. Thống kê chi tiết sản phẩm bán ra");
-            System.out.println("0. Quay lại");
-            System.out.print("Chọn chức năng: ");
+            System.out.println("\n===== THONG KE SAN PHAM =====");
+            System.out.println("1. So luong san pham ban duoc");
+            System.out.println("2. Chi tiet san pham ban ra");
+            System.out.println("0. Quay lai");
 
-            chon = Integer.parseInt(sc.nextLine());
+            chon = nhapSoNguyen("Chon: ");
 
             switch (chon) {
                 case 1:
@@ -796,126 +1028,9 @@ public class KeToan extends NhanVien implements Thongke {
                     break;
 
                 default:
-                    System.out.println("Lựa chọn không hợp lệ!");
+                    System.out.println("Lua chon khong hop le!");
             }
 
         } while (chon != 0);
     }
-
-    //Menu lương
-    public void menuLuong() {
-        int chon;
-
-        do {
-            System.out.println("\n===== THỐNG KÊ LƯƠNG =====");
-            System.out.println("1. Thống kê lương theo tháng");
-            System.out.println("2. Thống kê lương theo quý");
-            System.out.println("3. Thống kê lương theo năm");
-            System.out.println("0. Quay lại");
-            System.out.print("Chọn: ");
-            chon = sc.nextInt();
-
-            switch (chon) {
-                case 1:
-                    System.out.print("Nhập tháng: ");
-                    int thang = sc.nextInt();
-
-                    System.out.print("Nhập năm: ");
-                    int namThang = sc.nextInt();
-
-                    if (thang < 1 || thang > 12) {
-                        System.out.println("Tháng không hợp lệ!");
-                        break;
-                    }
-
-                    System.out.println("Tổng lương tháng " + thang
-                            + "/" + namThang + ": "
-                            + tinhTongLuongTheoThang(thang, namThang));
-                    break;
-
-                case 2:
-                    System.out.print("Nhập quý (1-4): ");
-                    int quy = sc.nextInt();
-
-                    System.out.print("Nhập năm: ");
-                    int namQuy = sc.nextInt();
-
-                    if (quy < 1 || quy > 4) {
-                        System.out.println("Quý không hợp lệ!");
-                        break;
-                    }
-
-                    System.out.println("Tổng lương quý " + quy
-                            + "/" + namQuy + ": "
-                            + tinhTongLuongTheoQuy(quy, namQuy));
-                    break;
-
-                case 3:
-                    System.out.print("Nhập năm: ");
-                    int nam = sc.nextInt();
-
-                    System.out.println("Tổng lương năm " + nam + ": "
-                            + tinhTongLuongTheoNam(nam));
-                    break;
-
-                case 0:
-                    System.out.println("Quay lại menu kế toán.");
-                    break;
-
-                default:
-                    System.out.println("Lựa chọn không hợp lệ!");
-            }
-        } while (chon != 0);
-    }
-
-//    //MENU CHÍNH
-//    public void menu() {
-//        Scanner sc = new Scanner(System.in);
-//        int chon;
-//
-//        do {
-//            System.out.println("\n===== MENU KẾ TOÁN =====");
-//            System.out.println("1. Thống kê doanh thu");
-//            System.out.println("2. Thống kê lợi nhuận");
-//            System.out.println("3. Thống kê thuế");
-//            System.out.println("4. Thống kê sản phẩm bán được");
-//            System.out.println("5. Thống kê lương nhân viên");
-//            System.out.println("0. Quay lại");
-//            System.out.print("Chọn chức năng: ");
-//
-//            chon = Integer.parseInt(sc.nextLine());
-//
-//            switch (chon) {
-//                case 1:
-//                    menuDoanhThu();
-//                    break;
-//
-//                case 2:
-//                    menuLoiNhuan();
-//                    break;
-//
-//                case 3:
-//                    menuThue();
-//                    break;
-//
-//                case 4:
-//                    menuSanPhamBanDuoc();
-//                    break;
-//
-//                case 5:
-//                    menuLuong();
-//                    break;
-//
-//                case 0:
-//                    System.out.println("Quay lại màn hình đăng nhập!");
-//                    break;
-//
-//                default:
-//                    System.out.println("Lựa chọn không hợp lệ!");
-//            }
-//
-//        } while (chon != 0);
-//    }
 }
-
-
