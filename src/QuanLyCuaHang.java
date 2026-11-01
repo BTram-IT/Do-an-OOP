@@ -22,7 +22,6 @@ public class QuanLyCuaHang extends NhanVien {
                 "Quan ly cua hang");
     }
 
-    /** Gan cac danh sach dung chung cua cua hang cho quan ly. */
     public void ketNoi(DSSanPham dsSP, DSNhanVien dsNV, DSKhachHang dsKH, DSDoiTac dsDoiTac,
                        DSKhuyenMai dsKhuyenMai, DSHoaDon dsHoaDonBan, DSHoaDon dsHoaDonNhap) {
         this.dsSP = dsSP;
@@ -39,12 +38,10 @@ public class QuanLyCuaHang extends NhanVien {
         return "QuanLyCuaHang";
     }
 
-    // ----- Nhan vien -----
     public boolean themNhanVien(NhanVien nv) {
         return dsNV.them(nv);
     }
 
-    /** Khong cho xoa chinh minh. */
     public boolean xoaNhanVien(String ma) {
         if (ma.equalsIgnoreCase(getMa())) {
             return false;
@@ -56,7 +53,6 @@ public class QuanLyCuaHang extends NhanVien {
         return dsNV.sua(ma, ten, sdt, luongCoBan, kinhNghiem);
     }
 
-    // ----- Doi tac / khuyen mai -----
     public boolean themDoiTac(DoiTac dt) {
         return dsDoiTac.them(dt);
     }
@@ -73,12 +69,6 @@ public class QuanLyCuaHang extends NhanVien {
         return dsKhuyenMai.xoa(ma);
     }
 
-    // ----- Nhap them hang -----
-    /**
-     * Nhap them hang cho mot san pham tu nha cung cap (nha cung cap tu giao, khong mat phi van chuyen):
-     * lap hoa don nhap, cong ton kho va ghi no nha cung cap.
-     * @return hoa don nhap, hoac null neu khong nhap duoc (sai san pham, vuot han muc no cong...).
-     */
     public HoaDonNhap nhapThemHang(NhaCungCap ncc, String maSP, int soLuong, double giaNhap) {
         SanPham sp = dsSP.timTheoMa(maSP);
         if (ncc == null || sp == null || soLuong <= 0 || giaNhap < 0) {
@@ -96,11 +86,6 @@ public class QuanLyCuaHang extends NhanVien {
         return hd;
     }
 
-    // ----- Trung bay -----
-    /**
-     * Chuyen soLuong san pham tu kho ra quay trung bay.
-     * @return null neu thanh cong, nguoc lai la ly do that bai.
-     */
     public String themSPTrungBay(String maSP, int soLuong) {
         SanPham sp = dsSP.timTheoMa(maSP);
         if (sp == null) {
@@ -117,10 +102,6 @@ public class QuanLyCuaHang extends NhanVien {
         return null;
     }
 
-    /**
-     * Thu hoi soLuong san pham tu quay trung bay ve kho (soLuong = 0: thu hoi het).
-     * @return null neu thanh cong, nguoc lai la ly do that bai.
-     */
     public String xoaSPTrungBay(String maSP, int soLuong) {
         SanPham sp = dsSP.timTheoMa(maSP);
         if (sp == null) {
@@ -135,8 +116,6 @@ public class QuanLyCuaHang extends NhanVien {
         return null;
     }
 
-    // ----- Phan tich san pham ban chay / ban e -----
-    /** So luong ban duoc cua tung san pham trong dsSP (cung thu tu) tu cac hoa don ban. */
     private int[] demSoLuongBan() {
         int[] ban = new int[dsSP.size()];
         for (HoaDonBan hd : dsHoaDonBan.layHoaDonBan()) {
@@ -160,7 +139,6 @@ public class QuanLyCuaHang extends NhanVien {
         return idx;
     }
 
-    /** In top san pham ban chay nhat (chi nhung san pham da ban duoc). */
     public void phanTichSPBanChay(int top) {
         int[] ban = demSoLuongBan();
         Integer[] idx = sapXepTheoSoLuongBan(ban, true);
@@ -178,7 +156,6 @@ public class QuanLyCuaHang extends NhanVien {
         }
     }
 
-    /** In top san pham ban e nhat (ban it nhat, bao gom san pham chua ban duoc cai nao). */
     public void phanTichSPBanE(int top) {
         int[] ban = demSoLuongBan();
         Integer[] idx = sapXepTheoSoLuongBan(ban, false);
