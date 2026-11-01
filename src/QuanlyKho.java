@@ -7,13 +7,24 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.time.format.ResolverStyle;
 import java.util.ArrayList;
 import java.util.Objects;
 import java.util.Scanner;
 
+// Lớp điều phối nghiệp vụ kho: quản lý danh sách sản phẩm (có các LÔ HÀNG bên trong) và các phiếu nhập.
+// Đây là CỔNG CHÍNH để Thu ngân, Kế toán, Quản lý cửa hàng làm việc với kho.
+// Danh sách sản phẩm được giữ kín (private), chỉ thao tác qua các hàm ở đây để luôn có kiểm tra đầy đủ.
+//
+// Nhà cung cấp: dùng DSNhaCungCap (danh sách NhaCungCap của Quản lý cửa hàng). Tạo phiếu nhập phải có nhà cung cấp trong danh sách đó.
+// Lô hàng: nhập kho tạo lô, xuất kho lấy theo FEFO (hết hạn sớm xuất trước, không xuất hàng hết hạn),
+// hoàn kho phải trả về đúng lô đã xuất (dùng danh sách LoXuat mà xuatKho trả về).
 public class QuanlyKho {
 
     public static final int NGUONG_SAP_HET_HANG = 10;
@@ -21,19 +32,23 @@ public class QuanlyKho {
     public static final String THU_MUC_MAC_DINH = "du_lieu_kho";
     public static final String TEN_FILE_SAN_PHAM = "san_pham.txt";
     public static final String TEN_FILE_HOA_DON_NHAP = "hoa_don_nhap.txt";
+    // File sổ xuất kho theo giao dịch. File này TÙY CHỌN khi đọc: dữ liệu cũ không có file này vẫn đọc được (sổ rỗng).
+    public static final String TEN_FILE_XUAT_KHO = "xuat_kho.txt";
 
-    private IDanhSachSanPham dsSanPham;
+    private DSSanPham dsSanPham;
     private ArrayList<HoadonNhap> dsHoaDonNhap = new ArrayList<>();
+    private ArrayList<GiaoDichXuat> dsGiaoDichXuat = new ArrayList<>();
     private DSNhaCungCap dsNhaCungCap;
 
+    // Mặc định dùng mảng động
     public QuanlyKho(DSNhaCungCap dsNhaCungCap) {
         this(new DSSanPham(), dsNhaCungCap);
     }
 
-    // Truyền danh sách muốn dùng: new DSSanPham() (mảng động) hoặc new DSSanPhamTinh(50) (mảng tĩnh).
+    // Truyền danh sách muốn dùng: new DSSanPham() (mảng động).
     // KeToan đang giữ một DSSanPham riêng, nên truyền chính DSSanPham đó vào đây để hai nơi dùng chung dữ liệu.
     // dsNhaCungCap là danh sách nhà cung cấp của Quản lý cửa hàng (cùng một đối tượng, không sao chép).
-    public QuanlyKho(IDanhSachSanPham dsSanPham, DSNhaCungCap dsNhaCungCap) {
+    public QuanlyKho(DSSanPham dsSanPham, DSNhaCungCap dsNhaCungCap) {
         if (dsSanPham == null) {
             throw new IllegalArgumentException("Danh sách sản phẩm không được null.");
         }
@@ -61,7 +76,7 @@ public class QuanlyKho {
         if (ncc == null) {
             return ma + " (không còn trong danh sách nhà cung cấp)";
         }
-        return ncc.getMa() + " - " + ncc.getTen();
+        return ncc.getMaDT() + " - " + ncc.getTenDT();
     }
 
     // ===================== QUẢN LÝ SẢN PHẨM =====================
@@ -74,7 +89,7 @@ public class QuanlyKho {
         return dsSanPham.themNhieu(dsMoi);
     }
 
-    // Sửa tên, giá bán, thuế suất bán và thông tin riêng. Không đổi được mã, loại, đơn vị tính; các lô giữ nguyên.
+    // Sửa tên, giá nhập tham khảo, giá bán và thông tin riêng (thuế do lớp sản phẩm quyết định). Không đổi được mã, loại, đơn vị tính; các lô giữ nguyên.
     public void suaSanPham(String ma, SanPham thongTinMoi) {
         dsSanPham.sua(ma, thongTinMoi);
     }
@@ -161,7 +176,7 @@ public class QuanlyKho {
     public String baoCaoHanSuDung(LocalDate ngay, int soNgay) {
         ArrayList<LoHang> hetHan = layLoHetHan(ngay);
         ArrayList<LoHang> sapHet = layLoSapHetHan(ngay, soNgay);
-        String ketQua = "===== HẠN SỬ DỤNG THEO LÔ (tính đến " + TienIch.dinhDangNgay(ngay) + ") =====\n";
+        String ketQua = "===== HẠN SỬ DỤNG THEO LÔ (tính đến " + SanPham.dinhDangNgay(ngay) + ") =====\n";
         ketQua += "--- Lô ĐÃ HẾT HẠN, còn hàng: " + hetHan.size() + " ---\n";
         for (LoHang lo : hetHan) {
             ketQua += "  " + tenSanPham(lo.getMaSP()) + " | " + lo + "\n";
@@ -327,6 +342,129 @@ public class QuanlyKho {
         return (int) tong;
     }
 
+    // ===================== XUẤT / HOÀN THEO GIAO DỊCH =====================
+    // xuatKho/xuatKhoNhieu/hoanKho ở trên là mức thấp: chỉ đổi tồn, KHÔNG biết hoàn thuộc giao dịch nào.
+    // Bán hàng nên dùng các hàm dưới đây: mỗi hóa đơn bán là một giao dịch có mã; kho ghi sổ đã xuất lô nào bao nhiêu,
+    // nhờ vậy hoàn kho đúng lô, không hoàn trùng, không hoàn vượt số đã xuất của chính giao dịch đó.
+    // Phân biệt: hủy đơn CHƯA thanh toán / thanh toán thất bại -> hoanKhoTheoGiaoDich(ma) (hoàn tất cả phần còn lại);
+    // khách trả hàng SAU khi đã thanh toán -> hoanKhoTheoGiaoDich(ma, maSP, soLuong) hoặc chỉ định cả lô.
+
+    private GiaoDichXuat timGiaoDich(String maGiaoDich) {
+        String maChuan = SanPham.chuanHoaMa(maGiaoDich);
+        for (GiaoDichXuat gd : dsGiaoDichXuat) {
+            if (gd.getMaGiaoDich().equals(maChuan)) {
+                return gd;
+            }
+        }
+        return null;
+    }
+
+    private GiaoDichXuat layGiaoDich(String maGiaoDich) {
+        GiaoDichXuat gd = timGiaoDich(maGiaoDich);
+        if (gd == null) {
+            throw new IllegalArgumentException("Không có giao dịch xuất kho mã: " + maGiaoDich);
+        }
+        return gd;
+    }
+
+    public boolean coGiaoDichXuat(String maGiaoDich) {
+        return timGiaoDich(maGiaoDich) != null;
+    }
+
+    // Xuất kho cho một giao dịch (FEFO, tất cả hoặc không gì) và ghi sổ. Mã giao dịch không được trùng.
+    // Trả về các lô đã lấy; bên gọi nên lưu cùng hóa đơn nhưng không bắt buộc: có thể hỏi lại bằng layLoDaXuatCuaGiaoDich.
+    public ArrayList<LoXuat> xuatKhoChoGiaoDich(String maGiaoDich, String[] maSP, int[] soLuong) {
+        return xuatKhoChoGiaoDich(maGiaoDich, maSP, soLuong, LocalDate.now());
+    }
+
+    public ArrayList<LoXuat> xuatKhoChoGiaoDich(String maGiaoDich, String[] maSP, int[] soLuong, LocalDate ngay) {
+        GiaoDichXuat gd = new GiaoDichXuat(maGiaoDich); // kiểm tra mã hợp lệ trước khi đổi tồn
+        if (timGiaoDich(gd.getMaGiaoDich()) != null) {
+            throw new IllegalArgumentException("Giao dịch xuất kho " + gd.getMaGiaoDich() + " đã tồn tại.");
+        }
+        ArrayList<LoXuat> daLay = xuatKhoNhieu(maSP, soLuong, ngay); // lỗi thì chưa đổi gì
+        for (LoXuat x : daLay) {
+            gd.ghiNhanXuat(x);
+        }
+        dsGiaoDichXuat.add(gd);
+        return daLay;
+    }
+
+    // Các lô đã xuất ròng của giao dịch (đã trừ phần hoàn), mỗi lô một dòng. Giá vốn = tinhGiaVon(kết quả này).
+    // Giao dịch đã hoàn hết thì trả về danh sách rỗng.
+    public ArrayList<LoXuat> layLoDaXuatCuaGiaoDich(String maGiaoDich) {
+        GiaoDichXuat gd = layGiaoDich(maGiaoDich);
+        ArrayList<LoXuat> ketQua = new ArrayList<>();
+        for (LoXuat x : gd.getCacLoDaXuat()) {
+            int rong = gd.soXuatRong(x.getMaSP(), x.getMaLo());
+            if (rong > 0) {
+                ketQua.add(new LoXuat(x.getMaSP(), x.getMaLo(), rong));
+            }
+        }
+        return ketQua;
+    }
+
+    // Bản sao sổ của giao dịch (đã xuất, đã hoàn) để xem
+    public String moTaGiaoDichXuat(String maGiaoDich) {
+        return layGiaoDich(maGiaoDich).toString();
+    }
+
+    // Hủy đơn chưa thanh toán / thanh toán thất bại: hoàn TẤT CẢ phần chưa hoàn của giao dịch về đúng lô.
+    // Gọi lần hai (hoặc khi đã hoàn hết) thì báo lỗi, không hoàn trùng.
+    public ArrayList<LoXuat> hoanKhoTheoGiaoDich(String maGiaoDich) {
+        GiaoDichXuat gd = layGiaoDich(maGiaoDich);
+        ArrayList<LoXuat> conLai = gd.getCacLoConHoanDuoc();
+        if (conLai.isEmpty()) {
+            throw new IllegalStateException("Giao dịch " + gd.getMaGiaoDich() + " đã hoàn hết, không hoàn thêm được.");
+        }
+        hoanKho(conLai); // tất cả hoặc không gì
+        for (LoXuat x : conLai) {
+            gd.ghiNhanHoan(x.getMaSP(), x.getMaLo(), x.getSoLuong());
+        }
+        return conLai;
+    }
+
+    // Khách trả một phần: hoàn soLuong của một lô cụ thể trong giao dịch
+    public void hoanKhoTheoGiaoDich(String maGiaoDich, String maSP, String maLo, int soLuong) {
+        GiaoDichXuat gd = layGiaoDich(maGiaoDich);
+        if (soLuong <= 0) {
+            throw new IllegalArgumentException("Số lượng hoàn phải lớn hơn 0.");
+        }
+        if (soLuong > gd.soConHoanDuoc(maSP, maLo)) {
+            throw new IllegalStateException("Giao dịch " + gd.getMaGiaoDich() + " chỉ còn hoàn được "
+                    + gd.soConHoanDuoc(maSP, maLo) + " của lô " + maLo + " (" + maSP + "), yêu cầu hoàn " + soLuong + ".");
+        }
+        hoanKho(maSP, maLo, soLuong);
+        gd.ghiNhanHoan(maSP, maLo, soLuong);
+    }
+
+    // Khách trả một phần theo sản phẩm (không chỉ định lô): hoàn lần lượt vào các lô của giao dịch theo thứ tự đã xuất
+    public ArrayList<LoXuat> hoanKhoTheoGiaoDich(String maGiaoDich, String maSP, int soLuong) {
+        GiaoDichXuat gd = layGiaoDich(maGiaoDich);
+        if (soLuong <= 0) {
+            throw new IllegalArgumentException("Số lượng hoàn phải lớn hơn 0.");
+        }
+        String sp = SanPham.chuanHoaMa(maSP);
+        ArrayList<LoXuat> keHoach = new ArrayList<>();
+        int canHoan = soLuong;
+        for (LoXuat x : gd.getCacLoConHoanDuoc()) {
+            if (canHoan > 0 && x.getMaSP().equals(sp)) {
+                int hoan = Math.min(canHoan, x.getSoLuong());
+                keHoach.add(new LoXuat(sp, x.getMaLo(), hoan));
+                canHoan -= hoan;
+            }
+        }
+        if (canHoan > 0) {
+            throw new IllegalStateException("Giao dịch " + gd.getMaGiaoDich() + " không còn đủ " + soLuong
+                    + " " + sp + " để hoàn (thiếu " + canHoan + ").");
+        }
+        hoanKho(keHoach); // tất cả hoặc không gì
+        for (LoXuat x : keHoach) {
+            gd.ghiNhanHoan(x.getMaSP(), x.getMaLo(), x.getSoLuong());
+        }
+        return keHoach;
+    }
+
     // ===================== PHIẾU NHẬP =====================
 
     // Tạo hóa đơn nhập mới (chờ xác nhận) với mã tự sinh, ví dụ HDN001; maNhanVien là nhân viên lập hóa đơn.
@@ -343,7 +481,7 @@ public class QuanlyKho {
         if (ngayNhap.isAfter(LocalDate.now())) {
             throw new IllegalArgumentException("Ngày nhập không được ở tương lai.");
         }
-        HoadonNhap phieu = new HoadonNhap(HoadonNhap.maKeTiep(), maNhanVien, ngayNhap, ncc.getMa());
+        HoadonNhap phieu = new HoadonNhap(HoadonNhap.maKeTiep(), maNhanVien, ngayNhap, ncc.getMaDT());
         dsHoaDonNhap.add(phieu);
         return phieu;
     }
@@ -409,8 +547,12 @@ public class QuanlyKho {
 
     // Giá vốn của một lần xuất (kết quả xuatKho/xuatKhoNhieu): tổng soLuong x giaNhap THỰC TẾ của từng lô đã xuất.
     // Dùng giá của lô (không phải SanPham.giaNhap tham khảo). Lô đã bị xóa thì báo lỗi.
+    // Danh sách null hoặc rỗng (hóa đơn chưa xuất kho) thì giá vốn là 0.
     public long tinhGiaVon(ArrayList<LoXuat> cacLoXuat) {
         long tong = 0;
+        if (cacLoXuat == null) {
+            return 0;
+        }
         for (LoXuat lx : cacLoXuat) {
             SanPham sp = dsSanPham.timTheoMa(lx.getMaSP());
             LoHang lo = sp == null ? null : sp.timLo(lx.getMaLo());
@@ -455,7 +597,7 @@ public class QuanlyKho {
 
     public String baoCaoNhapKho(LocalDate tuNgay, LocalDate denNgay) {
         kiemTraKhoangNgay(tuNgay, denNgay);
-        String ketQua = "===== NHẬP KHO TỪ " + TienIch.dinhDangNgay(tuNgay) + " ĐẾN " + TienIch.dinhDangNgay(denNgay)
+        String ketQua = "===== NHẬP KHO TỪ " + SanPham.dinhDangNgay(tuNgay) + " ĐẾN " + SanPham.dinhDangNgay(denNgay)
                 + " (phiếu đã xác nhận) =====\n";
         int soPhieu = 0;
         for (HoadonNhap phieu : dsHoaDonNhap) {
@@ -465,7 +607,7 @@ public class QuanlyKho {
             }
         }
         ketQua += "Số phiếu: " + soPhieu + " | Tổng tiền nhập (chưa thuế): "
-                + TienIch.dinhDangTien(tongTienNhap(tuNgay, denNgay)) + "\n";
+                + SanPham.dinhDangTien(tongTienNhap(tuNgay, denNgay)) + "\n";
         return ketQua;
     }
 
@@ -483,12 +625,12 @@ public class QuanlyKho {
 
     // ===================== DỮ LIỆU MẪU =====================
 
-    // Thêm vài sản phẩm mẫu (chưa có lô, tồn = 0; hàng vào kho qua phiếu nhập). Thuế suất 5 và 10 chỉ là SỐ GIẢ ĐỊNH để minh họa.
+    // Thêm vài sản phẩm mẫu (chưa có lô, tồn = 0; hàng vào kho qua phiếu nhập). Thuế do lớp con quyết định (ThucAn 10%, DoUong 8%, số giả định để minh họa); Kế toán dùng tinhThue() của sản phẩm.
     public void nhapDuLieuMau() {
-        themSanPham(new ThucAn(ThucAn.maKeTiep(), "Bánh mì thịt", 12000, 20000, "cái", 5, "Tiệm Hoa"));
-        themSanPham(new ThucAn(ThucAn.maKeTiep(), "Xúc xích nướng", 9000, 15000, "cái", 5, "CP Việt Nam"));
-        themSanPham(new DoUong(DoUong.maKeTiep(), "Nước ngọt Cola", 7000, 12000, "chai", 10, 330));
-        themSanPham(new DoUong(DoUong.maKeTiep(), "Nước suối", 3000, 6000, "chai", 0, 500));
+        themSanPham(new ThucAn(ThucAn.maKeTiep(), "Bánh mì thịt", 12000, 20000, "cái", "Tiệm Hoa"));
+        themSanPham(new ThucAn(ThucAn.maKeTiep(), "Xúc xích nướng", 9000, 15000, "cái", "CP Việt Nam"));
+        themSanPham(new DoUong(DoUong.maKeTiep(), "Nước ngọt Cola", 7000, 12000, "chai", 330));
+        themSanPham(new DoUong(DoUong.maKeTiep(), "Nước suối", 3000, 6000, "chai", 500));
     }
 
     // ===================== LƯU / ĐỌC FILE =====================
@@ -500,11 +642,75 @@ public class QuanlyKho {
         if (!dir.exists() && !dir.mkdirs()) {
             throw new IOException("Không tạo được thư mục: " + thuMuc);
         }
-        dsSanPham.ghiFile(new File(dir, TEN_FILE_SAN_PHAM).getPath());
+        File[] dich = {new File(dir, TEN_FILE_SAN_PHAM), new File(dir, TEN_FILE_HOA_DON_NHAP), new File(dir, TEN_FILE_XUAT_KHO)};
+        File[] tam = new File[dich.length];
+        for (int i = 0; i < dich.length; i++) {
+            tam[i] = new File(dir, dich[i].getName() + ".tmp");
+        }
+        // Bước 1: ghi cả ba file ra file tạm. Lỗi ở bước này thì chưa file thật nào bị đụng tới.
+        try {
+            dsSanPham.ghiRaFile(tam[0].getPath());
+            ghiFileHoaDonNhap(tam[1]);
+            ghiFileXuatKho(tam[2]);
+        } catch (IOException e) {
+            xoaTam(tam);
+            throw e;
+        }
+        // Bước 2: thay từng file thật bằng file tạm; có sao lưu để khôi phục nếu một lần thay bị lỗi.
+        thayCacFile(tam, dich);
+    }
 
+    private void xoaTam(File[] cacFile) {
+        for (File f : cacFile) {
+            if (f != null && f.exists() && !f.delete()) {
+                f.deleteOnExit();
+            }
+        }
+    }
+
+    // Thay dich[i] bằng tam[i] cho mọi i. Nếu lần thay thứ k lỗi thì khôi phục các file đã thay từ bản sao lưu (.bak).
+    // Đây là cố gắng tối đa trên hệ tệp thông thường, không phải giao dịch tuyệt đối: nếu chính việc khôi phục cũng lỗi
+    // (hoặc chương trình bị tắt đúng lúc đang thay) thì có thể còn sót file .bak/.tmp trong thư mục dữ liệu.
+    private void thayCacFile(File[] tam, File[] dich) throws IOException {
+        File[] sao = new File[dich.length];
+        boolean[] daThay = new boolean[dich.length];
+        try {
+            for (int i = 0; i < dich.length; i++) {
+                if (dich[i].exists()) {
+                    sao[i] = new File(dich[i].getPath() + ".bak");
+                    Files.copy(dich[i].toPath(), sao[i].toPath(), StandardCopyOption.REPLACE_EXISTING);
+                }
+            }
+            for (int i = 0; i < dich.length; i++) {
+                Files.move(tam[i].toPath(), dich[i].toPath(), StandardCopyOption.REPLACE_EXISTING);
+                daThay[i] = true;
+            }
+        } catch (IOException e) {
+            for (int i = 0; i < dich.length; i++) {
+                if (!daThay[i]) {
+                    continue;
+                }
+                try {
+                    if (sao[i] != null) {
+                        Files.move(sao[i].toPath(), dich[i].toPath(), StandardCopyOption.REPLACE_EXISTING);
+                    } else {
+                        Files.deleteIfExists(dich[i].toPath()); // file chưa từng có trước lần lưu này
+                    }
+                } catch (IOException loiKhoiPhuc) {
+                    e.addSuppressed(loiKhoiPhuc);
+                }
+            }
+            xoaTam(tam);
+            xoaTam(sao);
+            throw e;
+        }
+        xoaTam(sao);
+    }
+
+    private void ghiFileHoaDonNhap(File file) throws IOException {
         try (BufferedWriter ghi = new BufferedWriter(new OutputStreamWriter(
-                new FileOutputStream(new File(dir, TEN_FILE_HOA_DON_NHAP)), StandardCharsets.UTF_8))) {
-            ghi.write(TienIch.DONG_PHIEN_BAN);
+                new FileOutputStream(file), StandardCharsets.UTF_8))) {
+            ghi.write(DSSanPham.DONG_PHIEN_BAN);
             ghi.newLine();
             ghi.write("# HDN|maHoaDon|maNV|thoiGianLap|ngayNhap|maNhaCungCap|trangThai");
             ghi.newLine();
@@ -519,6 +725,103 @@ public class QuanlyKho {
         }
     }
 
+    private void ghiFileXuatKho(File file) throws IOException {
+        try (BufferedWriter ghi = new BufferedWriter(new OutputStreamWriter(
+                new FileOutputStream(file), StandardCharsets.UTF_8))) {
+            ghi.write(DSSanPham.DONG_PHIEN_BAN);
+            ghi.newLine();
+            ghi.write("# XK|maGiaoDich|maSP|maLo|soDaXuat|soDaHoan");
+            ghi.newLine();
+            for (GiaoDichXuat gd : dsGiaoDichXuat) {
+                for (String dong : gd.toCacDongFile()) {
+                    ghi.write(dong);
+                    ghi.newLine();
+                }
+            }
+        }
+    }
+
+    // File sổ xuất kho tùy chọn: không có file thì trả về sổ rỗng (dữ liệu cũ trước khi có sổ)
+    private ArrayList<GiaoDichXuat> docFileXuatKho(File file) throws IOException {
+        ArrayList<GiaoDichXuat> ketQua = new ArrayList<>();
+        if (!file.exists()) {
+            return ketQua;
+        }
+        boolean dungPhienBan = false;
+        try (BufferedReader doc = new BufferedReader(
+                new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8))) {
+            String dong;
+            int soDong = 0;
+            while ((dong = doc.readLine()) != null) {
+                soDong++;
+                dong = dong.trim();
+                if (soDong == 1 && dong.startsWith("\uFEFF")) {
+                    dong = dong.substring(1).trim();
+                }
+                if (dong.equals(DSSanPham.DONG_PHIEN_BAN)) {
+                    dungPhienBan = true;
+                    continue;
+                }
+                if (dong.isEmpty() || dong.startsWith("#")) {
+                    continue;
+                }
+                if (!dungPhienBan) {
+                    throw new IOException(file.getPath() + ", dòng " + soDong + ": thiếu dòng '" + DSSanPham.DONG_PHIEN_BAN + "' ở đầu file.");
+                }
+                try {
+                    String[] t = dong.split("\\|", -1);
+                    if (!t[0].equals("XK") || t.length != 6) {
+                        throw new IllegalArgumentException("Dòng cần dạng XK|maGiaoDich|maSP|maLo|soDaXuat|soDaHoan.");
+                    }
+                    String ma = SanPham.chuanHoaMa(SanPham.kiemTraVanBan(t[1], "Mã giao dịch xuất kho"));
+                    GiaoDichXuat gd = null;
+                    for (GiaoDichXuat co : ketQua) {
+                        if (co.getMaGiaoDich().equals(ma)) {
+                            gd = co;
+                        }
+                    }
+                    if (gd == null) {
+                        gd = new GiaoDichXuat(ma);
+                        ketQua.add(gd);
+                    }
+                    gd.nap(t[2], t[3], Integer.parseInt(t[4].trim()), Integer.parseInt(t[5].trim()));
+                } catch (IllegalArgumentException e) { // gồm cả NumberFormatException
+                    throw new IOException(file.getPath() + ", dòng " + soDong + ": " + e.getMessage());
+                }
+            }
+        }
+        if (!dungPhienBan && file.length() > 0) {
+            throw new IOException(file.getPath() + ": thiếu dòng '" + DSSanPham.DONG_PHIEN_BAN + "'.");
+        }
+        return ketQua;
+    }
+
+    // Sổ xuất kho phải khớp với kho: lô có thật, và số đã xuất ròng theo sổ không vượt số đã xuất thực tế của lô
+    private void kiemTraSoXuatKho(ArrayList<GiaoDichXuat> dsGD, ArrayList<SanPham> dsSP) throws IOException {
+        for (GiaoDichXuat gd : dsGD) {
+            for (LoXuat x : gd.getCacLoDaXuat()) {
+                SanPham sp = timTrong(dsSP, x.getMaSP());
+                LoHang lo = sp == null ? null : sp.timLo(x.getMaLo());
+                if (lo == null) {
+                    throw new IOException("Dữ liệu không khớp: giao dịch xuất " + gd.getMaGiaoDich() + " ghi lô "
+                            + x.getMaLo() + " của " + x.getMaSP() + " không tồn tại trong kho.");
+                }
+            }
+        }
+        for (SanPham sp : dsSP) {
+            for (LoHang lo : sp.getCacLo()) {
+                long rong = 0;
+                for (GiaoDichXuat gd : dsGD) {
+                    rong += gd.soXuatRong(sp.getMaSP(), lo.getMaLo());
+                }
+                if (rong > lo.getSoLuongNhap() - lo.getSoLuongCon()) {
+                    throw new IOException("Dữ liệu không khớp: sổ xuất kho ghi lô " + lo.getMaLo() + " đã xuất ròng " + rong
+                            + " nhưng lô chỉ mới xuất " + (lo.getSoLuongNhap() - lo.getSoLuongCon()) + ".");
+                }
+            }
+        }
+    }
+
     // Đọc từ thư mục. Đọc phiếu và sản phẩm (kèm lô) vào bộ nhớ tạm, KIỂM TRA liên kết giữa lô và phiếu,
     // mọi thứ đúng mới thay dữ liệu hiện có; sai chỗ nào thì ném IOException và dữ liệu hiện có giữ nguyên.
     // Tồn kho tính từ các lô nên đọc lại phiếu đã xác nhận KHÔNG làm tăng tồn lần nữa.
@@ -527,9 +830,12 @@ public class QuanlyKho {
         File dir = new File(thuMuc);
         ArrayList<HoadonNhap> phieuMoi = docFileHoaDonNhap(new File(dir, TEN_FILE_HOA_DON_NHAP));
         ArrayList<SanPham> sanPhamMoi = dsSanPham.docSanPhamTuFile(new File(dir, TEN_FILE_SAN_PHAM).getPath());
+        ArrayList<GiaoDichXuat> xuatMoi = docFileXuatKho(new File(dir, TEN_FILE_XUAT_KHO));
         kiemTraLienKet(sanPhamMoi, phieuMoi);
+        kiemTraSoXuatKho(xuatMoi, sanPhamMoi);
         dsSanPham.thayTheBang(sanPhamMoi);
         dsHoaDonNhap = phieuMoi;
+        dsGiaoDichXuat = xuatMoi;
     }
 
     // Quy tắc liên kết: mỗi dòng của phiếu ĐÃ XÁC NHẬN có đúng một lô khớp (số lượng nhập, hạn, ngày nhập);
@@ -622,7 +928,7 @@ public class QuanlyKho {
                 if (soDong == 1 && dong.startsWith("﻿")) {
                     dong = dong.substring(1).trim();
                 }
-                if (dong.equals(TienIch.DONG_PHIEN_BAN)) {
+                if (dong.equals(DSSanPham.DONG_PHIEN_BAN)) {
                     dungPhienBan = true;
                     continue;
                 }
@@ -630,7 +936,7 @@ public class QuanlyKho {
                     continue;
                 }
                 if (!dungPhienBan) {
-                    throw new IOException(file.getPath() + ", dòng " + soDong + ": thiếu dòng '" + TienIch.DONG_PHIEN_BAN
+                    throw new IOException(file.getPath() + ", dòng " + soDong + ": thiếu dòng '" + DSSanPham.DONG_PHIEN_BAN
                             + "' ở đầu file (file định dạng cũ, cần chuyển sang định dạng mới).");
                 }
                 try {
@@ -687,7 +993,7 @@ public class QuanlyKho {
         int chon;
         do {
             inMenu();
-            chon = TienIch.docSoNguyen(sc, "Chọn chức năng: ", 0, 23);
+            chon = Ktradulieu.luaChon(sc, "Chọn chức năng: ", 0, 23);
             try {
                 xuLyLuaChon(chon, sc);
             } catch (IllegalArgumentException e) {
@@ -732,7 +1038,7 @@ public class QuanlyKho {
     private void xuLyLuaChon(int chon, Scanner sc) throws IOException {
         switch (chon) {
             case 1:
-                dsSanPham.nhapN(TienIch.docSoNguyen(sc, "Số sản phẩm cần nhập (n): ", 1, 1000), sc);
+                dsSanPham.nhapN(Ktradulieu.luaChon(sc, "Số sản phẩm cần nhập (n): ", 1, 1000), sc);
                 break;
             case 2:
                 dsSanPham.xuat();
@@ -741,13 +1047,13 @@ public class QuanlyKho {
                 dsSanPham.nhapN(1, sc);
                 break;
             case 4:
-                dsSanPham.nhapN(TienIch.docSoNguyen(sc, "Số sản phẩm cần thêm (k): ", 1, 1000), sc);
+                dsSanPham.nhapN(Ktradulieu.luaChon(sc, "Số sản phẩm cần thêm (k): ", 1, 1000), sc);
                 break;
             case 5:
                 suaSanPhamTuBanPhim(sc);
                 break;
             case 6:
-                xoaSanPham(TienIch.docChuoi(sc, "Mã sản phẩm cần xóa: "));
+                xoaSanPham(Ktradulieu.nhapChuoi(sc, "Mã sản phẩm cần xóa: ", DSSanPham.REGEX_KHONG_RONG, DSSanPham.LOI_KHONG_RONG));
                 System.out.println("Đã xóa sản phẩm.");
                 break;
             case 7:
@@ -769,19 +1075,19 @@ public class QuanlyKho {
                 themChiTietTuBanPhim(sc);
                 break;
             case 13:
-                xacNhanHoaDonNhap(TienIch.docChuoi(sc, "Mã phiếu cần xác nhận: "));
+                xacNhanHoaDonNhap(Ktradulieu.nhapChuoi(sc, "Mã phiếu cần xác nhận: ", DSSanPham.REGEX_KHONG_RONG, DSSanPham.LOI_KHONG_RONG));
                 System.out.println("Đã xác nhận phiếu, các lô hàng mới đã vào kho.");
                 break;
             case 14:
-                huyHoaDonNhap(TienIch.docChuoi(sc, "Mã phiếu cần hủy: "));
+                huyHoaDonNhap(Ktradulieu.nhapChuoi(sc, "Mã phiếu cần hủy: ", DSSanPham.REGEX_KHONG_RONG, DSSanPham.LOI_KHONG_RONG));
                 System.out.println("Đã hủy phiếu.");
                 break;
             case 15:
                 inHoaDonNhap();
                 break;
             case 16:
-                LocalDate tu = TienIch.docNgay(sc, "Từ ngày (dd/MM/yyyy): ");
-                LocalDate den = TienIch.docNgay(sc, "Đến ngày (dd/MM/yyyy): ");
+                LocalDate tu = nhapNgayBatBuoc(sc, "Từ ngày (dd/MM/yyyy): ");
+                LocalDate den = nhapNgayBatBuoc(sc, "Đến ngày (dd/MM/yyyy): ");
                 System.out.println(baoCaoNhapKho(tu, den));
                 break;
             case 17:
@@ -800,12 +1106,12 @@ public class QuanlyKho {
                 System.out.println("Đã thêm 4 sản phẩm mẫu (tồn = 0, hãy nhập kho bằng phiếu nhập).");
                 break;
             case 21:
-                System.out.println(moTaCacLo(TienIch.docChuoi(sc, "Mã sản phẩm: ")));
+                System.out.println(moTaCacLo(Ktradulieu.nhapChuoi(sc, "Mã sản phẩm: ", DSSanPham.REGEX_KHONG_RONG, DSSanPham.LOI_KHONG_RONG)));
                 break;
             case 22:
-                String maSP = TienIch.docChuoi(sc, "Mã sản phẩm: ");
-                String maLo = TienIch.docChuoi(sc, "Mã lô cần hoàn về: ");
-                int soLuongHoan = TienIch.docSoNguyen(sc, "Số lượng hoàn: ", 1, Integer.MAX_VALUE);
+                String maSP = Ktradulieu.nhapChuoi(sc, "Mã sản phẩm: ", DSSanPham.REGEX_KHONG_RONG, DSSanPham.LOI_KHONG_RONG);
+                String maLo = Ktradulieu.nhapChuoi(sc, "Mã lô cần hoàn về: ", DSSanPham.REGEX_KHONG_RONG, DSSanPham.LOI_KHONG_RONG);
+                int soLuongHoan = Ktradulieu.luaChon(sc, "Số lượng hoàn: ", 1, Integer.MAX_VALUE);
                 hoanKho(maSP, maLo, soLuongHoan);
                 System.out.println("Đã hoàn. " + moTaCacLo(maSP));
                 break;
@@ -822,24 +1128,23 @@ public class QuanlyKho {
 
     // Sửa: nhập lại toàn bộ thông tin có thể sửa (màn hình hiện giá trị cũ để đối chiếu)
     private void suaSanPhamTuBanPhim(Scanner sc) {
-        String ma = TienIch.docChuoi(sc, "Mã sản phẩm cần sửa: ");
+        String ma = Ktradulieu.nhapChuoi(sc, "Mã sản phẩm cần sửa: ", DSSanPham.REGEX_KHONG_RONG, DSSanPham.LOI_KHONG_RONG);
         SanPham cu = dsSanPham.timTheoMa(ma);
         if (cu == null) {
             throw new IllegalArgumentException("Không tìm thấy sản phẩm có mã: " + ma);
         }
         System.out.println("Hiện tại: " + cu);
         System.out.println("(Không sửa được mã, loại, đơn vị tính. Hàng trong kho chỉ đổi qua phiếu nhập hoặc xuất kho.)");
-        String ten = TienIch.docChuoi(sc, "Tên mới: ");
-        long giaNhap = TienIch.docSoLong(sc, "Giá nhập tham khảo mới (đồng, chưa thuế, 0 = chưa có; không đổi giá các lần nhập cũ): ", 0, SanPham.GIA_TOI_DA);
-        long giaBan = TienIch.docSoLong(sc, "Giá bán mới (đồng, chưa thuế): ", 1, SanPham.GIA_TOI_DA);
-        double thue = TienIch.docSoThuc(sc, "Thuế suất bán mới (%): ", 0, SanPham.THUE_SUAT_TOI_DA);
+        String ten = Ktradulieu.nhapChuoi(sc, "Tên mới: ", DSSanPham.REGEX_KHONG_RONG, DSSanPham.LOI_KHONG_RONG);
+        long giaNhap = Long.parseLong(Ktradulieu.nhapChuoi(sc, "Giá nhập tham khảo mới (đồng, chưa thuế, 0 = chưa có; không đổi giá các lần nhập cũ): ", DSSanPham.REGEX_SO_KHONG_AM, DSSanPham.LOI_SO_KHONG_AM));
+        long giaBan = Ktradulieu.nhapSoNguyen(sc, "Giá bán mới (đồng, chưa thuế): ");
         SanPham moi;
         if (cu instanceof ThucAn) {
-            String nsx = TienIch.docChuoi(sc, "Nhà sản xuất mới: ");
-            moi = new ThucAn(cu.getMaSP(), ten, giaNhap, giaBan, cu.getDonViTinh(), thue, nsx);
+            String nsx = Ktradulieu.nhapChuoi(sc, "Nhà sản xuất mới: ", DSSanPham.REGEX_KHONG_RONG, DSSanPham.LOI_KHONG_RONG);
+            moi = new ThucAn(cu.getMaSP(), ten, giaNhap, giaBan, cu.getDonViTinh(), nsx);
         } else if (cu instanceof DoUong) {
-            int dungTich = TienIch.docSoNguyen(sc, "Dung tích mới (ml): ", 1, DoUong.DUNG_TICH_TOI_DA_ML);
-            moi = new DoUong(cu.getMaSP(), ten, giaNhap, giaBan, cu.getDonViTinh(), thue, dungTich);
+            int dungTich = Ktradulieu.luaChon(sc, "Dung tích mới (ml): ", 1, DoUong.DUNG_TICH_TOI_DA_ML);
+            moi = new DoUong(cu.getMaSP(), ten, giaNhap, giaBan, cu.getDonViTinh(), dungTich);
         } else {
             throw new IllegalStateException("Loại sản phẩm này chưa hỗ trợ sửa từ menu.");
         }
@@ -850,30 +1155,30 @@ public class QuanlyKho {
     private void timKiemTuBanPhim(Scanner sc) {
         System.out.println("1. Mã chính xác | 2. Mã gần đúng | 3. Tên chính xác | 4. Tên gần đúng");
         System.out.println("5. Loại | 6. Khoảng giá | 7. Kết hợp nhiều tiêu chí");
-        int cachTim = TienIch.docSoNguyen(sc, "Chọn cách tìm: ", 1, 7);
+        int cachTim = Ktradulieu.luaChon(sc, "Chọn cách tìm: ", 1, 7);
         ArrayList<SanPham> ketQua = new ArrayList<>();
         if (cachTim == 1) {
-            SanPham sp = timSanPham(TienIch.docChuoi(sc, "Mã: "));
+            SanPham sp = timSanPham(Ktradulieu.nhapChuoi(sc, "Mã: ", DSSanPham.REGEX_KHONG_RONG, DSSanPham.LOI_KHONG_RONG));
             if (sp != null) {
                 ketQua.add(sp);
             }
         } else if (cachTim == 2) {
-            ketQua = dsSanPham.timTheoMaGanDung(TienIch.docChuoi(sc, "Một phần mã: "));
+            ketQua = dsSanPham.timTheoMaGanDung(Ktradulieu.nhapChuoi(sc, "Một phần mã: ", DSSanPham.REGEX_KHONG_RONG, DSSanPham.LOI_KHONG_RONG));
         } else if (cachTim == 3) {
-            ketQua = dsSanPham.timTheoTenChinhXac(TienIch.docChuoi(sc, "Tên đầy đủ: "));
+            ketQua = dsSanPham.timTheoTenChinhXac(Ktradulieu.nhapChuoi(sc, "Tên đầy đủ: ", DSSanPham.REGEX_KHONG_RONG, DSSanPham.LOI_KHONG_RONG));
         } else if (cachTim == 4) {
-            ketQua = dsSanPham.timTheoTenGanDung(TienIch.docChuoi(sc, "Một phần tên (không cần dấu): "));
+            ketQua = dsSanPham.timTheoTenGanDung(Ktradulieu.nhapChuoi(sc, "Một phần tên (không cần dấu): ", DSSanPham.REGEX_KHONG_RONG, DSSanPham.LOI_KHONG_RONG));
         } else if (cachTim == 5) {
-            ketQua = dsSanPham.timTheoLoai(TienIch.docChuoi(sc, "Loại (Thức ăn / Đồ uống): "));
+            ketQua = dsSanPham.timTheoLoai(Ktradulieu.nhapChuoi(sc, "Loại (Thức ăn / Đồ uống): ", DSSanPham.REGEX_KHONG_RONG, DSSanPham.LOI_KHONG_RONG));
         } else if (cachTim == 6) {
-            long tu = TienIch.docSoLong(sc, "Giá từ: ", 0, SanPham.GIA_TOI_DA);
-            long den = TienIch.docSoLong(sc, "Giá đến: ", 0, SanPham.GIA_TOI_DA);
+            long tu = Long.parseLong(Ktradulieu.nhapChuoi(sc, "Giá từ: ", DSSanPham.REGEX_SO_KHONG_AM, DSSanPham.LOI_SO_KHONG_AM));
+            long den = Long.parseLong(Ktradulieu.nhapChuoi(sc, "Giá đến: ", DSSanPham.REGEX_SO_KHONG_AM, DSSanPham.LOI_SO_KHONG_AM));
             ketQua = dsSanPham.timTheoKhoangGia(tu, den);
         } else {
-            String ten = TienIch.docChuoiTuyChon(sc, "Một phần tên (Enter = bỏ qua): ");
-            String loai = TienIch.docChuoiTuyChon(sc, "Loại (Enter = bỏ qua): ");
-            long tu = TienIch.docSoLong(sc, "Giá từ (0 = không giới hạn): ", 0, SanPham.GIA_TOI_DA);
-            long den = TienIch.docSoLong(sc, "Giá đến (0 = không giới hạn): ", 0, SanPham.GIA_TOI_DA);
+            String ten = Ktradulieu.nhapChuoi(sc, "Một phần tên (Enter = bỏ qua): ", ".*", "");
+            String loai = Ktradulieu.nhapChuoi(sc, "Loại (Enter = bỏ qua): ", ".*", "");
+            long tu = Long.parseLong(Ktradulieu.nhapChuoi(sc, "Giá từ (0 = không giới hạn): ", DSSanPham.REGEX_SO_KHONG_AM, DSSanPham.LOI_SO_KHONG_AM));
+            long den = Long.parseLong(Ktradulieu.nhapChuoi(sc, "Giá đến (0 = không giới hạn): ", DSSanPham.REGEX_SO_KHONG_AM, DSSanPham.LOI_SO_KHONG_AM));
             if (den == 0) {
                 den = SanPham.GIA_TOI_DA;
             }
@@ -884,7 +1189,7 @@ public class QuanlyKho {
 
     private void sapXepTuBanPhim(Scanner sc) {
         System.out.println("1. Mã | 2. Tên | 3. Giá bán tăng | 4. Giá bán giảm | 5. Tồn tăng | 6. Tồn giảm");
-        int cach = TienIch.docSoNguyen(sc, "Chọn tiêu chí: ", 1, 6);
+        int cach = Ktradulieu.luaChon(sc, "Chọn tiêu chí: ", 1, 6);
         if (cach == 1) {
             dsSanPham.sapXepTheoMa();
         } else if (cach == 2) {
@@ -909,40 +1214,68 @@ public class QuanlyKho {
         System.out.println(baoCaoHanSuDung(LocalDate.now(), SO_NGAY_CANH_BAO_HET_HAN));
     }
 
+    // Ngày dd/MM/yyyy hoặc để trống (Enter) = null. Ktradulieu chưa có bản "tùy chọn", nên ở đây dùng
+    // Ktradulieu.nhapChuoi với regex cho phép rỗng hoặc đúng dạng số, rồi kiểm tra ngày thật (vd 31/02 là sai) bằng formatter STRICT.
+    private static final DateTimeFormatter DINH_DANG_NGAY_NHAP =
+            DateTimeFormatter.ofPattern("dd/MM/uuuu").withResolverStyle(ResolverStyle.STRICT);
+
+    // Ngày dd/MM/yyyy bắt buộc (Ktradulieu mới không còn NhapNgay dạng này; nhapNgaySinh dùng yyyy-MM-dd nên không dùng được)
+    private static LocalDate nhapNgayBatBuoc(Scanner sc, String thongBao) {
+        while (true) {
+            String chuoi = Ktradulieu.nhapChuoi(sc, thongBao, "\\d{2}/\\d{2}/\\d{4}",
+                    "Nhập ngày đúng dạng dd/MM/yyyy!");
+            try {
+                return LocalDate.parse(chuoi, DINH_DANG_NGAY_NHAP);
+            } catch (DateTimeParseException e) {
+                System.out.println("Ngày không hợp lệ! Ví dụ 25/10/2026.");
+            }
+        }
+    }
+
+    private static LocalDate nhapNgayTuyChon(Scanner sc, String thongBao) {
+        while (true) {
+            String chuoi = Ktradulieu.nhapChuoi(sc, thongBao, "|\\d{2}/\\d{2}/\\d{4}",
+                    "Loi: Nhap ngay dang dd/MM/yyyy hoac bam Enter de bo trong!");
+            if (chuoi.isEmpty()) {
+                return null;
+            }
+            try {
+                return LocalDate.parse(chuoi, DINH_DANG_NGAY_NHAP);
+            } catch (DateTimeParseException e) {
+                System.out.println("Loi: Ngay khong hop le! Vi du 25/10/2026.");
+            }
+        }
+    }
+
     private void taoPhieuTuBanPhim(Scanner sc) {
         System.out.println("Nhà cung cấp hiện có:");
         dsNhaCungCap.xuat();
-        String maNcc = TienIch.docChuoi(sc, "Mã nhà cung cấp: ");
-        String maNv = TienIch.docChuoi(sc, "Mã nhân viên lập hóa đơn: ");
-        String ngayChuoi = TienIch.docChuoiTuyChon(sc, "Ngày nhập (dd/MM/yyyy, Enter = hôm nay): ");
-        LocalDate ngay = LocalDate.now();
-        if (!ngayChuoi.isEmpty()) {
-            try {
-                ngay = LocalDate.parse(ngayChuoi, TienIch.DINH_DANG_NGAY);
-            } catch (DateTimeParseException e) {
-                throw new IllegalArgumentException("Ngày không hợp lệ, cần dạng dd/MM/yyyy.");
-            }
+        String maNcc = Ktradulieu.nhapChuoi(sc, "Mã nhà cung cấp: ", DSSanPham.REGEX_KHONG_RONG, DSSanPham.LOI_KHONG_RONG);
+        String maNv = Ktradulieu.nhapChuoi(sc, "Mã nhân viên lập hóa đơn: ", DSSanPham.REGEX_KHONG_RONG, DSSanPham.LOI_KHONG_RONG);
+        LocalDate ngay = nhapNgayTuyChon(sc, "Ngày nhập (dd/MM/yyyy, Enter = hôm nay): ");
+        if (ngay == null) {
+            ngay = LocalDate.now();
         }
         HoadonNhap phieu = taoHoaDonNhap(maNv, maNcc, ngay);
         System.out.println("Đã tạo " + phieu + ". Dùng chức năng 12 để thêm chi tiết.");
     }
 
     private void themChiTietTuBanPhim(Scanner sc) {
-        String maPhieu = TienIch.docChuoi(sc, "Mã phiếu nhập: ");
-        String maSP = TienIch.docChuoi(sc, "Mã sản phẩm: ");
+        String maPhieu = Ktradulieu.nhapChuoi(sc, "Mã phiếu nhập: ", DSSanPham.REGEX_KHONG_RONG, DSSanPham.LOI_KHONG_RONG);
+        String maSP = Ktradulieu.nhapChuoi(sc, "Mã sản phẩm: ", DSSanPham.REGEX_KHONG_RONG, DSSanPham.LOI_KHONG_RONG);
         SanPham sp = dsSanPham.timTheoMa(maSP);
         if (sp == null) {
             throw new IllegalArgumentException("Sản phẩm " + maSP + " chưa có trong danh mục.");
         }
-        int soLuong = TienIch.docSoNguyen(sc, "Số lượng nhập: ", 1, Integer.MAX_VALUE);
-        long giaNhap = TienIch.docSoLong(sc, "Giá nhập lần này (đồng/đơn vị, chưa thuế; giá tham khảo hiện tại "
-                + sp.getGiaNhap() + "): ", 0, SanPham.GIA_TOI_DA);
-        double thue = TienIch.docSoThuc(sc, "Thuế suất nhập (%), nhập 0 nếu chưa khai báo: ", 0, SanPham.THUE_SUAT_TOI_DA);
+        int soLuong = Ktradulieu.luaChon(sc, "Số lượng nhập: ", 1, Integer.MAX_VALUE);
+        long giaNhap = Long.parseLong(Ktradulieu.nhapChuoi(sc, "Giá nhập lần này (đồng/đơn vị, chưa thuế; giá tham khảo hiện tại "
+                + sp.getGiaNhap() + "): ", DSSanPham.REGEX_SO_KHONG_AM, DSSanPham.LOI_SO_KHONG_AM));
+        double thue = Double.parseDouble(Ktradulieu.nhapChuoi(sc, "Thuế suất nhập (%), nhập 0 nếu chưa khai báo: ", DSSanPham.REGEX_SO_THUC_KHONG_AM, DSSanPham.LOI_SO_THUC_KHONG_AM));
         LocalDate han;
         if (sp.batBuocCoHanSuDung()) {
-            han = TienIch.docNgay(sc, "Hạn sử dụng của lô này (dd/MM/yyyy): ");
+            han = nhapNgayBatBuoc(sc, "Hạn sử dụng của lô này (dd/MM/yyyy): ");
         } else {
-            han = TienIch.docNgayTuyChon(sc, "Hạn sử dụng của lô này (dd/MM/yyyy, Enter = không có): ");
+            han = nhapNgayTuyChon(sc, "Hạn sử dụng của lô này (dd/MM/yyyy, Enter = không có): ");
         }
         themChiTietPhieu(maPhieu, maSP, soLuong, giaNhap, thue, han);
         System.out.println("Đã thêm. " + layPhieu(maPhieu));
@@ -959,8 +1292,8 @@ public class QuanlyKho {
     }
 
     private void xuatKhoThuTuBanPhim(Scanner sc) {
-        String ma = TienIch.docChuoi(sc, "Mã sản phẩm bán: ");
-        int soLuong = TienIch.docSoNguyen(sc, "Số lượng bán: ", 1, Integer.MAX_VALUE);
+        String ma = Ktradulieu.nhapChuoi(sc, "Mã sản phẩm bán: ", DSSanPham.REGEX_KHONG_RONG, DSSanPham.LOI_KHONG_RONG);
+        int soLuong = Ktradulieu.luaChon(sc, "Số lượng bán: ", 1, Integer.MAX_VALUE);
         ArrayList<LoXuat> cacLo = xuatKho(ma, soLuong);
         System.out.println("Đã xuất kho, lấy từ các lô (hãy ghi nhớ để hoàn đúng lô):");
         for (LoXuat x : cacLo) {

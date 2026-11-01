@@ -5,7 +5,7 @@ import java.util.Locale;
 // Ví dụ: Sữa tươi nhập ngày 1/10 hết hạn 10/10 là một lô; sữa nhập ngày 5/10 hết hạn 20/10 là lô khác.
 // - hanSuDung = null nghĩa là hàng không ghi hạn (không bao giờ bị coi là hết hạn).
 // - maHoaDonNhap cho biết lô sinh ra từ hóa đơn nhập nào (để truy xuất, tra ra nhà cung cấp và kiểm tra file).
-// - giaNhap là giá nhập THỰC TẾ (chưa thuế) của lô, sao chép từ dòng ChiTietPhieuNhap lúc xác nhận; dùng tính giá vốn.
+// - giaNhap là giá nhập THỰC TẾ (chưa thuế) của lô, sao chép từ dòng CTHDonNhap lúc xác nhận; dùng tính giá vốn.
 //   Nó KHÔNG lấy từ SanPham.giaNhap (giá tham khảo) và không đổi khi giá tham khảo đổi.
 // - soLuongCon thay đổi khi xuất/hoàn kho. Hàm giam/tang không có chữ public: chỉ SanPham gọi,
 //   code bên ngoài phải đi qua QuanlyKho để không làm sai số lượng.
@@ -130,11 +130,9 @@ public class LoHang {
 
     // Cộng hàng trả lại vào lô, không vượt số lượng nhập ban đầu (chỉ SanPham gọi)
     void tang(int soLuong) {
-        if (soLuong <= 0 ||
-                (long) soLuongCon + soLuong > soLuongNhap) {
-            throw new IllegalStateException(
-                    "Lô " + maLo + " không nhận thêm " + soLuong
-            );
+        if (soLuong <= 0 || (long) soLuongCon + soLuong > soLuongNhap) {
+            throw new IllegalStateException("Lô " + maLo + " không nhận thêm " + soLuong
+                    + " được (còn " + soLuongCon + ", nhập ban đầu " + soLuongNhap + ").");
         }
         soLuongCon += soLuong;
     }
@@ -167,10 +165,10 @@ public class LoHang {
     public String toString() {
         String han = "không có HSD";
         if (hanSuDung != null) {
-            han = "HSD " + TienIch.dinhDangNgay(hanSuDung);
+            han = "HSD " + SanPham.dinhDangNgay(hanSuDung);
         }
-        return maLo + " | " + maSP + " | hóa đơn " + maHoaDonNhap + " | nhập " + TienIch.dinhDangNgay(ngayNhap)
+        return maLo + " | " + maSP + " | hóa đơn " + maHoaDonNhap + " | nhập " + SanPham.dinhDangNgay(ngayNhap)
                 + " | " + han + " | còn " + soLuongCon + "/" + soLuongNhap
-                + " | giá nhập " + TienIch.dinhDangTien(giaNhap);
+                + " | giá nhập " + SanPham.dinhDangTien(giaNhap);
     }
 }

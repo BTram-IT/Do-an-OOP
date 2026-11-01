@@ -4,7 +4,7 @@ import java.time.LocalDate;
 // Khi phiếu được xác nhận, mỗi dòng sinh ra đúng MỘT lô hàng (LoHang) mang hạn sử dụng và số lượng của dòng đó.
 // Không có setter: dòng đã tạo thì không sửa được, muốn đổi thì xóa dòng và thêm lại (khi phiếu chưa xác nhận).
 // - giaNhap: đơn giá trên hóa đơn nhà cung cấp, CHƯA thuế (đồng).
-// - thueSuatNhap: phần trăm thuế của lần nhập này, độc lập với thuế bán của SanPham.
+// - thueSuatNhap: phần trăm thuế của lần nhập này, độc lập với thuế bán của SanPham. Kho chỉ lưu, không tính tiền thuế.
 // - tenSP: tên sản phẩm tại lúc nhập, để sau này đổi tên sản phẩm không làm sai phiếu cũ.
 // - hanSuDung: hạn của lô này; null = hàng không có hạn (chỉ cho phép với loại sản phẩm không bắt buộc hạn).
 public class CTHDonNhap {
@@ -62,19 +62,14 @@ public class CTHDonNhap {
         return hanSuDung;
     }
 
-    // Thành tiền = số lượng x giá nhập (chưa thuế) - Tương ứng yêu cầu Tongtien()
-    public long Tongtien() {
-        return soLuongNhap * giaNhap; // đã kiểm tra không tràn ở constructor
-    }
-
-    // Đổi tên phụ trợ để tương thích ngược nếu các file khác đang gọi getThanhTien()
+    // Thành tiền = số lượng x giá nhập (chưa thuế)
     public long getThanhTien() {
-        return Tongtien();
+        return soLuongNhap * giaNhap; // đã kiểm tra không tràn ở constructor
     }
 
     // Tiền thuế nhập của dòng = thành tiền x thueSuatNhap%, làm tròn đến đồng
     public long tienThueNhap() {
-        return Math.round(Tongtien() * thueSuatNhap / 100.0);
+        return Math.round(getThanhTien() * thueSuatNhap / 100.0);
     }
 
     // Dòng ghi file: CT|maSP|tenSP|soLuongNhap|giaNhap|thueSuatNhap|hanSuDung
@@ -103,11 +98,11 @@ public class CTHDonNhap {
     public String toString() {
         String han = "không HSD";
         if (hanSuDung != null) {
-            han = "HSD " + TienIch.dinhDangNgay(hanSuDung);
+            han = "HSD " + SanPham.dinhDangNgay(hanSuDung);
         }
         return maSP + " - " + tenSP + " | SL: " + soLuongNhap
-                + " | Giá nhập: " + TienIch.dinhDangTien(giaNhap)
-                + " | Thành tiền: " + TienIch.dinhDangTien(Tongtien())
+                + " | Giá nhập: " + SanPham.dinhDangTien(giaNhap)
+                + " | Thành tiền: " + SanPham.dinhDangTien(getThanhTien())
                 + " | Thuế nhập: " + thueSuatNhap + "%"
                 + " | " + han;
     }

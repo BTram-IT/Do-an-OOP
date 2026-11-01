@@ -6,6 +6,9 @@ public class ThucAn extends SanPham {
     public static final String TIEN_TO_MA = "TA";
     private static int boDem = 0;
 
+    // Mức thuế mặc định của thức ăn (số giả định, nhóm/Kế toán chỉnh khi có quy định)
+    public static final double THUE_SUAT_MAC_DINH = 10.0;
+
     private String nhaSanXuat;
 
     // Sản phẩm mới luôn có tồn 0, hàng vào kho qua phiếu nhập (mỗi lần nhập tạo một lô có hạn sử dụng)
@@ -17,6 +20,11 @@ public class ThucAn extends SanPham {
         boDem = Math.max(boDem, laySoTuMa(chuanHoaMa(maSP), TIEN_TO_MA));
     }
 
+    // Không truyền thuế: thuế do lớp ThucAn quyết định
+    public ThucAn(String maSP, String tenSP, long giaNhap, long giaBan, String donViTinh, String nhaSanXuat) {
+        this(maSP, tenSP, giaNhap, giaBan, donViTinh, THUE_SUAT_MAC_DINH, nhaSanXuat);
+    }
+
     public static String maKeTiep() {
         return String.format(Locale.ROOT, "%s%03d", TIEN_TO_MA, boDem + 1);
     }
@@ -25,18 +33,14 @@ public class ThucAn extends SanPham {
         return nhaSanXuat;
     }
 
-    public void setNhaSanXuat(String nhaSanXuat) {
+    // Không public: sửa thông tin sản phẩm đi qua DSSanPham.sua (quy ước, cùng default package)
+    void setNhaSanXuat(String nhaSanXuat) {
         this.nhaSanXuat = kiemTraVanBan(nhaSanXuat, "Nhà sản xuất");
     }
 
     @Override
     public String getLoai() {
         return "Thức ăn";
-    }
-
-    @Override
-    public double tinhThue() {
-        return tinhThueTheoSuat();
     }
 
     @Override

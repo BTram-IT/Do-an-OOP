@@ -7,6 +7,9 @@ public class DoUong extends SanPham {
     public static final int DUNG_TICH_TOI_DA_ML = 100_000;
     private static int boDem = 0;
 
+    // Mức thuế mặc định của đồ uống (số giả định, nhóm/Kế toán chỉnh khi có quy định)
+    public static final double THUE_SUAT_MAC_DINH = 8.0;
+
     private int dungTichMl;
 
     public DoUong(String maSP, String tenSP, long giaNhap, long giaBan, String donViTinh,
@@ -15,6 +18,11 @@ public class DoUong extends SanPham {
         this.dungTichMl = kiemTraDungTich(dungTichMl);
 
         boDem = Math.max(boDem, laySoTuMa(chuanHoaMa(maSP), TIEN_TO_MA));
+    }
+
+    // Không truyền thuế: thuế do lớp DoUong quyết định
+    public DoUong(String maSP, String tenSP, long giaNhap, long giaBan, String donViTinh, int dungTichMl) {
+        this(maSP, tenSP, giaNhap, giaBan, donViTinh, THUE_SUAT_MAC_DINH, dungTichMl);
     }
 
     public static String maKeTiep() {
@@ -32,18 +40,14 @@ public class DoUong extends SanPham {
         return dungTichMl;
     }
 
-    public void setDungTichMl(int dungTichMl) {
+    // Không public: sửa thông tin sản phẩm đi qua DSSanPham.sua (quy ước, cùng default package)
+    void setDungTichMl(int dungTichMl) {
         this.dungTichMl = kiemTraDungTich(dungTichMl);
     }
 
     @Override
     public String getLoai() {
         return "Đồ uống";
-    }
-
-    @Override
-    public double tinhThue() {
-        return tinhThueTheoSuat();
     }
 
     @Override
