@@ -2,14 +2,14 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Scanner;
 
-public class KhachHang extends Nguoidung {
+public class Khachhang extends Nguoidung {
     private String maKH;
     private String thuHang; // Dong, Bac, Vang, Kim Cuong
     private LocalDate ngayDangKy;
     private double tongTienMua;
     private ArrayList<String> lichSuMuaHang; // Lưu danh sách mã đơn / hóa đơn đã mua (mảng động)
 
-    public KhachHang() {
+    public Khachhang() {
         super();
         this.maKH = "";
         this.thuHang = "Dong";
@@ -18,7 +18,7 @@ public class KhachHang extends Nguoidung {
         this.lichSuMuaHang = new ArrayList<>();
     }
 
-    public KhachHang(String ten, String sdt, String diaChi, String email, LocalDate ngaySinh,
+    public Khachhang(String ten, String sdt, String diaChi, String email, LocalDate ngaySinh,
                      String maKH, LocalDate ngayDangKy, double tongTienMua) {
         super(ten, sdt, diaChi, email, ngaySinh);
         this.maKH = maKH;

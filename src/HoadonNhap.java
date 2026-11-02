@@ -37,6 +37,7 @@ public class HoadonNhap extends HoaDon {
 
     private LocalDate ngayNhap;
     private String maNhaCungCap;
+    private String maDonViVanChuyen;
     private ArrayList<CTHDonNhap> chiTiet = new ArrayList<>();
     private TrangThai trangThai;
 
@@ -73,7 +74,14 @@ public class HoadonNhap extends HoaDon {
                 "Ma nha cung cap khong duoc de trong!"
         );
 
-        return new HoadonNhap(maHD, maNV, ngayNhap, maNCC);
+        String maDVVC = Ktradulieu.nhapChuoi(
+                sc,
+                "Nhap ma don vi van chuyen: ",
+                ".+",
+                "Ma don vi van chuyen khong duoc de trong!"
+        );
+
+        return new HoadonNhap(maHD, maNV, ngayNhap, maNCC, maDVVC);
     }
 
     // Tạo phiếu mới, ở trạng thái chờ xác nhận
@@ -99,6 +107,7 @@ public class HoadonNhap extends HoaDon {
         }
         this.ngayNhap = ngayNhap;
         this.maNhaCungCap = SanPham.chuanHoaMa(SanPham.kiemTraVanBan(maNhaCungCap, "Mã nhà cung cấp"));
+        this.maDonViVanChuyen = "";
         if (trangThai == null) {
             throw new IllegalArgumentException("Trạng thái phiếu không được null.");
         }
@@ -115,9 +124,20 @@ public class HoadonNhap extends HoaDon {
                 throw new IllegalArgumentException("Chi tiết hóa đơn nhập không được null.");
             }
             kiemTraChiTiet(ct);
+            ct.ganMaHD(getMaHD());
             chiTiet.add(ct);
         }
         boDem = Math.max(boDem, SanPham.laySoTuMa(getMaHD(), TIEN_TO_MA));
+    }
+
+    // Tạo phiếu mới có mã đơn vị vận chuyển
+    public HoadonNhap(String maHoaDon, String maNhanVien, LocalDate ngayNhap,
+                      String maNhaCungCap, String maDonViVanChuyen) {
+        this(maHoaDon, maNhanVien, ngayNhap, maNhaCungCap);
+
+        this.maDonViVanChuyen = SanPham.chuanHoaMa(
+                SanPham.kiemTraVanBan(maDonViVanChuyen, "Mã đơn vị vận chuyển")
+        );
     }
 
     // Mã hóa đơn là khóa liên kết với các lô (LoHang.maHoaDonNhap) và với file lưu, nên không được đổi sau khi tạo.
@@ -166,6 +186,7 @@ public class HoadonNhap extends HoaDon {
             throw new IllegalArgumentException("Chi tiết phiếu nhập không được null.");
         }
         kiemTraChiTiet(ct);
+        ct.ganMaHD(getMaHD());
         chiTiet.add(ct);
     }
 
@@ -214,6 +235,15 @@ public class HoadonNhap extends HoaDon {
         return tong;
     }
 
+    // Tổng tiền danh sách chi tiết hóa đơn nhập
+    public long TongtienDS() {
+        long tong = 0;
+        for (CTHDonNhap ct : chiTiet) {
+            tong = Math.addExact(tong, ct.Tongtien());
+        }
+        return tong;
+    }
+
     // Tổng thanh toán cho nhà cung cấp = tiền hàng + thuế nhập.
     // [HoaDon-thật] nhóm cần xác nhận Tongtienhoadon() của hóa đơn nhập có gồm thuế hay không (ở đây: có).
     @Override
@@ -225,7 +255,30 @@ public class HoadonNhap extends HoaDon {
     // In hóa đơn nhập ra màn hình (yêu cầu abstract của HoaDon)
     @Override
     public void inhoadon() {
-        System.out.println(moTaDayDu());
+        Inhoadon();
+    }
+
+    // In đầy đủ hóa đơn nhập
+    public void Inhoadon() {
+        System.out.println("========== HOA DON NHAP ==========");
+        System.out.println("Ma hoa don: " + getMaHD());
+        System.out.println("Ma nhan vien: " + getMaNV());
+        System.out.println("Ngay lap: " + getThoigianin());
+        System.out.println("Ngay nhap: " + SanPham.dinhDangNgay(ngayNhap));
+        System.out.println("Ma nha cung cap: " + maNhaCungCap);
+        System.out.println("Ma don vi van chuyen: " + maDonViVanChuyen);
+        System.out.println("Trang thai: " + trangThai.getNhan());
+        System.out.println("----------------------------------");
+
+        for (CTHDonNhap ct : chiTiet) {
+            System.out.println(ct);
+        }
+
+        System.out.println("----------------------------------");
+        System.out.println("Tong tien hang: " + SanPham.dinhDangTien(TongtienDS()));
+        System.out.println("Tong thue nhap: " + SanPham.dinhDangTien(tinhTongThue()));
+        System.out.println("Tong thanh toan: " + SanPham.dinhDangTien((long) Tongtienhoadon()));
+        System.out.println("==================================");
     }
 
     private void kiemTraConSua() {
@@ -337,6 +390,10 @@ public class HoadonNhap extends HoaDon {
         return maNhaCungCap;
     }
 
+    public String getMaDVVC() {
+        return maDonViVanChuyen;
+    }
+
     public TrangThai getTrangThai() {
         return trangThai;
     }
@@ -374,7 +431,9 @@ public class HoadonNhap extends HoaDon {
 
     @Override
     public String toString() {
-        return moTa(maNhaCungCap);
+        return moTa(maNhaCungCap)
+                + " | DVVC: " + maDonViVanChuyen
+                + " | Tổng thanh toán: " + SanPham.dinhDangTien((long) Tongtienhoadon());
     }
 
     private String moTa(String nhanNhaCungCap) {

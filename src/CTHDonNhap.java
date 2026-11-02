@@ -18,6 +18,7 @@ public class CTHDonNhap {
     private long giaNhap;
     private double thueSuatNhap;
     private LocalDate hanSuDung;
+    private String maHD;
 
     public CTHDonNhap(String maSP, String tenSP, int soLuongNhap, long giaNhap, double thueSuatNhap,
                       LocalDate hanSuDung) {
@@ -38,6 +39,7 @@ public class CTHDonNhap {
         this.giaNhap = giaNhap;
         this.thueSuatNhap = SanPham.kiemTraThueSuat(thueSuatNhap);
         this.hanSuDung = hanSuDung;
+        this.maHD = ""; // sẽ đc gán khi thêm vào hóa đơn nhập
     }
 
     // Nhập thông tin chi tiết hóa đơn nhập
@@ -166,6 +168,17 @@ public class CTHDonNhap {
         );
     }
 
+    public String getMaHD() {
+    return maHD;
+}
+
+    // Gắn mã hóa đơn khi thêm chi tiết vào hóa đơn nhập
+    void ganMaHD(String maHD) {
+       if (this.maHD.isEmpty()) {
+        this.maHD = maHD;
+       }
+   }
+
     public String getMaSP() {
         return maSP;
     }
@@ -194,6 +207,11 @@ public class CTHDonNhap {
     // Thành tiền = số lượng x giá nhập (chưa thuế)
     public long getThanhTien() {
         return soLuongNhap * giaNhap; // đã kiểm tra không tràn ở constructor
+    }
+
+    // Tổng tiền của chi tiết hóa đơn nhập
+    public long Tongtien() { 
+        return getThanhTien();
     }
 
     // Tiền thuế nhập của dòng = thành tiền x thueSuatNhap%, làm tròn đến đồng
@@ -228,11 +246,15 @@ public class CTHDonNhap {
         String han = "không HSD";
         if (hanSuDung != null) {
             han = "HSD " + SanPham.dinhDangNgay(hanSuDung);
-        }
-        return maSP + " - " + tenSP + " | SL: " + soLuongNhap
-                + " | Giá nhập: " + SanPham.dinhDangTien(giaNhap)
-                + " | Thành tiền: " + SanPham.dinhDangTien(getThanhTien())
-                + " | Thuế nhập: " + thueSuatNhap + "%"
-                + " | " + han;
+       }
+
+        return "MaHD: " + maHD
+            + " | MaSP: " + maSP
+            + " | TenSP: " + tenSP
+            + " | So luong: " + soLuongNhap
+            + " | Gia ban: " + SanPham.dinhDangTien(giaNhap)
+            + " | Tong tien: " + SanPham.dinhDangTien(Tongtien())
+            + " | Thuế nhập: " + thueSuatNhap + "%"
+            + " | " + han;
     }
 }

@@ -4,20 +4,14 @@ import java.util.Scanner;
 
 public class Hoadonban extends HoaDon {
     private String maKH;
-    private ArrayList<CTHoaDon> danhSachChiTietHD;
+    private ArrayList<CTHDonBan> danhSachChiTietHD;
     private ThanhToan thanhToan;
-    private Khuyenmai khuyenMai;
-    private double mucGiamGia;
-    private String trangThai;
 
     public Hoadonban() {
         super();
         this.maKH = "";
         this.danhSachChiTietHD = new ArrayList<>();
         this.thanhToan = null;
-        this.khuyenMai = null;
-        this.mucGiamGia = 0;
-        this.trangThai = "Chua thanh toan";
     }
 
     public Hoadonban(String maHD, String maNV, String maKH) {
@@ -25,9 +19,6 @@ public class Hoadonban extends HoaDon {
         setMaKH(maKH);
         this.danhSachChiTietHD = new ArrayList<>();
         this.thanhToan = null;
-        this.khuyenMai = null;
-        this.mucGiamGia = 0;
-        this.trangThai = "Chua thanh toan";
     }
 
     // Nhap thong tin hoa don ban
@@ -55,24 +46,12 @@ public class Hoadonban extends HoaDon {
         return maKH;
     }
 
-    public String getTrangThai() {
-        return trangThai;
-    }
-
-    public ArrayList<CTHoaDon> getDanhSachChiTietHD() {
+    public ArrayList<CTHDonBan> getDanhSachChiTietHD() {
         return danhSachChiTietHD;
     }
 
     public ThanhToan getThanhToan() {
         return thanhToan;
-    }
-
-    public Khuyenmai getKhuyenMai() {
-        return khuyenMai;
-    }
-
-    public double getMucGiamGia() {
-        return mucGiamGia;
     }
 
     // ================= SETTER =================
@@ -90,7 +69,7 @@ public class Hoadonban extends HoaDon {
 
     // ================= CHI TIET HOA DON =================
 
-    public void themChiTietHoaDon(CTHoaDon ct) {
+    public void themChiTietHoaDon(CTHDonBan ct) {
         if (ct == null) {
             throw new IllegalArgumentException("Chi tiet hoa don khong hop le!");
         }
@@ -110,41 +89,9 @@ public class Hoadonban extends HoaDon {
     // ================= KHUYEN MAI =================
 
     public void ApMaGiamGia(Khuyenmai km) {
-        if (km == null) {
-            this.khuyenMai = null;
-            this.mucGiamGia = 0;
-            return;
+        for (CTHDonBan ct : danhSachChiTietHD) {
+            ct.Apmagiamgia(km);
         }
-
-        this.khuyenMai = km;
-        this.mucGiamGia = tinhTienGiamKhuyenMai();
-    }
-
-    private double tinhTienGiamKhuyenMai() {
-        if (khuyenMai == null || !khuyenMai.kiemTraThoiHan()) {
-            return 0;
-        }
-
-        double tongTien = tinhTongTienHang();
-
-        if (tongTien < khuyenMai.getMucChiToiThieu()) {
-            return 0;
-        }
-
-        double tienSauKM = 0;
-
-        for (CTHoaDon ct : danhSachChiTietHD) {
-            double giaSauKM =
-                    khuyenMai.traCuuGiaSanPhamSauKM(ct.getMaSP());
-
-            if (giaSauKM < 0 || giaSauKM > ct.getGiaban()) {
-                giaSauKM = ct.getGiaban();
-            }
-
-            tienSauKM += ct.getSoluong() * giaSauKM;
-        }
-
-        return Math.max(0, tongTien - tienSauKM);
     }
 
     // ================= TINH TIEN =================
@@ -152,20 +99,26 @@ public class Hoadonban extends HoaDon {
     public double tinhTongTienHang() {
         double tong = 0;
 
-        for (CTHoaDon ct : danhSachChiTietHD) {
+        for (CTHDonBan ct : danhSachChiTietHD) {
             tong += ct.tinhTienHang();
         }
 
         return tong;
     }
 
-    public double ThanhTienSauKhuyenMai() {
-        return Math.max(0, tinhTongTienHang() - mucGiamGia);
+    public double tongtienhoadon() {
+        double tong = 0;
+
+        for (CTHDonBan ct : danhSachChiTietHD) {
+            tong += ct.ThanhTienSauKhuyenMai();
+        }
+
+        return tong;
     }
 
     @Override
     public double Tongtienhoadon() {
-        return ThanhTienSauKhuyenMai();
+        return tongtienhoadon();
     }
 
     // ================= THANH TOAN =================
@@ -181,7 +134,7 @@ public class Hoadonban extends HoaDon {
             return false;
         }
 
-        thanhToan.setSoTien(Tongtienhoadon());
+        thanhToan.setSoTien(tongtienhoadon());
         thanhToan.setMaNV(maNV);
         thanhToan.nhap();
 
@@ -208,7 +161,7 @@ public class Hoadonban extends HoaDon {
 
         System.out.println("\n--- CHI TIET HOA DON ---");
 
-        for (CTHoaDon ct : danhSachChiTietHD) {
+        for (CTHDonBan ct : danhSachChiTietHD) {
             System.out.println(ct);
             System.out.println("------------------------");
         }
@@ -216,11 +169,11 @@ public class Hoadonban extends HoaDon {
         System.out.printf("Tong tien hang: %,.0f VND%n",
                 tinhTongTienHang());
 
-        System.out.printf("Tien giam: %,.0f VND%n",
-                mucGiamGia);
+        System.out.printf("Tong tien giam: %,.0f VND%n",
+                tinhTongTienHang() - tongtienhoadon());
 
         System.out.printf("Tong thanh toan: %,.0f VND%n",
-                Tongtienhoadon());
+                tongtienhoadon());
 
         System.out.println("Trang thai: " + trangThai);
 
@@ -238,7 +191,7 @@ public class Hoadonban extends HoaDon {
                 + " | MaNV: " + maNV
                 + " | Thoi gian: " + thoigianin
                 + " | Tong tien: "
-                + String.format("%,.0f", Tongtienhoadon())
+                + String.format("%,.0f", tongtienhoadon())
                 + " VND | Trang thai: " + trangThai;
     }
 }
