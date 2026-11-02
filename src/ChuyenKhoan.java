@@ -1,6 +1,6 @@
 import java.util.Scanner;
 public class ChuyenKhoan extends ThanhToan {
-    private static final Scanner sc = TienIch.sc;
+    private static final Scanner sc = new Scanner(System.in);
 
     private String maGDNganHang;
     private String tenNguoiChuyen;

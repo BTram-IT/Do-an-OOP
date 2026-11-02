@@ -1,6 +1,6 @@
 import java.util.Scanner;
 public class TienMat extends ThanhToan {
-    private static final Scanner sc = TienIch.sc;
+    private static final Scanner sc = new Scanner(System.in);
 
     private double tienKhachDua;
     private double tienThoi;
