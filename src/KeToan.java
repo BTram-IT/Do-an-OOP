@@ -212,7 +212,7 @@ public class KeToan extends NhanVien implements Thongke {
                 Hoadonban hb = (Hoadonban) hd;
 
                 tongVon += quanLyKho.tinhGiaVon(
-                        hb.getCacLoDaXuat()
+                        quanLyKho.layLoDaXuatCuaGiaoDich(hb.getMaHD())
                 );
             }
         }
@@ -517,7 +517,7 @@ public class KeToan extends NhanVien implements Thongke {
 
             Hoadonban hdb = (Hoadonban) hd;
 
-            for (CTHoaDon ct : hdb.getCTHoaDon()) {
+            for (CTHoaDon ct : hdb.getDanhSachChiTietHD()) {
                 if (ct == null) {
                     continue;
                 }
@@ -607,7 +607,7 @@ public class KeToan extends NhanVien implements Thongke {
 
             Hoadonban hdb = (Hoadonban) hd;
 
-            for (CTHoaDon ct : hdb.getCTHoaDon()) {
+            for (CTHoaDon ct : hdb.getDanhSachChiTietHD()) {
                 if (ct == null) {
                     continue;
                 }

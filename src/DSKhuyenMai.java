@@ -92,7 +92,7 @@ public class DSKhuyenMai {
 
         switch (chon) {
             case 1:
-                danhSach[viTri].setKM();
+                danhSach[viTri].thietLapKhuyenMai();
 
                 // Kiểm tra mã sau khi sửa có bị trùng không
                 for (int i = 0; i < soLuong; i++) {
