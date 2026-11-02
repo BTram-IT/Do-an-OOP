@@ -6,12 +6,14 @@ public class Hoadonban extends HoaDon {
     private String maKH;
     private ArrayList<CTHDonBan> danhSachChiTietHD;
     private ThanhToan thanhToan;
+    private String trangThai;
 
     public Hoadonban() {
         super();
         this.maKH = "";
         this.danhSachChiTietHD = new ArrayList<>();
         this.thanhToan = null;
+        this.trangThai = "Chua thanh toan";
     }
 
     public Hoadonban(String maHD, String maNV, String maKH) {
@@ -19,6 +21,7 @@ public class Hoadonban extends HoaDon {
         setMaKH(maKH);
         this.danhSachChiTietHD = new ArrayList<>();
         this.thanhToan = null;
+        this.trangThai = "Chua thanh toan";
     }
 
     // Nhap thong tin hoa don ban
@@ -52,6 +55,10 @@ public class Hoadonban extends HoaDon {
 
     public ThanhToan getThanhToan() {
         return thanhToan;
+    }
+
+    public String getTrangThai() {
+        return trangThai;
     }
 
     // ================= SETTER =================
@@ -119,6 +126,20 @@ public class Hoadonban extends HoaDon {
     @Override
     public double Tongtienhoadon() {
         return tongtienhoadon();
+    }
+    
+    // ================= TINH TIEN THUE =================
+    // Tinh tong thue cua hoa don ban
+    public double Tongthuedonhang(DSSanPham DSSanPham) {
+        double tongThue = 0;
+
+        for (CTHDonBan ct : danhSachChiTietHD) {
+            if (ct != null) {
+                tongThue += ct.tinhTienThue();
+            }
+        }
+
+        return tongThue;
     }
 
     // ================= THANH TOAN =================

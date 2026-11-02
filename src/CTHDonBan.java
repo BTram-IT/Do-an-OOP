@@ -7,6 +7,7 @@ public class CTHDonBan {
     private double giaBan;
     private Khuyenmai khuyenMai;
     private double mucGiamGia;
+    private double thueSuat;
 
     public CTHDonBan() {
         this.maHD = "";
@@ -16,6 +17,7 @@ public class CTHDonBan {
         this.giaBan = 0;
         this.khuyenMai = null;
         this.mucGiamGia = 0;
+        this.thueSuat = 0;
     }
 
     public CTHDonBan(String maHD, String maSP, String tenSP,
@@ -27,6 +29,7 @@ public class CTHDonBan {
         setGiaBan(giaBan);
         this.khuyenMai = null;
         this.mucGiamGia = 0;
+        this.thueSuat = 0;
     }
 
     // ================= GETTER =================
@@ -59,6 +62,10 @@ public class CTHDonBan {
         return mucGiamGia;
     }
 
+    public double getThueSuat() {
+        return thueSuat;
+    }
+
     // ================= SETTER =================
 
     public void setMaHD(String maHD) {
@@ -77,6 +84,13 @@ public class CTHDonBan {
             throw new IllegalArgumentException("Gia ban khong hop le!");
         }
         this.giaBan = giaBan;
+    }
+
+    public void setThueSuat(double thueSuat) {
+        if (thueSuat < 0 || thueSuat > 100) {
+            throw new IllegalArgumentException("Thue suat khong hop le!");
+        }
+        this.thueSuat = thueSuat;
     }
 
     // ================= TINH TIEN =================
@@ -126,5 +140,12 @@ public class CTHDonBan {
                 + " VND | Thanh tien: "
                 + String.format("%,.0f", ThanhTienSauKhuyenMai())
                 + " VND";
+    }
+
+
+// ================= THUE SUAT =================
+    public double tinhTienThue() {
+        double tienSauGiam = ThanhTienSauKhuyenMai();
+        return tienSauGiam * thueSuat / 100.0;
     }
 }

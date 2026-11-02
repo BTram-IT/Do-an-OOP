@@ -517,7 +517,7 @@ public class KeToan extends NhanVien implements Thongke {
 
             Hoadonban hdb = (Hoadonban) hd;
 
-            for (CTHoaDon ct : hdb.getDanhSachChiTietHD()) {
+            for (CTHDonBan ct : hdb.getDanhSachChiTietHD()) {
                 if (ct == null) {
                     continue;
                 }
@@ -532,7 +532,7 @@ public class KeToan extends NhanVien implements Thongke {
                 }
 
                 if (viTri != -1) {
-                    soLuong[viTri] += ct.getSoluong();
+                    soLuong[viTri] += ct.getSoLuong();
                 } else {
                     if (n >= maSP.length) {
                         System.out.println("Danh sach san pham da day!");
@@ -541,7 +541,7 @@ public class KeToan extends NhanVien implements Thongke {
 
                     maSP[n] = ct.getMaSP();
                     tenSP[n] = ct.getTenSP();
-                    soLuong[n] = ct.getSoluong();
+                    soLuong[n] = ct.getSoLuong();
                     n++;
                 }
             }
@@ -607,7 +607,7 @@ public class KeToan extends NhanVien implements Thongke {
 
             Hoadonban hdb = (Hoadonban) hd;
 
-            for (CTHoaDon ct : hdb.getDanhSachChiTietHD()) {
+            for (CTHDonBan ct : hdb.getDanhSachChiTietHD()) {
                 if (ct == null) {
                     continue;
                 }
@@ -618,8 +618,8 @@ public class KeToan extends NhanVien implements Thongke {
                         "Ma HD: " + hd.getMaHD()
                                 + " | Ma SP: " + ct.getMaSP()
                                 + " | Ten SP: " + ct.getTenSP()
-                                + " | So luong: " + ct.getSoluong()
-                                + " | Gia ban: " + ct.getGiaban()
+                                + " | So luong: " + ct.getSoLuong()
+                                + " | Gia ban: " + ct.getGiaBan()
                 );
             }
         }
