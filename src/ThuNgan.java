@@ -133,7 +133,7 @@ public class ThuNgan extends NhanVien {
     }
 
     // Tao hoa don va luu lich su mua hang sau khi thanh toan thanh cong
-    public boolean taohoadon(HoaDonBan hd) {
+    public boolean taohoadon(Hoadonban hd) {
         if (hd == null) {
             System.out.println("Hoa don khong hop le!");
             return false;
@@ -179,8 +179,8 @@ public class ThuNgan extends NhanVien {
         boolean timThay = false;
 
         for (HoaDon hd : Hoadon.getDs()) {
-            if (hd instanceof HoaDonBan) {
-                HoaDonBan hdb = (HoaDonBan) hd;
+            if (hd instanceof Hoadonban) {
+                Hoadonban hdb = (Hoadonban) hd;
 
                 if (hdb.getMaKH().equalsIgnoreCase(maKH)) {
                     hdb.inhoadon();
