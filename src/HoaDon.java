@@ -1,218 +1,61 @@
+
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 public class HoaDon {
+
     private String maHD;
+    private String maNV;
+    private LocalDateTime thoiGianIn;
     private double tongTien;
     private String trangThai;
 
-    // Chi tiet hoa don duoc tao tu chi tiet don hang
     private List<CTHoaDon> danhSachChiTietHD = new ArrayList<>();
-
-    // Lien ket don hang va khuyen mai
-    private DonHang donHang;
     private Khuyenmai khuyenMai;
-
     private List<String> lichSuMaGiam = new ArrayList<>();
 
-    // Dung cho cach khoi tao hoa don cu
+    // Constructor mac dinh
+    public HoaDon() {
+        this.maHD = "";
+        this.maNV = "";
+        this.thoiGianIn = LocalDateTime.now();
+        this.tongTien = 0;
+        this.trangThai = "Chua thanh toan";
+    }
+
+    // Constructor tuong thich voi Main cu
     public HoaDon(String maHD, double tongTien, String trangThai) {
         this.maHD = maHD;
         this.tongTien = tongTien;
         this.trangThai = trangThai;
+        this.maNV = "";
+        this.thoiGianIn = LocalDateTime.now();
     }
 
-    // Tao hoa don tu don hang
-    public HoaDon(String maHD, DonHang donHang) {
+    // Constructor day du
+    public HoaDon(String maHD, String maNV) {
         this.maHD = maHD;
-        this.donHang = donHang;
+        this.maNV = maNV;
+        this.thoiGianIn = LocalDateTime.now();
         this.tongTien = 0;
         this.trangThai = "Chua thanh toan";
-
-        capNhatChiTietHoaDon();
     }
 
-    // Lay cac chi tiet tu don hang
-    private void capNhatChiTietHoaDon() {
-        danhSachChiTietHD.clear();
-
-        if (donHang == null) {
-            return;
-        }
-
-        List<CTDonhang> ds =
-            donHang.getDanhSachChiTiet();
-
-        for (int i = 0; i < ds.size(); i++) {
-            CTHoaDon ctHD = new CTHoaDon(
-                maHD + "-CTHD" + (i + 1),
-                ds.get(i),
-                ""
-            );
-
-            danhSachChiTietHD.add(ctHD);
-        }
-    }
-
-    // Gan khuyen mai cho hoa don
-    public void apDungKhuyenMai(Khuyenmai khuyenMai) {
-        this.khuyenMai = khuyenMai;
-
-        if (khuyenMai != null) {
-            lichSuMaGiam.add("Da ap dung: "
-                + khuyenMai.getClass().getSimpleName());
-        }
-    }
-
-    // Huy ap dung khuyen mai
-    public void huyKhuyenMai() {
-        this.khuyenMai = null;
-    }
-
-    // Tong tien hang truoc khuyen mai va thue
-    public double tinhTongTienHang() {
-        if (donHang == null) {
-            return 0;
-        }
-
-        return donHang.tinhTongTienHang();
-    }
-
-    // Tien duoc giam, khong vuot qua tien hang
-    public double tinhTienGiam() {
-        if (khuyenMai == null) {
-            return 0;
-        }
-
-        double tienGiam =
-            khuyenMai.tinhTienGiamHopLe(tinhTongTienHang());
-
-        if (tienGiam < 0) {
-            return 0;
-        }
-
-        return Math.min(tienGiam, tinhTongTienHang());
-    }
-
-    // Tien hang sau khuyen mai
-    public double tinhTienHangSauKhuyenMai() {
-        return Math.max(0, tinhTongTienHang() - tinhTienGiam());
-    }
-
-    // Tong thue sau khi phan bo tien giam vao cac san pham
-    public double tinhTongTienThue() {
-        if (donHang == null) {
-            return 0;
-        }
-
-        return donHang.tinhTongTienThueSauGiam(tinhTienGiam());
-    }
-
-    // Tong tien cuoi cung khach phai tra
-    public double tinhTongTienPhaiThanhToan() {
-        tongTien = tinhTienHangSauKhuyenMai()
-                 + tinhTongTienThue();
-
-        return tongTien;
-    }
-
-    // Hien thi hoa don va cac khoan tien
-    public void hienThiHoaDon() {
-        System.out.println("\n========== HOA DON ==========");
-        System.out.println("Ma hoa don: " + maHD);
-
-        if (donHang != null) {
-            System.out.println("Ma don hang: " + donHang.getMaDH());
-
-            Nhanvien nv = donHang.getNhanVien();
-            Khachhang kh = donHang.getKhachHang();
-
-            if (nv != null) {
-                System.out.println("Nhan vien lap: " + nv);
-            }
-
-            if (kh != null) {
-                System.out.println("Khach hang: " + kh);
-            }
-
-            // Dong bo chi tiet hoa don voi don hang
-            capNhatChiTietHoaDon();
-
-            System.out.println("\n--- CHI TIET HOA DON ---");
-            for (CTHoaDon ct : danhSachChiTietHD) {
-                ct.hienThiThongTinChiTiet();
-                System.out.println("-------------------------");
-            }
-
-            System.out.println("Tong tien hang: "
-                + tinhTongTienHang());
-
-            System.out.println("Tien giam khuyen mai: "
-                + tinhTienGiam());
-
-            System.out.println("Tien hang sau khuyen mai: "
-                + tinhTienHangSauKhuyenMai());
-
-            System.out.println("Tong tien thue sau giam: "
-                + tinhTongTienThue());
-
-            System.out.println("Tong tien phai thanh toan: "
-                + tinhTongTienPhaiThanhToan());
-        } else {
-            // Hoa don khoi tao theo constructor cu
-            System.out.println("Tong tien: " + tongTien);
-        }
-
-        System.out.println("Trang thai thanh toan: " + trangThai);
-
-        System.out.println("Lich su khuyen mai:");
-        if (lichSuMaGiam.isEmpty()) {
-            System.out.println("Chua ap dung khuyen mai.");
-        } else {
-            for (String ma : lichSuMaGiam) {
-                System.out.println("- " + ma);
-            }
-        }
-
-        System.out.println("==============================");
-    }
-
-    // Cap nhat trang thai thanh toan
-    public void capNhatTrangThaiThanhToan(boolean daThanhToan) {
-        if (daThanhToan) {
-            if (donHang != null) {
-                if (donHang.isDaHuy()) {
-                    System.out.println(
-                        "Don hang da huy, khong the thanh toan.");
-                    return;
-                }
-
-                // Chi xac nhan don khi chua xac nhan truoc do
-                if (!donHang.isDaXacNhan()) {
-                    if (!donHang.xacNhanDonHang()) {
-                        System.out.println(
-                            "Khong the thanh toan don hang nay.");
-                        return;
-                    }
-                }
-            }
-
-            trangThai = "Da thanh toan";
-            tongTien = tinhTongTienPhaiThanhToan();
-        } else {
-            trangThai = "Chua thanh toan";
-        }
-    }
-
+    // Getter
     public String getMaHD() {
         return maHD;
     }
 
-    public double getTongTien() {
-        if (donHang != null) {
-            return tinhTongTienPhaiThanhToan();
-        }
+    public String getMaNV() {
+        return maNV;
+    }
 
+    public LocalDateTime getThoiGianIn() {
+        return thoiGianIn;
+    }
+
+    public double getTongTien() {
         return tongTien;
     }
 
@@ -220,15 +63,145 @@ public class HoaDon {
         return trangThai;
     }
 
-    public DonHang getDonHang() {
-        return donHang;
+    public List<CTHoaDon> getDanhSachChiTietHD() {
+        return danhSachChiTietHD;
     }
 
     public Khuyenmai getKhuyenMai() {
         return khuyenMai;
     }
 
-    public List<CTHoaDon> getDanhSachChiTietHD() {
-        return danhSachChiTietHD;
+    // Setter
+    public void setMaHD(String maHD) {
+        if (maHD == null || maHD.trim().isEmpty()) {
+            throw new IllegalArgumentException("Ma hoa don khong hop le!");
+        }
+        this.maHD = maHD.trim();
+    }
+
+    public void setMaNV(String maNV) {
+        if (maNV == null || maNV.trim().isEmpty()) {
+            throw new IllegalArgumentException("Ma nhan vien khong hop le!");
+        }
+        this.maNV = maNV.trim();
+    }
+
+    public void setThoiGianIn(LocalDateTime thoiGianIn) {
+        if (thoiGianIn == null) {
+            throw new IllegalArgumentException("Thoi gian in khong hop le!");
+        }
+        this.thoiGianIn = thoiGianIn;
+    }
+
+    // Them chi tiet hoa don
+    public void themChiTietHoaDon(CTHoaDon ct) {
+        if (ct == null) {
+            throw new IllegalArgumentException("Chi tiet hoa don khong hop le!");
+        }
+
+        danhSachChiTietHD.add(ct);
+    }
+
+    // Xoa chi tiet hoa don
+    public void xoaChiTietHoaDon(int viTri) {
+        if (viTri < 0 || viTri >= danhSachChiTietHD.size()) {
+            System.out.println("Vi tri khong hop le!");
+            return;
+        }
+
+        danhSachChiTietHD.remove(viTri);
+    }
+
+    // Ap dung khuyen mai
+    public void apDungKhuyenMai(Khuyenmai khuyenMai) {
+        this.khuyenMai = khuyenMai;
+
+        if (khuyenMai != null) {
+            lichSuMaGiam.add(
+                "Da ap dung: " + khuyenMai.getClass().getSimpleName()
+            );
+        }
+    }
+
+    // Huy khuyen mai
+    public void huyKhuyenMai() {
+        this.khuyenMai = null;
+    }
+
+    // Tinh tong tien hang truoc khuyen mai
+    public double tinhTongTienHang() {
+        double tong = 0;
+
+        for (CTHoaDon ct : danhSachChiTietHD) {
+            tong += ct.tinhTienHang();
+        }
+
+        return tong;
+    }
+
+    // Tinh tien giam
+    public double tinhTienGiam() {
+        if (khuyenMai == null) {
+            return 0;
+        }
+
+        return khuyenMai.tinhTienGiamHopLe(tinhTongTienHang());
+    }
+
+    // Tinh tong tien phai thanh toan
+    public double tinhTongTienPhaiThanhToan() {
+        tongTien = Math.max(
+            0,
+            tinhTongTienHang() - tinhTienGiam()
+        );
+
+        return tongTien;
+    }
+
+    // Hien thi hoa don
+    public void inhoadon() {
+        System.out.println("\n========== HOA DON ==========");
+        System.out.println("Ma hoa don: " + maHD);
+        System.out.println("Ma nhan vien: " + maNV);
+        System.out.println("Thoi gian in: " + thoiGianIn);
+
+        System.out.println("\n--- CHI TIET HOA DON ---");
+
+        for (CTHoaDon ct : danhSachChiTietHD) {
+            System.out.println(ct);
+        }
+
+        System.out.println("Tong tien hang: " + tinhTongTienHang());
+        System.out.println("Tien giam: " + tinhTienGiam());
+        System.out.println("Tong thanh toan: "
+                + tinhTongTienPhaiThanhToan());
+
+        System.out.println("Trang thai: " + trangThai);
+        System.out.println("=============================");
+    }
+
+    // Tinh tong tien hoa don
+    public double Tongtienhoadon() {
+        return tinhTongTienPhaiThanhToan();
+    }
+
+    // Cap nhat trang thai thanh toan
+    public void capNhatTrangThaiThanhToan(boolean daThanhToan) {
+        if (daThanhToan) {
+            trangThai = "Da thanh toan";
+            tinhTongTienPhaiThanhToan();
+        } else {
+            trangThai = "Chua thanh toan";
+        }
+    }
+
+    // Lich su khuyen mai
+    public List<String> getLichSuMaGiam() {
+        return lichSuMaGiam;
+    }
+
+    // Hien thi hoa don theo ten phuong thuc Main cu
+    public void hienThiHoaDon() {
+        inhoadon();
     }
 }

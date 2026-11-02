@@ -1,4 +1,5 @@
-public class ThuNgan {
+
+public class ThuNgan extends Nhanvien {
     private String maTN;
     private String tenThuNgan;
     private String chucVu;
