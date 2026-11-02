@@ -1,45 +1,22 @@
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Scanner;
 
-public class HoaDon {
+public abstract class HoaDon {
+    protected String maHD;
+    protected String maNV;
+    protected LocalDateTime thoigianin;
 
-    private String maHD;
-    private String maNV;
-    private LocalDateTime thoiGianIn;
-    private double tongTien;
-    private String trangThai;
-
-    private List<CTHoaDon> danhSachChiTietHD = new ArrayList<>();
-    private Khuyenmai khuyenMai;
-    private List<String> lichSuMaGiam = new ArrayList<>();
-
-    // Constructor mac dinh
     public HoaDon() {
         this.maHD = "";
         this.maNV = "";
-        this.thoiGianIn = LocalDateTime.now();
-        this.tongTien = 0;
-        this.trangThai = "Chua thanh toan";
+        this.thoigianin = LocalDateTime.now();
     }
 
-    // Constructor tuong thich voi Main cu
-    public HoaDon(String maHD, double tongTien, String trangThai) {
-        this.maHD = maHD;
-        this.tongTien = tongTien;
-        this.trangThai = trangThai;
-        this.maNV = "";
-        this.thoiGianIn = LocalDateTime.now();
-    }
-
-    // Constructor day du
     public HoaDon(String maHD, String maNV) {
-        this.maHD = maHD;
-        this.maNV = maNV;
-        this.thoiGianIn = LocalDateTime.now();
-        this.tongTien = 0;
-        this.trangThai = "Chua thanh toan";
+        this();
+        setMaHD(maHD);
+        setMaNV(maNV);
     }
 
     // Getter
@@ -51,24 +28,8 @@ public class HoaDon {
         return maNV;
     }
 
-    public LocalDateTime getThoiGianIn() {
-        return thoiGianIn;
-    }
-
-    public double getTongTien() {
-        return tongTien;
-    }
-
-    public String getTrangThai() {
-        return trangThai;
-    }
-
-    public List<CTHoaDon> getDanhSachChiTietHD() {
-        return danhSachChiTietHD;
-    }
-
-    public Khuyenmai getKhuyenMai() {
-        return khuyenMai;
+    public LocalDateTime getThoigianin() {
+        return thoigianin;
     }
 
     // Setter
@@ -86,122 +47,45 @@ public class HoaDon {
         this.maNV = maNV.trim();
     }
 
-    public void setThoiGianIn(LocalDateTime thoiGianIn) {
-        if (thoiGianIn == null) {
-            throw new IllegalArgumentException("Thoi gian in khong hop le!");
+    public void setThoigianin(LocalDateTime thoigianin) {
+        if (thoigianin == null) {
+            throw new IllegalArgumentException("Thoi gian lap hoa don khong hop le!");
         }
-        this.thoiGianIn = thoiGianIn;
+        this.thoigianin = thoigianin;
     }
 
-    // Them chi tiet hoa don
-    public void themChiTietHoaDon(CTHoaDon ct) {
-        if (ct == null) {
-            throw new IllegalArgumentException("Chi tiet hoa don khong hop le!");
-        }
-
-        danhSachChiTietHD.add(ct);
-    }
-
-    // Xoa chi tiet hoa don
-    public void xoaChiTietHoaDon(int viTri) {
-        if (viTri < 0 || viTri >= danhSachChiTietHD.size()) {
-            System.out.println("Vi tri khong hop le!");
-            return;
-        }
-
-        danhSachChiTietHD.remove(viTri);
-    }
-
-    // Ap dung khuyen mai
-    public void apDungKhuyenMai(Khuyenmai khuyenMai) {
-        this.khuyenMai = khuyenMai;
-
-        if (khuyenMai != null) {
-            lichSuMaGiam.add(
-                "Da ap dung: " + khuyenMai.getClass().getSimpleName()
-            );
-        }
-    }
-
-    // Huy khuyen mai
-    public void huyKhuyenMai() {
-        this.khuyenMai = null;
-    }
-
-    // Tinh tong tien hang truoc khuyen mai
-    public double tinhTongTienHang() {
-        double tong = 0;
-
-        for (CTHoaDon ct : danhSachChiTietHD) {
-            tong += ct.tinhTienHang();
-        }
-
-        return tong;
-    }
-
-    // Tinh tien giam
-    public double tinhTienGiam() {
-        if (khuyenMai == null) {
-            return 0;
-        }
-
-        return khuyenMai.tinhTienGiamHopLe(tinhTongTienHang());
-    }
-
-    // Tinh tong tien phai thanh toan
-    public double tinhTongTienPhaiThanhToan() {
-        tongTien = Math.max(
-            0,
-            tinhTongTienHang() - tinhTienGiam()
+    // Nhap ma hoa don bang Ktradulieu
+    public static String nhapMaHD(Scanner sc) {
+        return Ktradulieu.nhapChuoi(
+                sc,
+                "Nhap ma hoa don: ",
+                ".+",
+                "Ma hoa don khong duoc de trong!"
         );
-
-        return tongTien;
     }
 
-    // Hien thi hoa don
-    public void inhoadon() {
-        System.out.println("\n========== HOA DON ==========");
-        System.out.println("Ma hoa don: " + maHD);
-        System.out.println("Ma nhan vien: " + maNV);
-        System.out.println("Thoi gian in: " + thoiGianIn);
-
-        System.out.println("\n--- CHI TIET HOA DON ---");
-
-        for (CTHoaDon ct : danhSachChiTietHD) {
-            System.out.println(ct);
-        }
-
-        System.out.println("Tong tien hang: " + tinhTongTienHang());
-        System.out.println("Tien giam: " + tinhTienGiam());
-        System.out.println("Tong thanh toan: "
-                + tinhTongTienPhaiThanhToan());
-
-        System.out.println("Trang thai: " + trangThai);
-        System.out.println("=============================");
+    // Nhap ma nhan vien bang Ktradulieu
+    public static String nhapMaNV(Scanner sc) {
+        return Ktradulieu.nhapChuoi(
+                sc,
+                "Nhap ma nhan vien: ",
+                ".+",
+                "Ma nhan vien khong duoc de trong!"
+        );
     }
 
-    // Tinh tong tien hoa don
-    public double Tongtienhoadon() {
-        return tinhTongTienPhaiThanhToan();
+    // Kiem tra trang thai thanh toan
+    public boolean isDaThanhToan() {
+        return this instanceof Hoadonban
+                && ((Hoadonban) this).getTrangThai() != null
+                && ((Hoadonban) this).getTrangThai().equalsIgnoreCase("Da thanh toan");
     }
 
-    // Cap nhat trang thai thanh toan
-    public void capNhatTrangThaiThanhToan(boolean daThanhToan) {
-        if (daThanhToan) {
-            trangThai = "Da thanh toan";
-            tinhTongTienPhaiThanhToan();
-        } else {
-            trangThai = "Chua thanh toan";
-        }
-    }
+    // Phuong thuc truu tuong
+    public abstract double Tongtienhoadon();
 
-    // Lich su khuyen mai
-    public List<String> getLichSuMaGiam() {
-        return lichSuMaGiam;
-    }
+    public abstract void inhoadon();
 
-    // Hien thi hoa don theo ten phuong thuc Main cu
-    public void hienThiHoaDon() {
-        inhoadon();
-    }
+    @Override
+    public abstract String toString();
 }

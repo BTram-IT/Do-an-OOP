@@ -1,7 +1,7 @@
 import java.util.Scanner;
 
 public abstract class DoiTac {
-    private static final Scanner sc = TienIch.sc;
+    private static final Scanner sc = new Scanner(System.in);
 
 
     protected String maDT;

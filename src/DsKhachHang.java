@@ -3,31 +3,31 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Scanner;
 
-public class DSKhachHang implements IQuanLy<KhachHang> {
+public class DsKhachHang implements IQuanLy<Khachhang> {
     // 1. Mảng động lưu toàn bộ khách hàng
-    private ArrayList<KhachHang> dsKhachHang;
+    private ArrayList<Khachhang> dsKhachHang;
 
     // 2. Mảng tĩnh lưu danh sách khách hàng VIP / Kim cương (Thỏa mãn yêu cầu mảng tĩnh)
-    private KhachHang[] dsKhachHangVip;
+    private Khachhang[] dsKhachHangVip;
     private int soLuongVip;
     private static final int MAX_VIP = 50;
 
-    public DSKhachHang() {
+    public DsKhachHang() {
         this.dsKhachHang = new ArrayList<>();
-        this.dsKhachHangVip = new KhachHang[MAX_VIP];
+        this.dsKhachHangVip = new Khachhang[MAX_VIP];
         this.soLuongVip = 0;
     }
 
-    public ArrayList<KhachHang> getDsKhachHang() { return dsKhachHang; }
+    public ArrayList<Khachhang> getDsKhachHang() { return dsKhachHang; }
 
     @Override
-    public void them(KhachHang kh) {
+    public void them(Khachhang kh) {
         dsKhachHang.add(kh);
         capNhatDanhSachVip();
     }
 
     @Override
-    public boolean sua(String maKH, KhachHang itemMoi) {
+    public boolean sua(String maKH, Khachhang itemMoi) {
         for (int i = 0; i < dsKhachHang.size(); i++) {
             if (dsKhachHang.get(i).getMaKH().equalsIgnoreCase(maKH)) {
                 dsKhachHang.set(i, itemMoi);
@@ -51,17 +51,17 @@ public class DSKhachHang implements IQuanLy<KhachHang> {
     }
 
     @Override
-    public KhachHang timKiemTheoMa(String maKH) {
-        for (KhachHang kh : dsKhachHang) {
+    public Khachhang timKiemTheoMa(String maKH) {
+        for (Khachhang kh : dsKhachHang) {
             if (kh.getMaKH().equalsIgnoreCase(maKH)) return kh;
         }
         return null;
     }
 
     // Tìm kiếm khách hàng theo tên (gần đúng)
-    public ArrayList<KhachHang> timKiemTheoTen(String ten) {
-        ArrayList<KhachHang> ketQua = new ArrayList<>();
-        for (KhachHang kh : dsKhachHang) {
+    public ArrayList<Khachhang> timKiemTheoTen(String ten) {
+        ArrayList<Khachhang> ketQua = new ArrayList<>();
+        for (Khachhang kh : dsKhachHang) {
             if (kh.getTen().toLowerCase().contains(ten.toLowerCase())) {
                 ketQua.add(kh);
             }
@@ -72,7 +72,7 @@ public class DSKhachHang implements IQuanLy<KhachHang> {
     // Cập nhật danh sách mảng tĩnh VIP (Vàng & Kim Cương)
     public void capNhatDanhSachVip() {
         soLuongVip = 0;
-        for (KhachHang kh : dsKhachHang) {
+        for (Khachhang kh : dsKhachHang) {
             if (kh.getThuHang().equalsIgnoreCase("Vang") || kh.getThuHang().equalsIgnoreCase("Kim Cuong")) {
                 if (soLuongVip < MAX_VIP) {
                     dsKhachHangVip[soLuongVip++] = kh;
@@ -97,7 +97,7 @@ public class DSKhachHang implements IQuanLy<KhachHang> {
         System.out.println("=========================================================================================");
         System.out.printf("%-8s | %-20s | %-12s | %-12s | %-15s\n", "Ma KH", "Ho Ten", "SDT", "Thu Hang", "Tong Chi");
         System.out.println("-----------------------------------------------------------------------------------------");
-        for (KhachHang kh : dsKhachHang) {
+        for (Khachhang kh : dsKhachHang) {
             System.out.printf("%-8s | %-20s | %-12s | %-12s | %,13.0f VND\n",
                     kh.getMaKH(), kh.getTen(), kh.getSdt(), kh.getThuHang(), kh.getTongTienMua());
         }
@@ -107,7 +107,7 @@ public class DSKhachHang implements IQuanLy<KhachHang> {
     // Đọc & Ghi file text cho Khách Hàng
     public void ghiFile(String filePath) {
         try (PrintWriter pw = new PrintWriter(new FileWriter(filePath))) {
-            for (KhachHang kh : dsKhachHang) {
+            for (Khachhang kh : dsKhachHang) {
                 // maKH,ten,sdt,diaChi,email,ngaySinh,ngayDangKy,tongTienMua
                 pw.println(String.format("%s,%s,%s,%s,%s,%s,%s,%.0f",
                         kh.getMaKH(), kh.getTen(), kh.getSdt(), kh.getDiaChi(),
@@ -127,7 +127,7 @@ public class DSKhachHang implements IQuanLy<KhachHang> {
             while ((line = br.readLine()) != null) {
                 String[] p = line.split(",");
                 if (p.length >= 8) {
-                    KhachHang kh = new KhachHang(p[1], p[2], p[3], p[4],
+                    Khachhang kh = new Khachhang(p[1], p[2], p[3], p[4],
                             LocalDate.parse(p[5]), p[0], LocalDate.parse(p[6]), Double.parseDouble(p[7]));
                     them(kh);
                 }

@@ -1,7 +1,10 @@
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Locale;
+import java.util.Scanner;
 
 // Hóa đơn nhập kho (thay PhieuNhap cũ), kế thừa HoaDon của nhóm: một lần nhập hàng từ một nhà cung cấp, gồm nhiều dòng CTHDonNhap.
 // Trạng thái: CHO_XAC_NHAN -> DA_XAC_NHAN -> DA_HUY (hoặc CHO_XAC_NHAN -> DA_HUY).
@@ -37,6 +40,42 @@ public class HoadonNhap extends HoaDon {
     private ArrayList<CTHDonNhap> chiTiet = new ArrayList<>();
     private TrangThai trangThai;
 
+    // Nhập thông tin tạo hóa đơn nhập
+    public static HoadonNhap Nhap(Scanner sc) {
+        if (sc == null) {
+            throw new IllegalArgumentException("Scanner khong hop le!");
+        }
+
+        String maHD = HoaDon.nhapMaHD(sc);
+        String maNV = HoaDon.nhapMaNV(sc);
+
+        LocalDate ngayNhap;
+        while (true) {
+            String ngay = Ktradulieu.nhapChuoi(
+                    sc,
+                    "Nhap ngay nhap (yyyy-MM-dd): ",
+                    "^\\d{4}-\\d{2}-\\d{2}$",
+                    "Ngay nhap phai co dang yyyy-MM-dd!"
+            );
+
+            try {
+                ngayNhap = LocalDate.parse(ngay);
+                break;
+            } catch (DateTimeParseException e) {
+                System.out.println("Ngay nhap khong hop le!");
+            }
+        }
+
+        String maNCC = Ktradulieu.nhapChuoi(
+                sc,
+                "Nhap ma nha cung cap: ",
+                ".+",
+                "Ma nha cung cap khong duoc de trong!"
+        );
+
+        return new HoadonNhap(maHD, maNV, ngayNhap, maNCC);
+    }
+
     // Tạo phiếu mới, ở trạng thái chờ xác nhận
     public HoadonNhap(String maHoaDon, String maNhanVien, LocalDate ngayNhap, String maNhaCungCap) {
         this(maHoaDon, maNhanVien, LocalDateTime.now(), ngayNhap, maNhaCungCap,
@@ -64,7 +103,17 @@ public class HoadonNhap extends HoaDon {
             throw new IllegalArgumentException("Trạng thái phiếu không được null.");
         }
         this.trangThai = trangThai;
+
+        // [ĐÃ SỬA] Kiểm tra danh sách chi tiết không null trước khi duyệt.
+        if (cacDong == null) {
+            throw new IllegalArgumentException("Danh sách chi tiết không được null.");
+        }
+
         for (CTHDonNhap ct : cacDong) {
+            // [ĐÃ SỬA] Không cho phép phần tử null trong danh sách chi tiết.
+            if (ct == null) {
+                throw new IllegalArgumentException("Chi tiết hóa đơn nhập không được null.");
+            }
             kiemTraChiTiet(ct);
             chiTiet.add(ct);
         }
@@ -94,6 +143,11 @@ public class HoadonNhap extends HoaDon {
 
     // Mỗi sản phẩm một dòng; hạn sử dụng không được trước ngày nhập (không nhập hàng đã hết hạn)
     private void kiemTraChiTiet(CTHDonNhap ct) {
+        // [ĐÃ SỬA] Bảo vệ phương thức nếu được gọi với chi tiết null.
+        if (ct == null) {
+            throw new IllegalArgumentException("Chi tiết hóa đơn nhập không được null.");
+        }
+
         if (ct.getHanSuDung() != null && ct.getHanSuDung().isBefore(ngayNhap)) {
             throw new IllegalArgumentException("Dòng " + ct.getMaSP() + ": hạn sử dụng không được trước ngày nhập "
                     + SanPham.dinhDangNgay(ngayNhap) + ".");
@@ -164,7 +218,8 @@ public class HoadonNhap extends HoaDon {
     // [HoaDon-thật] nhóm cần xác nhận Tongtienhoadon() của hóa đơn nhập có gồm thuế hay không (ở đây: có).
     @Override
     public double Tongtienhoadon() {
-        return (double) (tinhTongTien() + tinhTongThue());
+        // [ĐÃ SỬA] Chuyển từng giá trị sang double trước khi cộng để tránh tràn số kiểu long.
+        return (double) tinhTongTien() + (double) tinhTongThue();
     }
 
     // In hóa đơn nhập ra màn hình (yêu cầu abstract của HoaDon)

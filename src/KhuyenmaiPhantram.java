@@ -1,84 +1,86 @@
-import java.time.LocalDate;
+
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 
 public class KhuyenmaiPhantram extends Khuyenmai {
     private double phanTramGiamGia;
-    private long mucGiamToiDa;
+    private double mucGiamGiaToiDa;
 
     public KhuyenmaiPhantram() {
+        super();
+        loaiKM = "Giam theo phan tram";
         phanTramGiamGia = 0;
-        mucGiamToiDa = 0;
-        setLoaiKM("Giảm theo phần trăm");
+        mucGiamGiaToiDa = 0;
     }
 
-    public KhuyenmaiPhantram(String maKM, String loaiKM,
-                             LocalDate ngayBatDau, LocalDate ngayKetThuc,
-                             long mucChiToiThieu, ArrayList<SanPham> danhSachKM,
-                             double phanTramGiamGia, long mucGiamToiDa) {
-        super(maKM, loaiKM, ngayBatDau, ngayKetThuc,
+    public KhuyenmaiPhantram(
+            String maKM, String tenKM,
+            LocalDateTime ngayBatDau,
+            LocalDateTime ngayKetThuc,
+            double mucChiToiThieu,
+            ArrayList<SanPham> danhSachKM,
+            double phanTramGiamGia,
+            double mucGiamGiaToiDa) {
+
+        super(maKM, tenKM, "Giam theo phan tram",
+                ngayBatDau, ngayKetThuc,
                 mucChiToiThieu, danhSachKM);
+
         this.phanTramGiamGia = phanTramGiamGia;
-        this.mucGiamToiDa = mucGiamToiDa;
+        this.mucGiamGiaToiDa = mucGiamGiaToiDa;
     }
 
-    public void setKM() {
-        super.setKM();
+    public void thietLapKhuyenMai() {
+        super.thietLapKhuyenMai();
+
+        loaiKM = "Giam theo phan tram";
 
         do {
             phanTramGiamGia = Ktradulieu.nhapSoThuc(
-                    sc, "Nhập phần trăm giảm giá: ");
+                    sc,
+                    "Nhap phan tram giam gia (toi da 100%): "
+            );
 
             if (phanTramGiamGia > 100) {
-                System.out.println("Phần trăm giảm giá không được lớn hơn 100!");
+                System.out.println("Phan tram giam gia khong duoc vuot qua 100%!");
             }
         } while (phanTramGiamGia > 100);
 
-        mucGiamToiDa = Ktradulieu.nhapSoNguyen(
-                sc, "Nhập số tiền được giảm tối đa: ");
-
-        setLoaiKM("Giảm " + phanTramGiamGia + "%");
-    }
-
-    public double getPhanTramGiamGia() {
-        return phanTramGiamGia;
-    }
-
-    public long getMucGiamToiDa() {
-        return mucGiamToiDa;
-    }
-
-    public void setPhanTramGiamGia(double phanTramGiamGia) {
-        this.phanTramGiamGia = phanTramGiamGia;
-    }
-
-    public void setMucGiamToiDa(long mucGiamToiDa) {
-        this.mucGiamToiDa = mucGiamToiDa;
+        mucGiamGiaToiDa = Ktradulieu.nhapSoThuc(
+                sc,
+                "Nhap muc giam gia toi da: "
+        );
     }
 
     @Override
     public double traCuuGiaSanPhamSauKM(String maSP) {
         int viTri = timKiemSP(maSP);
 
-        if (viTri == -1) {
+        if (viTri == -1 || !kiemTraThoiHan()) {
             return -1;
         }
 
-        SanPham sp = getDanhSachKM().get(viTri);
-        double giaBan = sp.getGiaBan();
+        double giaGoc = danhSachKM.get(viTri).getGiaBan();
 
-        double tienGiam = giaBan * phanTramGiamGia / 100;
+        double tienGiam = giaGoc * phanTramGiamGia / 100;
 
-        if (tienGiam > mucGiamToiDa) {
-            tienGiam = mucGiamToiDa;
-        }
+        tienGiam = Math.min(tienGiam, mucGiamGiaToiDa);
 
-        return giaBan - tienGiam;
+        return Math.max(0, giaGoc - tienGiam);
+    }
+
+    public double getPhanTramGiamGia() {
+        return phanTramGiamGia;
+    }
+
+    public double getMucGiamGiaToiDa() {
+        return mucGiamGiaToiDa;
     }
 
     @Override
     public String toString() {
         return super.toString()
-                + " | Phần trăm giảm giá: " + phanTramGiamGia
-                + "% | Mức giảm tối đa: " + mucGiamToiDa;
+                + "\nPhan tram giam: " + phanTramGiamGia + "%"
+                + "\nMuc giam toi da: " + mucGiamGiaToiDa;
     }
 }

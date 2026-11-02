@@ -1,378 +1,244 @@
+
 import java.util.ArrayList;
 import java.util.Scanner;
 
 public class Hoadonban extends HoaDon {
+    private String maKH;
+    private ArrayList<CTHoaDon> danhSachChiTietHD;
+    private ThanhToan thanhToan;
+    private Khuyenmai khuyenMai;
+    private double mucGiamGia;
+    private String trangThai;
 
-    private String MaKH;
-    private ArrayList<CTHoaDon> CTHoaDon;
-    private ThanhToan thanhtoan;
-    private ArrayList<LoXuat> cacLoDaXuat;
-
-    private DSSanPham dsSanPham;
-    private DSSanPhamKhuyenMai dsSPKM;
-    private DSKhuyenMai dsKM;
-
-    // Constructor mặc định
     public Hoadonban() {
-        MaKH = "";
-        CTHoaDon = new ArrayList<>();
-        cacLoDaXuat = new ArrayList<>();
-        thanhtoan = null;
-
-        dsSanPham = null;
-        dsSPKM = null;
-        dsKM = null;
+        super();
+        this.maKH = "";
+        this.danhSachChiTietHD = new ArrayList<>();
+        this.thanhToan = null;
+        this.khuyenMai = null;
+        this.mucGiamGia = 0;
+        this.trangThai = "Chua thanh toan";
     }
 
-    // Constructor đầy đủ theo cấu trúc cũ
-    public Hoadonban(String maKH, ArrayList<CTHoaDon> CTHoaDon,
-                     ThanhToan thanhtoan) {
-
-        this();
-
+    public Hoadonban(String maHD, String maNV, String maKH) {
+        super(maHD, maNV);
         setMaKH(maKH);
-        setCTHoaDon(CTHoaDon);
-        this.thanhtoan = thanhtoan;
+        this.danhSachChiTietHD = new ArrayList<>();
+        this.thanhToan = null;
+        this.khuyenMai = null;
+        this.mucGiamGia = 0;
+        this.trangThai = "Chua thanh toan";
     }
 
-    // Constructor có đầy đủ dữ liệu để tính tiền
-    public Hoadonban(String maKH, ArrayList<CTHoaDon> CTHoaDon,
-                     ThanhToan thanhtoan, DSSanPham dsSanPham,
-                     DSSanPhamKhuyenMai dsSPKM, DSKhuyenMai dsKM) {
-
-        this(maKH, CTHoaDon, thanhtoan);
-
-        this.dsSanPham = dsSanPham;
-        this.dsSPKM = dsSPKM;
-        this.dsKM = dsKM;
-    }
-
-    // Nhập thông tin hóa đơn
-    public void Nhap(Scanner sc) {
+    // Nhap thong tin hoa don ban
+    public static Hoadonban Nhap(Scanner sc) {
         if (sc == null) {
-            throw new IllegalArgumentException("Scanner không hợp lệ!");
+            throw new IllegalArgumentException("Scanner khong hop le!");
         }
 
-        MaKH = Ktradulieu.nhapChuoi(
+        String maHD = HoaDon.nhapMaHD(sc);
+        String maNV = HoaDon.nhapMaNV(sc);
+
+        String maKH = Ktradulieu.nhapChuoi(
                 sc,
-                "Nhập mã khách hàng: ",
+                "Nhap ma khach hang: ",
                 ".+",
-                "Mã khách hàng không được để trống!"
+                "Ma khach hang khong duoc de trong!"
         );
+
+        return new Hoadonban(maHD, maNV, maKH);
     }
 
-    // Tính tổng tiền hàng trước khuyến mãi
-    public double tinhTongTienTruocKM() {
+    // ================= GETTER =================
 
-        double tongTien = 0;
-
-        if (CTHoaDon == null) {
-            return 0;
-        }
-
-        for (CTHoaDon ct : CTHoaDon) {
-            if (ct != null) {
-                tongTien += ct.tinhTienHang();
-            }
-        }
-
-        return tongTien;
-    }
-
-    // Tính tổng tiền hàng sau khuyến mãi
-    public double tinhTongTienSauKM() {
-
-        if (CTHoaDon == null) {
-            return 0;
-        }
-
-        double tongTienSauKM = 0;
-
-        // Tổng tiền trước khuyến mãi dùng để xét mức chi tiêu tối thiểu
-        double tongTienTruocKM = tinhTongTienTruocKM();
-
-        for (CTHoaDon ct : CTHoaDon) {
-
-            if (ct == null) {
-                continue;
-            }
-
-            tongTienSauKM += ct.tinhTienSauKM(
-                    dsSPKM,
-                    dsKM,
-                    tongTienTruocKM
-            );
-        }
-
-        return tongTienSauKM;
-    }
-
-    // Tính tổng thuế của hóa đơn
-    public double Tongthuedonhang(DSSanPham dssanpham) {
-
-        if (CTHoaDon == null || dssanpham == null) {
-            return 0;
-        }
-
-        double tongThue = 0;
-
-        double tongTienTruocKM = tinhTongTienTruocKM();
-
-        for (CTHoaDon ct : CTHoaDon) {
-
-            if (ct == null) {
-                continue;
-            }
-
-            // Tìm sản phẩm theo mã trong chi tiết hóa đơn
-            SanPham sp = dssanpham.timTheoMa(ct.getMaSP());
-
-            if (sp == null) {
-                throw new IllegalArgumentException(
-                        "Không tìm thấy sản phẩm có mã: " + ct.getMaSP()
-                );
-            }
-
-            // Tính thuế trên giá sau khuyến mãi
-            tongThue += ct.tinhTienThue(
-                    sp,
-                    dsSPKM,
-                    dsKM,
-                    tongTienTruocKM
-            );
-        }
-
-        return tongThue;
-    }
-
-    // Tính tổng tiền hóa đơn
-    @Override
-    public double Tongtienhoadon() {
-
-        if (dsSanPham == null) {
-            return 0;
-        }
-
-        // Tiền hàng sau khuyến mãi + tổng thuế
-        return tinhTongTienSauKM()
-                + Tongthuedonhang(dsSanPham);
-    }
-
-    // Nhập phương thức thanh toán
-    public void nhapThanhToan(Scanner sc, double tongTien) {
-
-        if (sc == null) {
-            throw new IllegalArgumentException("Scanner không hợp lệ!");
-        }
-
-        if (tongTien < 0 || Double.isNaN(tongTien)
-                || Double.isInfinite(tongTien)) {
-            throw new IllegalArgumentException("Tổng tiền không hợp lệ!");
-        }
-
-        // Chưa thanh toán thì không giữ thông tin thanh toán cũ
-        thanhtoan = null;
-
-        while (thanhtoan == null) {
-
-            System.out.println("\n===== PHƯƠNG THỨC THANH TOÁN =====");
-            System.out.println("Tổng tiền cần thanh toán: " + tongTien);
-            System.out.println("1. Tiền mặt");
-            System.out.println("2. Chuyển khoản");
-
-            int chon = Ktradulieu.luaChon(
-                    sc,
-                    "Chọn phương thức thanh toán: ",
-                    1,
-                    2
-            );
-
-            if (chon == 1) {
-
-                TienMat tienMat = new TienMat();
-
-                tienMat.nhap(sc);
-
-                if (tienMat.thanhToan(tongTien)) {
-
-                    thanhtoan = tienMat;
-
-                    System.out.println("Thanh toán thành công!");
-                    System.out.println(
-                            "Tiền thừa: " + tienMat.tienThua(tongTien)
-                    );
-
-                } else {
-
-                    System.out.println("Khách đưa không đủ tiền!");
-                    System.out.println("Vui lòng nhập lại!");
-                }
-
-            } else if (chon == 2) {
-
-                String maGiaoDich = Ktradulieu.nhapChuoi(
-                        sc,
-                        "Nhập mã giao dịch: ",
-                        ".+",
-                        "Mã giao dịch không được để trống!"
-                );
-
-                ChuyenKhoan chuyenKhoan =
-                        new ChuyenKhoan(maGiaoDich);
-
-                if (chuyenKhoan.thanhToan(tongTien)) {
-
-                    thanhtoan = chuyenKhoan;
-
-                    System.out.println("Thanh toán chuyển khoản thành công!");
-
-                } else {
-
-                    System.out.println("Thanh toán chuyển khoản thất bại!");
-                }
-            }
-        }
-    }
-
-    // Lưu các lô hàng đã xuất
-    public void setCacLoDaXuat(ArrayList<LoXuat> cacLoDaXuat) {
-
-        if (cacLoDaXuat == null) {
-            this.cacLoDaXuat = new ArrayList<>();
-        } else {
-            this.cacLoDaXuat = new ArrayList<>(cacLoDaXuat);
-        }
-    }
-
-    public ArrayList<LoXuat> getCacLoDaXuat() {
-        return new ArrayList<>(cacLoDaXuat);
-    }
-
-    // Getter và setter
     public String getMaKH() {
-        return MaKH;
+        return maKH;
     }
+
+    public String getTrangThai() {
+        return trangThai;
+    }
+
+    public ArrayList<CTHoaDon> getDanhSachChiTietHD() {
+        return danhSachChiTietHD;
+    }
+
+    public ThanhToan getThanhToan() {
+        return thanhToan;
+    }
+
+    public Khuyenmai getKhuyenMai() {
+        return khuyenMai;
+    }
+
+    public double getMucGiamGia() {
+        return mucGiamGia;
+    }
+
+    // ================= SETTER =================
 
     public void setMaKH(String maKH) {
-
         if (maKH == null || maKH.trim().isEmpty()) {
-            throw new IllegalArgumentException(
-                    "Mã khách hàng không được để trống!"
-            );
+            throw new IllegalArgumentException("Ma khach hang khong hop le!");
+        }
+        this.maKH = maKH.trim();
+    }
+
+    public void setThanhToan(ThanhToan thanhToan) {
+        this.thanhToan = thanhToan;
+    }
+
+    // ================= CHI TIET HOA DON =================
+
+    public void themChiTietHoaDon(CTHoaDon ct) {
+        if (ct == null) {
+            throw new IllegalArgumentException("Chi tiet hoa don khong hop le!");
         }
 
-        MaKH = maKH.trim();
+        ct.setMaHD(maHD);
+        danhSachChiTietHD.add(ct);
     }
 
-    public ArrayList<CTHoaDon> getCTHoaDon() {
-        return new ArrayList<>(CTHoaDon);
-    }
-
-    public void setCTHoaDon(ArrayList<CTHoaDon> CTHoaDon) {
-
-        if (CTHoaDon == null) {
-            this.CTHoaDon = new ArrayList<>();
+    public void xoaChiTietHoaDon(int viTri) {
+        if (viTri >= 0 && viTri < danhSachChiTietHD.size()) {
+            danhSachChiTietHD.remove(viTri);
         } else {
-            this.CTHoaDon = new ArrayList<>(CTHoaDon);
+            System.out.println("Vi tri khong hop le!");
         }
     }
 
-    public ThanhToan getThanhtoan() {
-        return thanhtoan;
-    }
+    // ================= KHUYEN MAI =================
 
-    public void setThanhtoan(ThanhToan thanhtoan) {
-        this.thanhtoan = thanhtoan;
-    }
-
-    public DSSanPham getDsSanPham() {
-        return dsSanPham;
-    }
-
-    public void setDsSanPham(DSSanPham dsSanPham) {
-        this.dsSanPham = dsSanPham;
-    }
-
-    public DSSanPhamKhuyenMai getDsSPKM() {
-        return dsSPKM;
-    }
-
-    public void setDsSPKM(DSSanPhamKhuyenMai dsSPKM) {
-        this.dsSPKM = dsSPKM;
-    }
-
-    public DSKhuyenMai getDsKM() {
-        return dsKM;
-    }
-
-    public void setDsKM(DSKhuyenMai dsKM) {
-        this.dsKM = dsKM;
-    }
-
-    // In hóa đơn
-    @Override
-    public void inhoadon() {
-
-        System.out.println("\n========== HÓA ĐƠN BÁN ==========");
-
-        System.out.println("Mã khách hàng: " + MaKH);
-
-        if (CTHoaDon == null || CTHoaDon.isEmpty()) {
-            System.out.println("Hóa đơn chưa có sản phẩm!");
+    public void ApMaGiamGia(Khuyenmai km) {
+        if (km == null) {
+            this.khuyenMai = null;
+            this.mucGiamGia = 0;
             return;
         }
 
-        for (CTHoaDon ct : CTHoaDon) {
+        this.khuyenMai = km;
+        this.mucGiamGia = tinhTienGiamKhuyenMai();
+    }
 
-            if (ct != null) {
-                System.out.println("---------------------------------");
-                System.out.println(ct);
-
-                System.out.println(
-                        "Tiền sau khuyến mãi: "
-                                + ct.tinhTienSauKM(
-                                dsSPKM,
-                                dsKM,
-                                tinhTongTienTruocKM()
-                        )
-                );
-            }
+    private double tinhTienGiamKhuyenMai() {
+        if (khuyenMai == null || !khuyenMai.kiemTraThoiHan()) {
+            return 0;
         }
 
-        System.out.println("---------------------------------");
+        double tongTien = tinhTongTienHang();
 
-        System.out.println(
-                "Tổng tiền hàng trước KM: "
-                        + tinhTongTienTruocKM()
-        );
+        if (tongTien < khuyenMai.getMucChiToiThieu()) {
+            return 0;
+        }
 
-        System.out.println(
-                "Tổng tiền hàng sau KM: "
-                        + tinhTongTienSauKM()
-        );
+        double tienSauKM = 0;
 
-        System.out.println(
-                "Tổng thuế: "
-                        + Tongthuedonhang(dsSanPham)
-        );
+        for (CTHoaDon ct : danhSachChiTietHD) {
+            double giaSauKM =
+                    khuyenMai.traCuuGiaSanPhamSauKM(ct.getMaSP());
 
-        System.out.println("---------------------------------");
+            if (giaSauKM < 0 || giaSauKM > ct.getGiaban()) {
+                giaSauKM = ct.getGiaban();
+            }
 
-        System.out.println(
-                "Tổng tiền hóa đơn: "
-                        + Tongtienhoadon()
-        );
+            tienSauKM += ct.getSoluong() * giaSauKM;
+        }
 
-        if (thanhtoan != null) {
-            System.out.println("Phương thức thanh toán: "
-                    + thanhtoan.getPhuongThuc());
+        return Math.max(0, tongTien - tienSauKM);
+    }
 
-            System.out.println("Thông tin thanh toán:");
-            System.out.println(thanhtoan);
+    // ================= TINH TIEN =================
+
+    public double tinhTongTienHang() {
+        double tong = 0;
+
+        for (CTHoaDon ct : danhSachChiTietHD) {
+            tong += ct.tinhTienHang();
+        }
+
+        return tong;
+    }
+
+    public double ThanhTienSauKhuyenMai() {
+        return Math.max(0, tinhTongTienHang() - mucGiamGia);
+    }
+
+    @Override
+    public double Tongtienhoadon() {
+        return ThanhTienSauKhuyenMai();
+    }
+
+    // ================= THANH TOAN =================
+
+    public boolean thanhToanHoaDon() {
+        if (thanhToan == null) {
+            System.out.println("Chua chon phuong thuc thanh toan!");
+            return false;
+        }
+
+        if (isDaThanhToan()) {
+            System.out.println("Hoa don da duoc thanh toan!");
+            return false;
+        }
+
+        thanhToan.setSoTien(Tongtienhoadon());
+        thanhToan.setMaNV(maNV);
+        thanhToan.nhap();
+
+        boolean ketQua = thanhToan.qTrinhThanhToan();
+
+        if (ketQua) {
+            trangThai = "Da thanh toan";
         } else {
-            System.out.println("Hóa đơn chưa thanh toán!");
+            trangThai = "Chua thanh toan";
+        }
+
+        return ketQua;
+    }
+
+    // ================= IN HOA DON =================
+
+    @Override
+    public void inhoadon() {
+        System.out.println("\n========== HOA DON BAN ==========");
+        System.out.println("Ma hoa don: " + maHD);
+        System.out.println("Ma khach hang: " + maKH);
+        System.out.println("Ma nhan vien: " + maNV);
+        System.out.println("Thoi gian in: " + thoigianin);
+
+        System.out.println("\n--- CHI TIET HOA DON ---");
+
+        for (CTHoaDon ct : danhSachChiTietHD) {
+            System.out.println(ct);
+            System.out.println("------------------------");
+        }
+
+        System.out.printf("Tong tien hang: %,.0f VND%n",
+                tinhTongTienHang());
+
+        System.out.printf("Tien giam: %,.0f VND%n",
+                mucGiamGia);
+
+        System.out.printf("Tong thanh toan: %,.0f VND%n",
+                Tongtienhoadon());
+
+        System.out.println("Trang thai: " + trangThai);
+
+        if (thanhToan != null) {
+            System.out.println("Thanh toan: " + thanhToan);
         }
 
         System.out.println("=================================");
+    }
+
+    @Override
+    public String toString() {
+        return "MaHD: " + maHD
+                + " | MaKH: " + maKH
+                + " | MaNV: " + maNV
+                + " | Thoi gian: " + thoigianin
+                + " | Tong tien: "
+                + String.format("%,.0f", Tongtienhoadon())
+                + " VND | Trang thai: " + trangThai;
     }
 }

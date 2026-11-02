@@ -1,57 +1,78 @@
-import java.time.LocalDate;
+
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 
 public class KhuyenmaiTructiep extends Khuyenmai {
-    private long soTienGiam;
+    private double soTienGiam;
 
+    // Constructor mac dinh
     public KhuyenmaiTructiep() {
+        super();
+        loaiKM = "Giam truc tiep";
         soTienGiam = 0;
-        setLoaiKM("Giảm giá trực tiếp");
     }
 
-    public KhuyenmaiTructiep(String maKM, String loaiKM,
-                             LocalDate ngayBatDau, LocalDate ngayKetThuc,
-                             long mucChiToiThieu, ArrayList<SanPham> danhSachKM,
-                             long soTienGiam) {
-        super(maKM, loaiKM, ngayBatDau, ngayKetThuc,
+    // Constructor day du
+    public KhuyenmaiTructiep(
+            String maKM, String tenKM,
+            LocalDateTime ngayBatDau,
+            LocalDateTime ngayKetThuc,
+            double mucChiToiThieu,
+            ArrayList<SanPham> danhSachKM,
+            double soTienGiam) {
+
+        super(maKM, tenKM, "Giam truc tiep",
+                ngayBatDau, ngayKetThuc,
                 mucChiToiThieu, danhSachKM);
+
         this.soTienGiam = soTienGiam;
     }
 
-    public void setKM() {
-        super.setKM();
+    // Nhap thong tin khuyen mai
+    public void thietLapKhuyenMai() {
+        super.thietLapKhuyenMai();
 
-        soTienGiam = Ktradulieu.nhapSoNguyen(
-                sc, "Nhập số tiền giảm giá trực tiếp: ");
+        loaiKM = "Giam truc tiep";
 
-        setLoaiKM("Giảm trực tiếp " + soTienGiam + " đồng");
+        soTienGiam = Ktradulieu.nhapSoThuc(
+                sc,
+                "Nhap so tien giam truc tiep: "
+        );
     }
 
-    public long getSoTienGiam() {
-        return soTienGiam;
-    }
-
-    public void setSoTienGiam(long soTienGiam) {
-        this.soTienGiam = soTienGiam;
-    }
-
+    // Tra cuu gia san pham sau khuyen mai
     @Override
     public double traCuuGiaSanPhamSauKM(String maSP) {
         int viTri = timKiemSP(maSP);
 
-        if (viTri == -1) {
+        if (viTri == -1 || !kiemTraThoiHan()) {
             return -1;
         }
 
-        double giaBan = getDanhSachKM().get(viTri).getGiaBan();
+        double giaGoc = danhSachKM.get(viTri).getGiaBan();
 
-        // Không giảm quá giá bán sản phẩm
-        return Math.max(0, giaBan - soTienGiam);
+        return Math.max(0, giaGoc - soTienGiam);
+    }
+
+    // Getter
+    public double getSoTienGiam() {
+        return soTienGiam;
+    }
+
+    // Setter
+    public void setSoTienGiam(double soTienGiam) {
+        if (!Double.isFinite(soTienGiam) || soTienGiam < 0) {
+            throw new IllegalArgumentException(
+                    "So tien giam khong hop le!");
+        }
+
+        this.soTienGiam = soTienGiam;
     }
 
     @Override
     public String toString() {
         return super.toString()
-                + " | Số tiền giảm trực tiếp: " + soTienGiam;
+                + "\nSo tien giam truc tiep: "
+                + String.format("%,.0f VND", soTienGiam);
     }
 }

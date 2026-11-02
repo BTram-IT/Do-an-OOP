@@ -1,4 +1,7 @@
+
 import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
+import java.util.Scanner;
 
 // Một dòng của hóa đơn nhập (HoadonNhap): nhập sản phẩm nào, bao nhiêu, GIÁ NHẬP BAO NHIÊU, HẠN SỬ DỤNG nào ở lần nhập này.
 // Khi phiếu được xác nhận, mỗi dòng sinh ra đúng MỘT lô hàng (LoHang) mang hạn sử dụng và số lượng của dòng đó.
@@ -35,6 +38,132 @@ public class CTHDonNhap {
         this.giaNhap = giaNhap;
         this.thueSuatNhap = SanPham.kiemTraThueSuat(thueSuatNhap);
         this.hanSuDung = hanSuDung;
+    }
+
+    // Nhập thông tin chi tiết hóa đơn nhập
+    public static CTHDonNhap Nhap(Scanner sc) {
+        if (sc == null) {
+            throw new IllegalArgumentException("Scanner không hợp lệ!");
+        }
+
+        // Nhập mã sản phẩm
+        String maSP = Ktradulieu.nhapChuoi(
+                sc,
+                "Nhập mã sản phẩm (TA### hoặc DU###): ",
+                "(?i)(TA|DU)\\d{3}",
+                "Mã sản phẩm không hợp lệ!"
+        );
+
+        // Nhập tên sản phẩm
+        String tenSP = Ktradulieu.nhapChuoi(
+                sc,
+                "Nhập tên sản phẩm: ",
+                ".+",
+                "Tên sản phẩm không được để trống!"
+        );
+
+        // Nhập số lượng
+        long soLuong;
+        do {
+            soLuong = Ktradulieu.nhapSoNguyen(
+                    sc,
+                    "Nhập số lượng nhập: "
+            );
+
+            if (soLuong > Integer.MAX_VALUE) {
+                System.out.println("Số lượng quá lớn! Vui lòng nhập lại.");
+            }
+        } while (soLuong > Integer.MAX_VALUE);
+
+        // Nhập giá nhập, cho phép bằng 0
+        long giaNhap;
+
+        while (true) {
+            String gia = Ktradulieu.nhapChuoi(
+                    sc,
+                    "Nhập giá nhập: ",
+                    "\\d+",
+                    "Giá nhập phải là số nguyên không âm!"
+            );
+
+            try {
+                giaNhap = Long.parseLong(gia);
+
+                if (giaNhap > SanPham.GIA_TOI_DA) {
+                    System.out.println(
+                            "Giá nhập không được vượt quá "
+                                    + SanPham.GIA_TOI_DA + " đồng!"
+                    );
+                    continue;
+                }
+
+                break;
+            } catch (NumberFormatException e) {
+                System.out.println("Giá nhập quá lớn! Vui lòng nhập lại.");
+            }
+        }
+
+        // Nhập thuế suất, cho phép bằng 0
+        double thueSuat;
+
+        while (true) {
+            String thue = Ktradulieu.nhapChuoi(
+                    sc,
+                    "Nhập thuế suất nhập (%): ",
+                    "\\d+(\\.\\d+)?",
+                    "Thuế suất phải là số không âm!"
+            );
+
+            try {
+                thueSuat = Double.parseDouble(thue);
+
+                if (!Double.isFinite(thueSuat)) {
+                    System.out.println("Thuế suất không hợp lệ!");
+                    continue;
+                }
+
+                thueSuat = SanPham.kiemTraThueSuat(thueSuat);
+                break;
+
+            } catch (NumberFormatException e) {
+                System.out.println("Thuế suất không hợp lệ!");
+            } catch (IllegalArgumentException e) {
+                System.out.println(e.getMessage());
+            }
+        }
+
+        // Nhập hạn sử dụng, được phép bỏ trống
+        LocalDate hanSuDung = null;
+
+        while (true) {
+            System.out.println(
+                    "Nhập hạn sử dụng (yyyy-MM-dd), bỏ trống nếu không có:"
+            );
+
+            String ngay = sc.nextLine().trim();
+
+            if (ngay.isEmpty()) {
+                break;
+            }
+
+            try {
+                hanSuDung = LocalDate.parse(ngay);
+                break;
+            } catch (DateTimeParseException e) {
+                System.out.println(
+                        "Ngày không hợp lệ! Nhập theo dạng yyyy-MM-dd."
+                );
+            }
+        }
+
+        return new CTHDonNhap(
+                maSP,
+                tenSP,
+                (int) soLuong,
+                giaNhap,
+                thueSuat,
+                hanSuDung
+        );
     }
 
     public String getMaSP() {

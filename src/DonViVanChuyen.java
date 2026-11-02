@@ -2,8 +2,7 @@ import java.util.Scanner;
 import java.util.ArrayList;
 
 public class DonViVanChuyen extends DoiTac {
-    private static final Scanner sc = TienIch.sc;
-
+    private static final Scanner sc = new Scanner(System.in);
     private ArrayList<PhuongTien> dsXe;
 
     public DonViVanChuyen() {
