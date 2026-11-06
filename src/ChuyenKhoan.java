@@ -1,6 +1,7 @@
 import java.util.Scanner;
 public class ChuyenKhoan extends ThanhToan {
-    private static final Scanner sc = new Scanner(System.in);
+    private static final Scanner sc = Main.sc;
+
 
     private String maGDNganHang;
     private String tenNguoiChuyen;
@@ -21,12 +22,13 @@ public class ChuyenKhoan extends ThanhToan {
 
     @Override
     public void nhap() {
-        maGDNganHang = Ktradulieu.nhapChuoi(sc, "Ma giao dich ngan hang: ", TienIch.REGEX_MA_GD_NGAN_HANG, TienIch.LOI_MA_GD_NGAN_HANG);
-        tenNguoiChuyen = Ktradulieu.nhapChuoi(sc, "Ten nguoi chuyen: ", TienIch.REGEX_TEN, TienIch.LOI_TEN);
-        soTKChuyen = Ktradulieu.nhapChuoi(sc, "So tai khoan chuyen: ", TienIch.REGEX_SO_TAI_KHOAN, TienIch.LOI_SO_TAI_KHOAN);
-        tenNganHang = Ktradulieu.nhapChuoi(sc, "Ten ngan hang: ", TienIch.REGEX_VAN_BAN, TienIch.LOI_VAN_BAN);
+        maGDNganHang = Ktradulieu.nhapChuoi(sc, "Ma giao dich ngan hang: ", "^\\w{4,30}$", "Ma giao dich gom 4-30 chu cai / chu so, vui long nhap lai!");
+        tenNguoiChuyen = Ktradulieu.nhapChuoi(sc, "Ten nguoi chuyen: ", "^[\\p{L}][\\p{L} .'-]{1,49}$", "Ten chi gom chu cai va khoang trang (2-50 ky tu), vui long nhap lai!");
+        soTKChuyen = Ktradulieu.nhapChuoi(sc, "So tai khoan chuyen: ", "^\\d{6,20}$", "So tai khoan gom 6-20 chu so, vui long nhap lai!");
+        tenNganHang = Ktradulieu.nhapChuoi(sc, "Ten ngan hang: ", "^[^|]{1,200}$", "Khong duoc de trong, khong qua 200 ky tu va khong chua ky tu '|', vui long nhap lai!");
     }
 
+    /** Thanh cong khi da co ma giao dich ngan hang va so tai khoan chuyen. */
     @Override
     public boolean qTrinhThanhToan() {
         return ketThuc(!maGDNganHang.isEmpty() && !soTKChuyen.isEmpty());
