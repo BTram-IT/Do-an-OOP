@@ -1,94 +1,77 @@
-
-import java.time.LocalDateTime;
-import java.util.ArrayList;
+import java.time.LocalDate;
 
 public class KhuyenmaiMuatang extends Khuyenmai {
+
     private int soLuongMuaToiThieu;
     private int soLuongTang;
 
     public KhuyenmaiMuatang() {
         super();
-        loaiKM = "Mua tang";
-        soLuongMuaToiThieu = 0;
-        soLuongTang = 0;
+        this.soLuongMuaToiThieu = 0;
+        this.soLuongTang = 0;
+        setLoaiKM("Mua tặng");
     }
 
     public KhuyenmaiMuatang(
-            String maKM, String tenKM,
-            LocalDateTime ngayBatDau,
-            LocalDateTime ngayKetThuc,
-            double mucChiToiThieu,
-            ArrayList<SanPham> danhSachKM,
+            String maKM,
+            String loaiKM,
+            LocalDate ngayBatDau,
+            LocalDate ngayKetThuc,
+            long mucChiToiThieu,
             int soLuongMuaToiThieu,
             int soLuongTang) {
 
-        super(maKM, tenKM, "Mua tang",
-                ngayBatDau, ngayKetThuc,
-                mucChiToiThieu, danhSachKM);
-
-        if (soLuongMuaToiThieu <= 0 || soLuongTang <= 0) {
-            throw new IllegalArgumentException("So luong mua va so luong tang phai lon hon 0!");
+        super(maKM, loaiKM, ngayBatDau, ngayKetThuc, mucChiToiThieu);
+        setSoLuongMuaToiThieu(soLuongMuaToiThieu);
+        setSoLuongTang(soLuongTang);
+        if (loaiKM == null || loaiKM.trim().isEmpty()) {
+            capNhatMoTaLoaiKM();
         }
-
-        this.soLuongMuaToiThieu = soLuongMuaToiThieu;
-        this.soLuongTang = soLuongTang;
     }
 
-    public void thietLapMuaTang() {
-        super.thietLapKhuyenMai();
-
-        loaiKM = "Mua tang";
-
-        long soLuongMua = Ktradulieu.nhapSoNguyen(
-                sc,
-                "Nhap so luong mua toi thieu: "
-        );
-
-        while (soLuongMua > Integer.MAX_VALUE) {
-            System.out.println("So luong vuot qua gioi han cho phep!");
-            soLuongMua = Ktradulieu.nhapSoNguyen(
-                    sc,
-                    "Nhap lai so luong mua toi thieu: "
-            );
+    private void capNhatMoTaLoaiKM() {
+        if (soLuongMuaToiThieu > 0 && soLuongTang > 0) {
+            setLoaiKM("Mua " + soLuongMuaToiThieu + " tặng " + soLuongTang);
+        } else {
+            setLoaiKM("Mua tặng");
         }
-
-        soLuongMuaToiThieu = (int) soLuongMua;
-
-        long soLuongDuocTang = Ktradulieu.nhapSoNguyen(
-                sc,
-                "Nhap so luong tang: "
-        );
-
-        while (soLuongDuocTang > Integer.MAX_VALUE) {
-            System.out.println("So luong vuot qua gioi han cho phep!");
-            soLuongDuocTang = Ktradulieu.nhapSoNguyen(
-                    sc,
-                    "Nhap lai so luong tang: "
-            );
-        }
-
-        soLuongTang = (int) soLuongDuocTang;
     }
 
     @Override
-    public double traCuuGiaSanPhamSauKM(String maSP) {
-        int viTri = timKiemSP(maSP);
+    public void setKM() {
+        super.setKM();
 
-        if (viTri == -1 || !kiemTraThoiHan()) {
-            return -1;
-        }
+        do {
+            soLuongMuaToiThieu = (int) Ktradulieu.nhapSoNguyen(
+                    sc,
+                    "Nhập số lượng sản phẩm mua tối thiểu: "
+            );
 
-        // Khuyen mai mua tang khong lam thay doi don gia.
-        return danhSachKM.get(viTri).getGiaBan();
+            if (soLuongMuaToiThieu <= 0) {
+                System.out.println("Số lượng mua tối thiểu phải lớn hơn 0!");
+            }
+        } while (soLuongMuaToiThieu <= 0);
+
+        do {
+            soLuongTang = (int) Ktradulieu.nhapSoNguyen(
+                    sc,
+                    "Nhập số lượng sản phẩm tặng: "
+            );
+
+            if (soLuongTang <= 0) {
+                System.out.println("Số lượng tặng phải lớn hơn 0!");
+            }
+        } while (soLuongTang <= 0);
+
+        capNhatMoTaLoaiKM();
     }
 
-    public int tinhSoLuongDuocTang(int soLuongMua) {
-        if (!kiemTraThoiHan()
-                || soLuongMua < soLuongMuaToiThieu
-                || soLuongMuaToiThieu <= 0) {
+    @Override
+    public int tinhSoLuongTang(int soLuongMua) {
+        if (soLuongMuaToiThieu <= 0 || soLuongTang <= 0
+                || soLuongMua < soLuongMuaToiThieu) {
             return 0;
         }
-
         return (soLuongMua / soLuongMuaToiThieu) * soLuongTang;
     }
 
@@ -100,10 +83,41 @@ public class KhuyenmaiMuatang extends Khuyenmai {
         return soLuongTang;
     }
 
+    public void setSoLuongMuaToiThieu(int soLuongMuaToiThieu) {
+        if (soLuongMuaToiThieu <= 0) {
+            throw new IllegalArgumentException(
+                    "Số lượng mua tối thiểu phải lớn hơn 0!"
+            );
+        }
+        this.soLuongMuaToiThieu = soLuongMuaToiThieu;
+        capNhatMoTaLoaiKM();
+    }
+
+    public void setSoLuongTang(int soLuongTang) {
+        if (soLuongTang <= 0) {
+            throw new IllegalArgumentException(
+                    "Số lượng tặng phải lớn hơn 0!"
+            );
+        }
+        this.soLuongTang = soLuongTang;
+        capNhatMoTaLoaiKM();
+    }
+
+    // Mua tặng không giảm tiền trực tiếp
+    @Override
+    public long tinhTienGiam(long giaBan) {
+        return 0;
+    }
+
+    @Override
+    public Khuyenmai taoKhuyenMaiRong() {
+        return new KhuyenmaiMuatang();
+    }
+
     @Override
     public String toString() {
         return super.toString()
-                + "\nSo luong mua toi thieu: " + soLuongMuaToiThieu
-                + "\nSo luong tang: " + soLuongTang;
+                + "\nSố lượng mua tối thiểu: " + soLuongMuaToiThieu
+                + "\nSố lượng tặng: " + soLuongTang;
     }
 }

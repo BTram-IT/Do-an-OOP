@@ -1,78 +1,69 @@
-
-import java.time.LocalDateTime;
-import java.util.ArrayList;
+import java.time.LocalDate;
 
 public class KhuyenmaiTructiep extends Khuyenmai {
-    private double soTienGiam;
+    private long soTienGiam;
 
-    // Constructor mac dinh
     public KhuyenmaiTructiep() {
         super();
-        loaiKM = "Giam truc tiep";
-        soTienGiam = 0;
+        this.soTienGiam = 0;
+        setLoaiKM("Giảm giá trực tiếp");
     }
 
-    // Constructor day du
     public KhuyenmaiTructiep(
-            String maKM, String tenKM,
-            LocalDateTime ngayBatDau,
-            LocalDateTime ngayKetThuc,
-            double mucChiToiThieu,
-            ArrayList<SanPham> danhSachKM,
-            double soTienGiam) {
-
-        super(maKM, tenKM, "Giam truc tiep",
-                ngayBatDau, ngayKetThuc,
-                mucChiToiThieu, danhSachKM);
-
-        this.soTienGiam = soTienGiam;
+            String maKM,
+            String loaiKM,
+            LocalDate ngayBatDau,
+            LocalDate ngayKetThuc,
+            long mucChiToiThieu,
+            long soTienGiam) {
+        super(maKM,
+                (loaiKM == null || loaiKM.trim().isEmpty()) ? "Giảm giá trực tiếp" : loaiKM,
+                ngayBatDau, ngayKetThuc, mucChiToiThieu);
+        setSoTienGiam(soTienGiam);
     }
 
-    // Nhap thong tin khuyen mai
-    public void thietLapKhuyenMai() {
-        super.thietLapKhuyenMai();
-
-        loaiKM = "Giam truc tiep";
-
-        soTienGiam = Ktradulieu.nhapSoThuc(
-                sc,
-                "Nhap so tien giam truc tiep: "
-        );
-    }
-
-    // Tra cuu gia san pham sau khuyen mai
     @Override
-    public double traCuuGiaSanPhamSauKM(String maSP) {
-        int viTri = timKiemSP(maSP);
+    public void setKM() {
+        super.setKM();
 
-        if (viTri == -1 || !kiemTraThoiHan()) {
-            return -1;
-        }
+        do {
+            soTienGiam = Ktradulieu.nhapSoNguyen(
+                    sc, "Nhập số tiền giảm: ");
 
-        double giaGoc = danhSachKM.get(viTri).getGiaBan();
-
-        return Math.max(0, giaGoc - soTienGiam);
+            if (soTienGiam <= 0) {
+                System.out.println("Số tiền giảm phải lớn hơn 0!");
+            }
+        } while (soTienGiam <= 0);
     }
 
-    // Getter
-    public double getSoTienGiam() {
+    @Override
+    public long tinhTienGiam(long giaBan) {
+        if (giaBan <= 0 || soTienGiam <= 0) {
+            return 0;
+        }
+        return Math.min(giaBan, soTienGiam);
+    }
+
+    @Override
+    public Khuyenmai taoKhuyenMaiRong() {
+        return new KhuyenmaiTructiep();
+    }
+
+    public long getSoTienGiam() {
         return soTienGiam;
     }
 
-    // Setter
-    public void setSoTienGiam(double soTienGiam) {
-        if (!Double.isFinite(soTienGiam) || soTienGiam < 0) {
+    public void setSoTienGiam(long soTienGiam) {
+        if (soTienGiam <= 0) {
             throw new IllegalArgumentException(
-                    "So tien giam khong hop le!");
+                    "Số tiền giảm phải lớn hơn 0!");
         }
-
         this.soTienGiam = soTienGiam;
     }
 
     @Override
     public String toString() {
         return super.toString()
-                + "\nSo tien giam truc tiep: "
-                + String.format("%,.0f VND", soTienGiam);
+                + "\nSố tiền giảm: " + soTienGiam;
     }
 }

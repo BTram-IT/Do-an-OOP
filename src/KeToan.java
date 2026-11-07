@@ -1,7 +1,7 @@
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
-import java.util.Scanner;
 import java.util.ArrayList;
+import java.util.Scanner;
 
 public class KeToan extends NhanVien implements Thongke {
 
@@ -15,7 +15,6 @@ public class KeToan extends NhanVien implements Thongke {
     // Constructor mac dinh
     public KeToan() {
         super();
-
         this.NhanVien = new DSNhanVien();
         this.DSSanPham = new DSSanPham();
         this.HoaDon = new DSHoadon();
@@ -26,16 +25,26 @@ public class KeToan extends NhanVien implements Thongke {
     public KeToan(DSNhanVien nhanVien,
                   DSSanPham DSSanPham,
                   DSHoadon hoadon) {
-
         super();
-
         this.NhanVien = nhanVien;
         this.DSSanPham = DSSanPham;
         this.HoaDon = hoadon;
         this.quanLyKho = null;
     }
 
-    // Constructor day du
+    // Constructor ket noi day du ca QuanlyKho
+    public KeToan(DSNhanVien nhanVien,
+                  DSSanPham DSSanPham,
+                  DSHoadon hoadon,
+                  QuanlyKho quanLyKho) {
+        super();
+        this.NhanVien = nhanVien;
+        this.DSSanPham = DSSanPham;
+        this.HoaDon = hoadon;
+        this.quanLyKho = quanLyKho;
+    }
+
+    // Constructor day du thong tin nhan vien KeToan
     public KeToan(String ten, String sdt, String diaChi,
                   String email, LocalDate ngaySinh,
                   String maNV, double luongCoBan,
@@ -107,7 +116,7 @@ public class KeToan extends NhanVien implements Thongke {
 
     // Kiem tra du lieu ket noi
     private void kiemTraDuLieu() {
-        if (HoaDon == null) {
+        if (HoaDon == null || HoaDon.getDs() == null) {
             throw new IllegalStateException("Chua ket noi danh sach hoa don!");
         }
 
@@ -121,12 +130,12 @@ public class KeToan extends NhanVien implements Thongke {
     }
 
     // =====================================================
-    // 1. THONG KE DOANH THU
+    // 1. THONG KE DOANH THU (DOANH THU THUAN - CHUA BAO GOM THUE VAT)
     // =====================================================
 
     @Override
     public double tinhDoanhThuTheoThang(int thang, int nam) {
-        if (thang < 1 || thang > 12) {
+        if (thang < 1 || thang > 12 || nam <= 0) {
             return 0;
         }
 
@@ -135,14 +144,25 @@ public class KeToan extends NhanVien implements Thongke {
         double doanhThu = 0;
 
         for (HoaDon hd : HoaDon.getDs()) {
-            if (hd == null || hd.getThoigianin() == null) {
+            // Chi tinh doanh thu tren Hoa don ban (khong cong nham Hoa don nhap)
+            if (!(hd instanceof Hoadonban)) {
+                continue;
+            }
+
+            if (hd.getThoigianin() == null) {
                 continue;
             }
 
             if (hd.getThoigianin().getMonthValue() == thang
                     && hd.getThoigianin().getYear() == nam) {
 
-                doanhThu += hd.Tongtienhoadon();
+                Hoadonban hb = (Hoadonban) hd;
+                if (hb.getDsSanPham() == null && this.DSSanPham != null) {
+                    hb.setDsSanPham(this.DSSanPham);
+                }
+
+                // Doanh thu ban hang = Tien hang sau khuyen mai (CHUA bao gom thue VAT)
+                doanhThu += hb.tinhTongTienSauKM();
             }
         }
 
@@ -151,16 +171,14 @@ public class KeToan extends NhanVien implements Thongke {
 
     @Override
     public double tinhDoanhThuTheoQuy(int quy, int nam) {
-        if (quy < 1 || quy > 4) {
+        if (quy < 1 || quy > 4 || nam <= 0) {
             return 0;
         }
 
         int thangBatDau = (quy - 1) * 3 + 1;
         double doanhThu = 0;
 
-        for (int thang = thangBatDau;
-             thang < thangBatDau + 3; thang++) {
-
+        for (int thang = thangBatDau; thang < thangBatDau + 3; thang++) {
             doanhThu += tinhDoanhThuTheoThang(thang, nam);
         }
 
@@ -169,6 +187,10 @@ public class KeToan extends NhanVien implements Thongke {
 
     @Override
     public double tinhDoanhThuTheoNam(int nam) {
+        if (nam <= 0) {
+            return 0;
+        }
+
         double doanhThu = 0;
 
         for (int thang = 1; thang <= 12; thang++) {
@@ -183,17 +205,11 @@ public class KeToan extends NhanVien implements Thongke {
     // =====================================================
 
     public double TongGiavonHangdabantheoThang(int thang, int nam) {
-        if (thang < 1 || thang > 12) {
+        if (thang < 1 || thang > 12 || nam <= 0) {
             return 0;
         }
 
         kiemTraDuLieu();
-
-        if (quanLyKho == null) {
-            throw new IllegalStateException(
-                    "Chua ket noi QuanlyKho voi KeToan!"
-            );
-        }
 
         double tongVon = 0;
 
@@ -211,9 +227,23 @@ public class KeToan extends NhanVien implements Thongke {
 
                 Hoadonban hb = (Hoadonban) hd;
 
-                tongVon += quanLyKho.tinhGiaVon(
-                        quanLyKho.layLoDaXuatCuaGiaoDich(hb.getMaHD())
-                );
+                if (quanLyKho != null && hb.getCacLoDaXuat() != null && !hb.getCacLoDaXuat().isEmpty()) {
+                    tongVon += quanLyKho.tinhGiaVon(hb.getCacLoDaXuat());
+                } else {
+                    // Du phong neu chua ket noi quanLyKho hoac hoa don chua luu cacLoDaXuat
+                    for (CTHoaDon ct : hb.getCTHoaDon()) {
+                        if (ct == null) {
+                            continue;
+                        }
+                        SanPham sp = DSSanPham.timTheoMa(ct.getMaSP());
+                        if (sp != null) {
+                            long giaVonDonVi = sp.tinhGiaVonBinhQuanTon() > 0
+                                    ? sp.tinhGiaVonBinhQuanTon()
+                                    : sp.getGiaNhap();
+                            tongVon += (double) giaVonDonVi * ct.getSoluong();
+                        }
+                    }
+                }
             }
         }
 
@@ -221,16 +251,14 @@ public class KeToan extends NhanVien implements Thongke {
     }
 
     public double TongGiavonTheoQuy(int quy, int nam) {
-        if (quy < 1 || quy > 4) {
+        if (quy < 1 || quy > 4 || nam <= 0) {
             return 0;
         }
 
         double tongVon = 0;
         int thangBatDau = (quy - 1) * 3 + 1;
 
-        for (int thang = thangBatDau;
-             thang < thangBatDau + 3; thang++) {
-
+        for (int thang = thangBatDau; thang < thangBatDau + 3; thang++) {
             tongVon += TongGiavonHangdabantheoThang(thang, nam);
         }
 
@@ -238,6 +266,10 @@ public class KeToan extends NhanVien implements Thongke {
     }
 
     public double TongGiavonHangdabantheoNam(int nam) {
+        if (nam <= 0) {
+            return 0;
+        }
+
         double tongVon = 0;
 
         for (int thang = 1; thang <= 12; thang++) {
@@ -252,33 +284,38 @@ public class KeToan extends NhanVien implements Thongke {
     // =====================================================
 
     /*
-       Doanh thu hoa don la so tien khach hang thanh toan,
-       da bao gom VAT.
-
-       Loi nhuan uoc tinh =
-       Doanh thu - Thue VAT - Gia von - Luong.
+       Vi Doanh thu (tinhDoanhThuTheoThang) da la doanh thu thuan
+       (tien hang sau KM, CHUA bao gom thue VAT),
+       nen Loi nhuan = Doanh thu (chua thue) - Gia von - Luong
+       (khong tru thue VAT lan nua de tranh bi tru kep 2 lan).
     */
 
     @Override
     public double tinhLoiNhuanTheoThang(int thang, int nam) {
+        if (thang < 1 || thang > 12 || nam <= 0) {
+            return 0;
+        }
         return tinhDoanhThuTheoThang(thang, nam)
-                - thongKeThueTheoThang(thang, nam)
                 - TongGiavonHangdabantheoThang(thang, nam)
                 - tinhTongLuongTheoThang(thang, nam);
     }
 
     @Override
     public double tinhLoiNhuanTheoQuy(int quy, int nam) {
+        if (quy < 1 || quy > 4 || nam <= 0) {
+            return 0;
+        }
         return tinhDoanhThuTheoQuy(quy, nam)
-                - thongKeThueTheoQuy(quy, nam)
                 - TongGiavonTheoQuy(quy, nam)
                 - tinhTongLuongTheoQuy(quy, nam);
     }
 
     @Override
     public double tinhLoiNhuanTheoNam(int nam) {
+        if (nam <= 0) {
+            return 0;
+        }
         return tinhDoanhThuTheoNam(nam)
-                - thongKeThueTheoNam(nam)
                 - TongGiavonHangdabantheoNam(nam)
                 - tinhTongLuongTheoNam(nam);
     }
@@ -289,7 +326,7 @@ public class KeToan extends NhanVien implements Thongke {
 
     @Override
     public double thongKeThueTheoThang(int thang, int nam) {
-        if (thang < 1 || thang > 12) {
+        if (thang < 1 || thang > 12 || nam <= 0) {
             return 0;
         }
 
@@ -310,7 +347,6 @@ public class KeToan extends NhanVien implements Thongke {
                     && hd.getThoigianin().getYear() == nam) {
 
                 Hoadonban hb = (Hoadonban) hd;
-
                 tongThue += hb.Tongthuedonhang(DSSanPham);
             }
         }
@@ -320,16 +356,14 @@ public class KeToan extends NhanVien implements Thongke {
 
     // Thong ke thue theo quy
     public double thongKeThueTheoQuy(int quy, int nam) {
-        if (quy < 1 || quy > 4) {
+        if (quy < 1 || quy > 4 || nam <= 0) {
             return 0;
         }
 
         double tongThue = 0;
         int thangBatDau = (quy - 1) * 3 + 1;
 
-        for (int thang = thangBatDau;
-             thang < thangBatDau + 3; thang++) {
-
+        for (int thang = thangBatDau; thang < thangBatDau + 3; thang++) {
             tongThue += thongKeThueTheoThang(thang, nam);
         }
 
@@ -338,6 +372,10 @@ public class KeToan extends NhanVien implements Thongke {
 
     @Override
     public double thongKeThueTheoNam(int nam) {
+        if (nam <= 0) {
+            return 0;
+        }
+
         double tongThue = 0;
 
         for (int thang = 1; thang <= 12; thang++) {
@@ -352,11 +390,15 @@ public class KeToan extends NhanVien implements Thongke {
     // =====================================================
 
     public double tinhTongLuongTheoThang(int thang, int nam) {
-        if (thang < 1 || thang > 12) {
+        if (thang < 1 || thang > 12 || nam <= 0) {
             return 0;
         }
 
         kiemTraDuLieu();
+
+        if (NhanVien.getDsNhanVien() == null) {
+            return 0;
+        }
 
         LocalDate ngayDauThang = LocalDate.of(nam, thang, 1);
         LocalDate ngayCuoiThang = ngayDauThang.withDayOfMonth(
@@ -398,6 +440,10 @@ public class KeToan extends NhanVien implements Thongke {
                     ngayBatDauTinh, ngayCuoiThang
             ) + 1;
 
+            if (soNgayLam <= 0) {
+                continue;
+            }
+
             // Luong thang theo kinh nghiem tai ngay ket thuc
             double luongThang = nv.Tinhluong(ngayCuoiThang);
 
@@ -412,16 +458,14 @@ public class KeToan extends NhanVien implements Thongke {
     }
 
     public double tinhTongLuongTheoQuy(int quy, int nam) {
-        if (quy < 1 || quy > 4) {
+        if (quy < 1 || quy > 4 || nam <= 0) {
             return 0;
         }
 
         double tongLuong = 0;
         int thangBatDau = (quy - 1) * 3 + 1;
 
-        for (int thang = thangBatDau;
-             thang < thangBatDau + 3; thang++) {
-
+        for (int thang = thangBatDau; thang < thangBatDau + 3; thang++) {
             tongLuong += tinhTongLuongTheoThang(thang, nam);
         }
 
@@ -429,6 +473,10 @@ public class KeToan extends NhanVien implements Thongke {
     }
 
     public double tinhTongLuongTheoNam(int nam) {
+        if (nam <= 0) {
+            return 0;
+        }
+
         double tongLuong = 0;
 
         for (int thang = 1; thang <= 12; thang++) {
@@ -440,23 +488,26 @@ public class KeToan extends NhanVien implements Thongke {
 
     @Override
     public void thongKeLuong() {
+        kiemTraDuLieu();
         LocalDate homNay = LocalDate.now();
 
         System.out.println("===== THONG KE LUONG THANG "
                 + homNay.getMonthValue() + "/" + homNay.getYear()
                 + " =====");
 
-        for (NhanVien nv : NhanVien.getDsNhanVien()) {
-            if (nv == null) {
-                continue;
-            }
+        if (NhanVien.getDsNhanVien() != null) {
+            for (NhanVien nv : NhanVien.getDsNhanVien()) {
+                if (nv == null) {
+                    continue;
+                }
 
-            System.out.println("Ma nhan vien: " + nv.getMaNV());
-            System.out.println("Ho ten: " + nv.getTen());
-            System.out.println("Chuc vu: " + nv.getChucVu());
-            System.out.println("Luong hien tai: "
-                    + String.format("%,.0f", nv.Tinhluong()));
-            System.out.println("-----------------------------");
+                System.out.println("Ma nhan vien: " + nv.getMaNV());
+                System.out.println("Ho ten: " + nv.getTen());
+                System.out.println("Chuc vu: " + nv.getChucVu());
+                System.out.println("Luong hien tai: "
+                        + String.format("%,.0f", nv.Tinhluong()));
+                System.out.println("-----------------------------");
+            }
         }
 
         System.out.println("Tong luong thang: "
@@ -472,7 +523,7 @@ public class KeToan extends NhanVien implements Thongke {
     // =====================================================
 
     private boolean thuocKy(HoaDon hd, int ky, int nam, int loai) {
-        if (hd == null || hd.getThoigianin() == null) {
+        if (hd == null || hd.getThoigianin() == null || nam <= 0) {
             return false;
         }
 
@@ -500,11 +551,11 @@ public class KeToan extends NhanVien implements Thongke {
     }
 
     private void thongKeSoLuongSanPham(int ky, int nam, int loai) {
-        String[] maSP = new String[500];
-        String[] tenSP = new String[500];
-        int[] soLuong = new int[500];
+        kiemTraDuLieu();
 
-        int n = 0;
+        ArrayList<String> dsMaSP = new ArrayList<>();
+        ArrayList<String> dsTenSP = new ArrayList<>();
+        ArrayList<Integer> dsSoLuong = new ArrayList<>();
 
         for (HoaDon hd : HoaDon.getDs()) {
             if (!(hd instanceof Hoadonban)) {
@@ -517,55 +568,49 @@ public class KeToan extends NhanVien implements Thongke {
 
             Hoadonban hdb = (Hoadonban) hd;
 
-            for (CTHDonBan ct : hdb.getDanhSachChiTietHD()) {
-                if (ct == null) {
+            for (CTHoaDon ct : hdb.getCTHoaDon()) {
+                if (ct == null || ct.getMaSP() == null) {
                     continue;
                 }
 
                 int viTri = -1;
 
-                for (int i = 0; i < n; i++) {
-                    if (maSP[i].equalsIgnoreCase(ct.getMaSP())) {
+                for (int i = 0; i < dsMaSP.size(); i++) {
+                    if (dsMaSP.get(i).equalsIgnoreCase(ct.getMaSP())) {
                         viTri = i;
                         break;
                     }
                 }
 
                 if (viTri != -1) {
-                    soLuong[viTri] += ct.getSoLuong();
+                    dsSoLuong.set(viTri, dsSoLuong.get(viTri) + ct.getSoluong());
                 } else {
-                    if (n >= maSP.length) {
-                        System.out.println("Danh sach san pham da day!");
-                        return;
-                    }
-
-                    maSP[n] = ct.getMaSP();
-                    tenSP[n] = ct.getTenSP();
-                    soLuong[n] = ct.getSoLuong();
-                    n++;
+                    dsMaSP.add(ct.getMaSP());
+                    dsTenSP.add(ct.getTenSP());
+                    dsSoLuong.add(ct.getSoluong());
                 }
             }
         }
 
         System.out.println("===== THONG KE SAN PHAM BAN DUOC =====");
 
-        for (int i = 0; i < n; i++) {
+        for (int i = 0; i < dsMaSP.size(); i++) {
             System.out.println(
-                    "Ma SP: " + maSP[i]
-                            + " | Ten: " + tenSP[i]
-                            + " | So luong ban: " + soLuong[i]
+                    "Ma SP: " + dsMaSP.get(i)
+                            + " | Ten: " + dsTenSP.get(i)
+                            + " | So luong ban: " + dsSoLuong.get(i)
             );
         }
 
-        if (n == 0) {
+        if (dsMaSP.isEmpty()) {
             System.out.println("Khong co san pham ban trong ky nay.");
         }
     }
 
     @Override
     public void thongKeSanPhamBanDuocTheoThang(int thang, int nam) {
-        if (thang < 1 || thang > 12) {
-            System.out.println("Thang khong hop le!");
+        if (thang < 1 || thang > 12 || nam <= 0) {
+            System.out.println("Thang hoac nam khong hop le!");
             return;
         }
 
@@ -574,8 +619,8 @@ public class KeToan extends NhanVien implements Thongke {
 
     @Override
     public void thongKeSanPhamBanDuocTheoQuy(int quy, int nam) {
-        if (quy < 1 || quy > 4) {
-            System.out.println("Quy khong hop le!");
+        if (quy < 1 || quy > 4 || nam <= 0) {
+            System.out.println("Quy hoac nam khong hop le!");
             return;
         }
 
@@ -584,6 +629,11 @@ public class KeToan extends NhanVien implements Thongke {
 
     @Override
     public void thongKeSanPhamBanDuocTheoNam(int nam) {
+        if (nam <= 0) {
+            System.out.println("Nam khong hop le!");
+            return;
+        }
+
         thongKeSoLuongSanPham(0, nam, 3);
     }
 
@@ -592,6 +642,8 @@ public class KeToan extends NhanVien implements Thongke {
     // =====================================================
 
     private void thongKeSanPhamBanRa(int ky, int nam, int loai) {
+        kiemTraDuLieu();
+
         boolean coSanPham = false;
 
         System.out.println("===== CHI TIET SAN PHAM BAN RA =====");
@@ -607,7 +659,7 @@ public class KeToan extends NhanVien implements Thongke {
 
             Hoadonban hdb = (Hoadonban) hd;
 
-            for (CTHDonBan ct : hdb.getDanhSachChiTietHD()) {
+            for (CTHoaDon ct : hdb.getCTHoaDon()) {
                 if (ct == null) {
                     continue;
                 }
@@ -618,8 +670,8 @@ public class KeToan extends NhanVien implements Thongke {
                         "Ma HD: " + hd.getMaHD()
                                 + " | Ma SP: " + ct.getMaSP()
                                 + " | Ten SP: " + ct.getTenSP()
-                                + " | So luong: " + ct.getSoLuong()
-                                + " | Gia ban: " + ct.getGiaBan()
+                                + " | So luong: " + ct.getSoluong()
+                                + " | Gia ban: " + ct.getGiaban()
                 );
             }
         }
@@ -631,8 +683,8 @@ public class KeToan extends NhanVien implements Thongke {
 
     @Override
     public void thongKeSanPhamBanRaTheoThang(int thang, int nam) {
-        if (thang < 1 || thang > 12) {
-            System.out.println("Thang khong hop le!");
+        if (thang < 1 || thang > 12 || nam <= 0) {
+            System.out.println("Thang hoac nam khong hop le!");
             return;
         }
 
@@ -641,8 +693,8 @@ public class KeToan extends NhanVien implements Thongke {
 
     @Override
     public void thongKeSanPhamBanRaTheoQuy(int quy, int nam) {
-        if (quy < 1 || quy > 4) {
-            System.out.println("Quy khong hop le!");
+        if (quy < 1 || quy > 4 || nam <= 0) {
+            System.out.println("Quy hoac nam khong hop le!");
             return;
         }
 
@@ -651,6 +703,11 @@ public class KeToan extends NhanVien implements Thongke {
 
     @Override
     public void thongKeSanPhamBanRaTheoNam(int nam) {
+        if (nam <= 0) {
+            System.out.println("Nam khong hop le!");
+            return;
+        }
+
         thongKeSanPhamBanRa(0, nam, 3);
     }
 
@@ -687,16 +744,16 @@ public class KeToan extends NhanVien implements Thongke {
 
             switch (chon) {
                 case 1: {
-                    int thang = nhapSoNguyen("Nhap thang: ");
+                    int thang = nhapSoNguyen("Nhap thang (1-12): ");
                     int nam = nhapSoNguyen("Nhap nam: ");
 
-                    if (thang < 1 || thang > 12) {
-                        System.out.println("Thang khong hop le!");
+                    if (thang < 1 || thang > 12 || nam <= 0) {
+                        System.out.println("Thang hoac nam khong hop le!");
                         break;
                     }
 
                     System.out.println("Doanh thu: "
-                            + tinhDoanhThuTheoThang(thang, nam));
+                            + String.format("%,.0f", tinhDoanhThuTheoThang(thang, nam)));
                     break;
                 }
 
@@ -704,21 +761,25 @@ public class KeToan extends NhanVien implements Thongke {
                     int quy = nhapSoNguyen("Nhap quy (1-4): ");
                     int nam = nhapSoNguyen("Nhap nam: ");
 
-                    if (quy < 1 || quy > 4) {
-                        System.out.println("Quy khong hop le!");
+                    if (quy < 1 || quy > 4 || nam <= 0) {
+                        System.out.println("Quy hoac nam khong hop le!");
                         break;
                     }
 
                     System.out.println("Doanh thu: "
-                            + tinhDoanhThuTheoQuy(quy, nam));
+                            + String.format("%,.0f", tinhDoanhThuTheoQuy(quy, nam)));
                     break;
                 }
 
                 case 3: {
                     int nam = nhapSoNguyen("Nhap nam: ");
+                    if (nam <= 0) {
+                        System.out.println("Nam khong hop le!");
+                        break;
+                    }
 
                     System.out.println("Doanh thu: "
-                            + tinhDoanhThuTheoNam(nam));
+                            + String.format("%,.0f", tinhDoanhThuTheoNam(nam)));
                     break;
                 }
 
@@ -750,16 +811,16 @@ public class KeToan extends NhanVien implements Thongke {
 
             switch (chon) {
                 case 1: {
-                    int thang = nhapSoNguyen("Nhap thang: ");
+                    int thang = nhapSoNguyen("Nhap thang (1-12): ");
                     int nam = nhapSoNguyen("Nhap nam: ");
 
-                    if (thang < 1 || thang > 12) {
-                        System.out.println("Thang khong hop le!");
+                    if (thang < 1 || thang > 12 || nam <= 0) {
+                        System.out.println("Thang hoac nam khong hop le!");
                         break;
                     }
 
                     System.out.println("Loi nhuan: "
-                            + tinhLoiNhuanTheoThang(thang, nam));
+                            + String.format("%,.0f", tinhLoiNhuanTheoThang(thang, nam)));
                     break;
                 }
 
@@ -767,21 +828,25 @@ public class KeToan extends NhanVien implements Thongke {
                     int quy = nhapSoNguyen("Nhap quy (1-4): ");
                     int nam = nhapSoNguyen("Nhap nam: ");
 
-                    if (quy < 1 || quy > 4) {
-                        System.out.println("Quy khong hop le!");
+                    if (quy < 1 || quy > 4 || nam <= 0) {
+                        System.out.println("Quy hoac nam khong hop le!");
                         break;
                     }
 
                     System.out.println("Loi nhuan: "
-                            + tinhLoiNhuanTheoQuy(quy, nam));
+                            + String.format("%,.0f", tinhLoiNhuanTheoQuy(quy, nam)));
                     break;
                 }
 
                 case 3: {
                     int nam = nhapSoNguyen("Nhap nam: ");
+                    if (nam <= 0) {
+                        System.out.println("Nam khong hop le!");
+                        break;
+                    }
 
                     System.out.println("Loi nhuan: "
-                            + tinhLoiNhuanTheoNam(nam));
+                            + String.format("%,.0f", tinhLoiNhuanTheoNam(nam)));
                     break;
                 }
 
@@ -805,31 +870,50 @@ public class KeToan extends NhanVien implements Thongke {
         do {
             System.out.println("\n===== THONG KE THUE =====");
             System.out.println("1. Thue theo thang");
-            System.out.println("2. Thue theo nam");
+            System.out.println("2. Thue theo quy");
+            System.out.println("3. Thue theo nam");
             System.out.println("0. Quay lai");
 
             chon = nhapSoNguyen("Chon: ");
 
             switch (chon) {
                 case 1: {
-                    int thang = nhapSoNguyen("Nhap thang: ");
+                    int thang = nhapSoNguyen("Nhap thang (1-12): ");
                     int nam = nhapSoNguyen("Nhap nam: ");
 
-                    if (thang < 1 || thang > 12) {
-                        System.out.println("Thang khong hop le!");
+                    if (thang < 1 || thang > 12 || nam <= 0) {
+                        System.out.println("Thang hoac nam khong hop le!");
                         break;
                     }
 
                     System.out.println("Tong thue: "
-                            + thongKeThueTheoThang(thang, nam));
+                            + String.format("%,.0f", thongKeThueTheoThang(thang, nam)));
                     break;
                 }
 
                 case 2: {
+                    int quy = nhapSoNguyen("Nhap quy (1-4): ");
                     int nam = nhapSoNguyen("Nhap nam: ");
 
+                    if (quy < 1 || quy > 4 || nam <= 0) {
+                        System.out.println("Quy hoac nam khong hop le!");
+                        break;
+                    }
+
                     System.out.println("Tong thue: "
-                            + thongKeThueTheoNam(nam));
+                            + String.format("%,.0f", thongKeThueTheoQuy(quy, nam)));
+                    break;
+                }
+
+                case 3: {
+                    int nam = nhapSoNguyen("Nhap nam: ");
+                    if (nam <= 0) {
+                        System.out.println("Nam khong hop le!");
+                        break;
+                    }
+
+                    System.out.println("Tong thue: "
+                            + String.format("%,.0f", thongKeThueTheoNam(nam)));
                     break;
                 }
 
@@ -855,22 +939,23 @@ public class KeToan extends NhanVien implements Thongke {
             System.out.println("1. Luong theo thang");
             System.out.println("2. Luong theo quy");
             System.out.println("3. Luong theo nam");
+            System.out.println("4. Bang luong chi tiet thang hien tai");
             System.out.println("0. Quay lai");
 
             chon = nhapSoNguyen("Chon: ");
 
             switch (chon) {
                 case 1: {
-                    int thang = nhapSoNguyen("Nhap thang: ");
+                    int thang = nhapSoNguyen("Nhap thang (1-12): ");
                     int nam = nhapSoNguyen("Nhap nam: ");
 
-                    if (thang < 1 || thang > 12) {
-                        System.out.println("Thang khong hop le!");
+                    if (thang < 1 || thang > 12 || nam <= 0) {
+                        System.out.println("Thang hoac nam khong hop le!");
                         break;
                     }
 
                     System.out.println("Tong luong: "
-                            + tinhTongLuongTheoThang(thang, nam));
+                            + String.format("%,.0f", tinhTongLuongTheoThang(thang, nam)));
                     break;
                 }
 
@@ -878,23 +963,31 @@ public class KeToan extends NhanVien implements Thongke {
                     int quy = nhapSoNguyen("Nhap quy (1-4): ");
                     int nam = nhapSoNguyen("Nhap nam: ");
 
-                    if (quy < 1 || quy > 4) {
-                        System.out.println("Quy khong hop le!");
+                    if (quy < 1 || quy > 4 || nam <= 0) {
+                        System.out.println("Quy hoac nam khong hop le!");
                         break;
                     }
 
                     System.out.println("Tong luong: "
-                            + tinhTongLuongTheoQuy(quy, nam));
+                            + String.format("%,.0f", tinhTongLuongTheoQuy(quy, nam)));
                     break;
                 }
 
                 case 3: {
                     int nam = nhapSoNguyen("Nhap nam: ");
+                    if (nam <= 0) {
+                        System.out.println("Nam khong hop le!");
+                        break;
+                    }
 
                     System.out.println("Tong luong: "
-                            + tinhTongLuongTheoNam(nam));
+                            + String.format("%,.0f", tinhTongLuongTheoNam(nam)));
                     break;
                 }
+
+                case 4:
+                    thongKeLuong();
+                    break;
 
                 case 0:
                     break;
@@ -1031,6 +1124,48 @@ public class KeToan extends NhanVien implements Thongke {
                     System.out.println("Lua chon khong hop le!");
             }
 
+        } while (chon != 0);
+    }
+
+    // =====================================================
+    // 16. MENU TONG HOP KE TOAN
+    // =====================================================
+
+    public void menuKeToan() {
+        int chon;
+
+        do {
+            System.out.println("\n========== MENU NGHIEP VU KE TOAN ==========");
+            System.out.println("1. Thong ke doanh thu");
+            System.out.println("2. Thong ke loi nhuan");
+            System.out.println("3. Thong ke thue");
+            System.out.println("4. Thong ke luong nhan vien");
+            System.out.println("5. Thong ke san pham ban ra");
+            System.out.println("0. Thoat");
+
+            chon = nhapSoNguyen("Chon: ");
+
+            switch (chon) {
+                case 1:
+                    menuDoanhThu();
+                    break;
+                case 2:
+                    menuLoiNhuan();
+                    break;
+                case 3:
+                    menuThue();
+                    break;
+                case 4:
+                    menuLuong();
+                    break;
+                case 5:
+                    menuThongKeSanPham();
+                    break;
+                case 0:
+                    break;
+                default:
+                    System.out.println("Lua chon khong hop le!");
+            }
         } while (chon != 0);
     }
 }

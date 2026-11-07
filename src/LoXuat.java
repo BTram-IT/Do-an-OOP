@@ -1,6 +1,3 @@
-// Kết quả một lần xuất kho: đã lấy bao nhiêu từ LÔ nào của sản phẩm nào.
-// Thu ngân/DonHang phải GIỮ danh sách LoXuat này để khi hủy đơn thì hoàn hàng về đúng lô (QuanlyKho.hoanKho).
-// Đối tượng không đổi được sau khi tạo.
 public class LoXuat {
 
     private final String maSP;

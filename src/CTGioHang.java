@@ -1,4 +1,3 @@
-
 import java.time.LocalDate;
 import java.util.Scanner;
 
@@ -8,145 +7,162 @@ public class CTGioHang {
     private int Soluong;
     private long DonGia;
 
+    // Constructor mặc định
     public CTGioHang() {
-        MaSP = "";
-        TenSP = "";
-        Soluong = 0;
-        DonGia = 0;
+        this.MaSP = "";
+        this.TenSP = "";
+        this.Soluong = 0;
+        this.DonGia = 0;
     }
 
+    // Constructor tương thích 2 tham số
+    public CTGioHang(String maSP, int soluong) {
+        this();
+        setMaSP(maSP);
+        setSoluong(soluong);
+    }
+
+    // Constructor đầy đủ tham số
     public CTGioHang(String maSP, String tenSP, int soluong, long donGia) {
+        this();
         setMaSP(maSP);
         setTenSP(tenSP);
         setSoluong(soluong);
         setDonGia(donGia);
     }
 
-    public String getMaSP() {
-        return MaSP;
-    }
+    // Getter
+    public String getMaSP() { return MaSP; }
+    public String getTenSP() { return TenSP; }
+    public int getSoluong() { return Soluong; }
+    public int getSoLuong() { return Soluong; }
+    public long getDonGia() { return DonGia; }
 
-    public String getTenSP() {
-        return TenSP;
-    }
-
-    public int getSoluong() {
-        return Soluong;
-    }
-
-    public long getDonGia() {
-        return DonGia;
-    }
-
+    // Setter
     public void setMaSP(String maSP) {
-        if (maSP == null || !maSP.trim().matches("(?i)(TA|DU)\\d{3}")) {
-            throw new IllegalArgumentException("Ma san pham khong hop le!");
+        if (maSP == null || maSP.trim().isEmpty()) {
+            throw new IllegalArgumentException("Mã sản phẩm không được để trống.");
         }
-
         this.MaSP = SanPham.chuanHoaMa(maSP);
     }
 
     public void setTenSP(String tenSP) {
         if (tenSP == null || tenSP.trim().isEmpty()) {
-            throw new IllegalArgumentException("Ten san pham khong duoc de trong!");
+            throw new IllegalArgumentException("Tên sản phẩm không được để trống.");
         }
-
         this.TenSP = tenSP.trim();
     }
 
     public void setSoluong(int soluong) {
         if (soluong <= 0) {
-            throw new IllegalArgumentException("So luong phai lon hon 0!");
+            throw new IllegalArgumentException("Số lượng phải lớn hơn 0.");
         }
-
         this.Soluong = soluong;
     }
 
-    public void setDonGia(long donGia) {
-        if (donGia <= 0) {
-            throw new IllegalArgumentException("Don gia phai lon hon 0!");
-        }
+    public void setSoLuong(int soluong) {
+        setSoluong(soluong);
+    }
 
+    public void setDonGia(long donGia) {
+        if (donGia <= 0 || donGia > SanPham.GIA_TOI_DA) {
+            throw new IllegalArgumentException("Đơn giá phải lớn hơn 0 và không vượt quá " + SanPham.GIA_TOI_DA + " đồng.");
+        }
         this.DonGia = donGia;
     }
 
-    public long tongtien() {
+    // Tính thành tiền chưa thuế
+    public long TongTien() {
         return Math.multiplyExact((long) Soluong, DonGia);
     }
 
-    // Giu ten cu de khong anh huong code dang goi TongTien()
-    public long TongTien() {
-        return tongtien();
-    }
-
-    // Nhap san pham vao gio hang
+    // Nhập chi tiết giỏ hàng - Sử dụng Ktradulieu
     public void Nhap(Scanner sc, DSSanPham dsSP) {
         if (sc == null || dsSP == null) {
-            throw new IllegalArgumentException("Du lieu nhap khong hop le!");
+            throw new IllegalArgumentException("Scanner và danh sách sản phẩm không được null.");
         }
 
-        // Nhap ma san pham bang Ktradulieu
-        String ma = Ktradulieu.nhapChuoi(
-                sc,
-                "Nhap ma san pham (TA### hoac DU###): ",
-                "(?i)(TA|DU)\\d{3}",
-                "Ma san pham khong hop le!"
-        );
+        SanPham sp;
+        LocalDate ngayBan = LocalDate.now();
 
-        // Tim san pham trong danh sach
-        SanPham sp = dsSP.timTheoMa(ma);
-
-        while (sp == null) {
-            System.out.println("Khong tim thay san pham!");
-
-            ma = Ktradulieu.nhapChuoi(
+        // Tìm sản phẩm còn hàng bán được
+        while (true) {
+            String ma = Ktradulieu.nhapChuoi(
                     sc,
-                    "Nhap lai ma san pham: ",
-                    "(?i)(TA|DU)\\d{3}",
-                    "Ma san pham khong hop le!"
+                    "Nhập mã sản phẩm: ",
+                    ".+",
+                    "Mã sản phẩm không được để trống!"
             );
 
+            ma = SanPham.chuanHoaMa(ma);
             sp = dsSP.timTheoMa(ma);
-        }
 
-        // Kiem tra so luong ton kho
-        long tonKho = dsSP.layTonBanDuoc(ma, LocalDate.now());
-
-        long soLuong;
-
-        do {
-            soLuong = Ktradulieu.nhapSoNguyen(
-                    sc,
-                    "Nhap so luong: "
-            );
-
-            if (soLuong > Integer.MAX_VALUE) {
-                System.out.println("So luong qua lon! Vui long nhap lai.");
-            } else if (soLuong > tonKho) {
-                System.out.println("So luong ton kho khong du! Ton kho hien tai: " + tonKho);
+            if (sp == null) {
+                System.out.println("Không tìm thấy sản phẩm! Vui lòng nhập lại.");
+                continue;
             }
 
-        } while (soLuong > Integer.MAX_VALUE || soLuong > tonKho);
+            int coTheBan = sp.getSoLuongBanDuoc(ngayBan);
+            if (coTheBan <= 0) {
+                System.out.println("Sản phẩm " + sp.getTenSP() + " hiện không còn hàng bán được!");
+                continue;
+            }
+            break;
+        }
 
-        // Gan thong tin san pham vao gio hang
-        this.MaSP = sp.getMaSP();
-        this.TenSP = sp.getTenSP();
-        this.Soluong = (int) soLuong;
-        this.DonGia = sp.getGiaBan();
+        // Lưu thông tin sản phẩm vào chi tiết giỏ hàng
+        setMaSP(sp.getMaSP());
+        setTenSP(sp.getTenSP());
+        setDonGia(sp.getGiaBan());
+
+        // Nhập số lượng và kiểm tra hàng còn bán được qua Ktradulieu
+        while (true) {
+            long soLuongNhap = Ktradulieu.nhapSoNguyen(sc, "Nhập số lượng: ");
+            int soLuongConBan = sp.getSoLuongBanDuoc(ngayBan);
+
+            if (soLuongNhap > Integer.MAX_VALUE) {
+                System.out.println("Số lượng vượt quá giới hạn cho phép!");
+                continue;
+            }
+
+            if (soLuongNhap <= 0) {
+                System.out.println("Số lượng phải lớn hơn 0!");
+                continue;
+            }
+
+            if (soLuongNhap > soLuongConBan) {
+                System.out.println("Số lượng vượt quá hàng còn tồn!");
+                System.out.println("Số lượng hiện có thể bán: " + soLuongConBan);
+                continue;
+            }
+
+            setSoluong((int) soLuongNhap);
+            break;
+        }
     }
 
-    // Giu lai phuong thuc Nhap() cu de tuong thich code
-    public void Nhap() {
-        System.out.println("Hay goi Nhap(Scanner, DSSanPham) de nhap san pham.");
+    public void nhap(Scanner sc, DSSanPham dsSP) {
+        Nhap(sc, dsSP);
+    }
+
+    // Hiển thị chi tiết giỏ hàng
+    public void Xuat() {
+        System.out.println("Mã sản phẩm: " + MaSP);
+        System.out.println("Tên sản phẩm: " + TenSP);
+        System.out.println("Số lượng: " + Soluong);
+        System.out.println("Đơn giá: " + Ktradulieu.dinhDangTien(DonGia));
+        System.out.println("Thành tiền: " + Ktradulieu.dinhDangTien(TongTien()));
+    }
+
+    public void xuat(DSSanPham dsSP) {
+        Xuat();
     }
 
     @Override
     public String toString() {
-        return "MaSP: " + MaSP
-                + " | TenSP: " + TenSP
-                + " | So luong: " + Soluong
-                + " | Don gia: " + String.format("%,d", DonGia)
-                + " VND | Thanh tien: " + String.format("%,d", tongtien())
-                + " VND";
+        return MaSP + " | " + TenSP
+                + " | Số lượng: " + Soluong
+                + " | Đơn giá: " + Ktradulieu.dinhDangTien(DonGia)
+                + " | Thành tiền: " + Ktradulieu.dinhDangTien(TongTien());
     }
 }

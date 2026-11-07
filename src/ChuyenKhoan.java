@@ -1,7 +1,6 @@
 import java.util.Scanner;
-public class ChuyenKhoan extends ThanhToan {
-    private static final Scanner sc = Main.sc;
 
+public class ChuyenKhoan extends ThanhToan {
 
     private String maGDNganHang;
     private String tenNguoiChuyen;
@@ -13,7 +12,7 @@ public class ChuyenKhoan extends ThanhToan {
     }
 
     public ChuyenKhoan(String maGD) {
-        super(maGD, "Chuyen khoan");
+        super(maGD, "Chuyển khoản");
         this.maGDNganHang = "";
         this.tenNguoiChuyen = "";
         this.soTKChuyen = "";
@@ -22,33 +21,68 @@ public class ChuyenKhoan extends ThanhToan {
 
     @Override
     public void nhap() {
-        maGDNganHang = Ktradulieu.nhapChuoi(sc, "Ma giao dich ngan hang: ", "^\\w{4,30}$", "Ma giao dich gom 4-30 chu cai / chu so, vui long nhap lai!");
-        tenNguoiChuyen = Ktradulieu.nhapChuoi(sc, "Ten nguoi chuyen: ", "^[\\p{L}][\\p{L} .'-]{1,49}$", "Ten chi gom chu cai va khoang trang (2-50 ky tu), vui long nhap lai!");
-        soTKChuyen = Ktradulieu.nhapChuoi(sc, "So tai khoan chuyen: ", "^\\d{6,20}$", "So tai khoan gom 6-20 chu so, vui long nhap lai!");
-        tenNganHang = Ktradulieu.nhapChuoi(sc, "Ten ngan hang: ", "^[^|]{1,200}$", "Khong duoc de trong, khong qua 200 ky tu va khong chua ky tu '|', vui long nhap lai!");
+        Scanner sc = new Scanner(System.in);
+        nhap(sc);
     }
 
-    /** Thanh cong khi da co ma giao dich ngan hang va so tai khoan chuyen. */
+    @Override
+    public void nhap(Scanner sc) {
+        if (sc == null) sc = new Scanner(System.in);
+
+        maGDNganHang = Ktradulieu.nhapChuoi(
+                sc,
+                "Mã giao dịch ngân hàng: ",
+                "^[\\w]{4,30}$",
+                "Mã giao dịch gồm 4-30 ký tự chữ hoặc số, vui lòng nhập lại!"
+        );
+
+        tenNguoiChuyen = Ktradulieu.nhapChuoi(
+                sc,
+                "Tên người chuyển khoản: ",
+                "^[\\p{L}][\\p{L} .'-]{1,49}$",
+                "Tên chỉ gồm chữ cái và khoảng trắng (2-50 ký tự), vui lòng nhập lại!"
+        );
+
+        soTKChuyen = Ktradulieu.nhapChuoi(
+                sc,
+                "Số tài khoản chuyển: ",
+                "^\\d{6,20}$",
+                "Số tài khoản gồm 6-20 chữ số, vui lòng nhập lại!"
+        );
+
+        tenNganHang = Ktradulieu.nhapChuoi(
+                sc,
+                "Tên ngân hàng: ",
+                "^[^|]{1,200}$",
+                "Không được để trống và không chứa ký tự '|', vui lòng nhập lại!"
+        );
+    }
+
+    /**
+     * Thành công khi đã có mã giao dịch ngân hàng và số tài khoản hợp lệ.
+     */
     @Override
     public boolean qTrinhThanhToan() {
-        return ketThuc(!maGDNganHang.isEmpty() && !soTKChuyen.isEmpty());
+        boolean hopLe = (maGDNganHang != null && !maGDNganHang.isEmpty())
+                && (soTKChuyen != null && !soTKChuyen.isEmpty());
+        return ketThuc(hopLe);
     }
 
-    public String getMaGDNganHang() {
-        return maGDNganHang;
+    public boolean thanhToan(Scanner sc, long tongTien) {
+        this.soTien = (double) tongTien;
+        System.out.println("Tổng tiền cần chuyển: " + Ktradulieu.dinhDangTien(tongTien));
+        nhap(sc);
+        return qTrinhThanhToan();
     }
 
-    public String getTenNguoiChuyen() {
-        return tenNguoiChuyen;
+    public boolean thanhToan(long tongTien) {
+        return thanhToan(new Scanner(System.in), tongTien);
     }
 
-    public String getSoTKChuyen() {
-        return soTKChuyen;
-    }
-
-    public String getTenNganHang() {
-        return tenNganHang;
-    }
+    public String getMaGDNganHang() { return maGDNganHang; }
+    public String getTenNguoiChuyen() { return tenNguoiChuyen; }
+    public String getSoTKChuyen() { return soTKChuyen; }
+    public String getTenNganHang() { return tenNganHang; }
 
     @Override
     public String toString() {

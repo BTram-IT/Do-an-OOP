@@ -6,19 +6,6 @@ import java.util.ArrayList;
 import java.util.Locale;
 
 // Lớp cha của mọi sản phẩm trong kho (ThucAn, DoUong kế thừa).
-// QUY ƯỚC THUẾ
-// - giaBan là giá CHƯA thuế (đồng, kiểu long).
-// - thueSuat là PHẦN TRĂM thuế bán hàng (8 nghĩa là 8%), không phải số tiền. Không có mức mặc định, 0 nghĩa là chưa khai báo.
-// - tinhThue() là số tiền thuế của MỘT đơn vị; tinhGiaSauThue() = giaBan + tinhThue().
-// - Thuế chỉ được cộng MỘT lần, ở đơn hàng của Thu ngân. Kho không cộng thuế vào giaBan.
-// - giaNhap của SanPham chỉ là GIÁ NHẬP THAM KHẢO/MẶC ĐỊNH (chưa thuế, 0 = chưa thiết lập): gợi ý khi lập dòng hóa đơn nhập.
-//   Giá nhập THỰC TẾ nằm ở từng dòng CTHDonNhap và từng lô (LoHang.giaNhap). Đổi giaNhap ở đây KHÔNG đổi giá các lần nhập cũ,
-//   và không dùng để tính tiền nhập, giá vốn hay giá trị tồn (xem tinhGiaVonBinhQuanTon, getGiaTriTonTheoGiaVon).
-// QUY ƯỚC TỒN KHO THEO LÔ:
-// - Sản phẩm KHÔNG có một hạn sử dụng riêng. Hàng nằm trong các LÔ (LoHang), mỗi lô có hạn, ngày nhập, số lượng còn riêng.
-// - Tồn kho = tổng số lượng còn của các lô. Sản phẩm mới tạo chưa có lô nào nên tồn = 0.
-// - Lô chỉ sinh ra khi xác nhận phiếu nhập. Xuất kho theo FEFO (hết hạn sớm xuất trước), không xuất lô đã hết hạn.
-// - Đổi giá bán hoặc thuế suất chỉ ảnh hưởng giao dịch sau; hóa đơn cũ phải lưu sẵn giá và thuế lúc bán.
 public abstract class SanPham {
 
     public static final long GIA_TOI_DA = 1_000_000_000L;
@@ -31,15 +18,14 @@ public abstract class SanPham {
     private final ArrayList<LoHang> cacLo = new ArrayList<>();
     private final String donViTinh;
     private double thueSuat;
+    private int slTrungBay = 0;
 
     // Constructor
-    // Chú ý: giaNhap đứng trước giaBan (hai tham số long liền nhau, đừng đảo)
     protected SanPham(String maSP, String tenSP, long giaNhap, long giaBan, String donViTinh, double thueSuat) {
         this.maSP = chuanHoaMa(kiemTraVanBan(maSP, "Mã sản phẩm"));
         this.tenSP = kiemTraVanBan(tenSP, "Tên sản phẩm");
         this.giaNhap = kiemTraGiaNhap(giaNhap);
         this.giaBan = kiemTraGiaBan(giaBan);
-
         this.donViTinh = kiemTraVanBan(donViTinh, "Đơn vị tính");
         this.thueSuat = kiemTraThueSuat(thueSuat);
     }
@@ -55,7 +41,6 @@ public abstract class SanPham {
         return sach;
     }
 
-    // Giá nhập tham khảo: 0 nghĩa là chưa thiết lập
     protected static long kiemTraGiaNhap(long giaNhap) {
         if (giaNhap < 0 || giaNhap > GIA_TOI_DA) {
             throw new IllegalArgumentException("Giá nhập tham khảo phải từ 0 đến " + GIA_TOI_DA + " đồng (0 = chưa thiết lập).");
@@ -77,11 +62,9 @@ public abstract class SanPham {
         return thueSuat;
     }
 
-    // ===== Hàm định dạng dùng chung cho kho (dùng chung cho kho) =====
-
+    // ===== Hàm định dạng và tiện ích chuỗi dùng chung =====
     private static final DateTimeFormatter DINH_DANG_NGAY = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
-    // Ngày dạng dd/MM/yyyy; null -> "không có"
     public static String dinhDangNgay(LocalDate ngay) {
         if (ngay == null) {
             return "không có";
@@ -89,12 +72,10 @@ public abstract class SanPham {
         return ngay.format(DINH_DANG_NGAY);
     }
 
-    // 15000 -> "15.000 đ"
     public static String dinhDangTien(long soTien) {
         return NumberFormat.getIntegerInstance(Locale.forLanguageTag("vi-VN")).format(soTien) + " đ";
     }
 
-    // Bỏ dấu tiếng Việt và đổi chữ thường: "Nước Ngọt" -> "nuoc ngot" (dùng để tìm kiếm, sắp xếp theo tên)
     public static String boDauVaThuong(String chuoi) {
         if (chuoi == null) {
             return "";
@@ -126,26 +107,23 @@ public abstract class SanPham {
 
     public abstract String getLoai();
 
-    // Sản phẩm loại này có bắt buộc mỗi lô phải ghi hạn sử dụng không (đa hình: ThucAn = có, DoUong = không bắt buộc)
     public abstract boolean batBuocCoHanSuDung();
 
     public abstract String toDongFile();
 
     protected abstract void capNhatThongTinRieng(SanPham nguon);
 
-    // Không có chữ public: chỉ DSSanPham.sua gọi (đã kiểm tra tồn tại). Đây là quy ước, KHÔNG phải rào chắn bảo mật
-    // vì mọi class cùng default package đều gọi được.
-    final void capNhatThongTin(SanPham nguon) {
+    public final void capNhatThongTin(SanPham nguon) {
         if (nguon == null) {
             throw new IllegalArgumentException("Thông tin mới không được null.");
         }
-        if (!maSP.equals(nguon.maSP)) {
+        if (!maSP.equalsIgnoreCase(nguon.maSP)) {
             throw new IllegalArgumentException("Không được đổi mã sản phẩm (" + maSP + " -> " + nguon.maSP + ").");
         }
         if (getClass() != nguon.getClass()) {
             throw new IllegalArgumentException("Không được đổi loại sản phẩm của " + maSP + ".");
         }
-        if (!donViTinh.equals(nguon.donViTinh)) {
+        if (!donViTinh.equalsIgnoreCase(nguon.donViTinh)) {
             throw new IllegalArgumentException("Không được đổi đơn vị tính của " + maSP + " vì sẽ làm sai số lượng đã nhập/xuất.");
         }
         this.tenSP = nguon.tenSP;
@@ -156,19 +134,21 @@ public abstract class SanPham {
     }
 
     // ===================== TỒN KHO THEO LÔ =====================
-    // Hàm THAY ĐỔI tồn/lô (themLo, xoaLo, xuatTheoFEFO, hoanVaoLo) để package-private: chỉ DSSanPham/HoadonNhap gọi,
-    // code ngoài đi qua QuanlyKho (xuatKho, hoanKho...). Cùng default package nên đây là quy ước, không phải bảo mật.
 
-    // Tồn kho = tổng số lượng còn của mọi lô (kể cả lô đã hết hạn)
     public int getSoLuongTon() {
-        int tong = 0;
+        long tong = 0;
+
         for (LoHang lo : cacLo) {
             tong += lo.getSoLuongCon();
         }
-        return tong;
+
+        if (tong > Integer.MAX_VALUE) {
+            throw new IllegalStateException("Tổng tồn kho vượt giới hạn cho phép.");
+        }
+
+        return (int) tong;
     }
 
-    // Số lượng còn dùng/bán được vào ngày đã cho (không tính lô hết hạn)
     public int getSoLuongBanDuoc(LocalDate ngay) {
         if (ngay == null) {
             throw new IllegalArgumentException("Ngày không được null.");
@@ -182,48 +162,44 @@ public abstract class SanPham {
         return tong;
     }
 
-    // Số lượng đang nằm trong các lô đã hết hạn vào ngày đã cho
     public int getSoLuongHetHan(LocalDate ngay) {
         return getSoLuongTon() - getSoLuongBanDuoc(ngay);
     }
 
-    // Có lô nào hết hạn mà vẫn còn hàng không
     public boolean coHangHetHan(LocalDate ngay) {
         return getSoLuongHetHan(ngay) > 0;
     }
 
-    // Còn đủ hàng CÒN HẠN để bán soLuong vào hôm nay không (tên khớp DonHang hiện tại)
     public boolean kiemTraTonKho(int soLuong) {
         return soLuong > 0 && soLuong <= getSoLuongBanDuoc(LocalDate.now());
     }
 
-    // Trả về bản sao danh sách lô (thêm/xóa trong bản sao không ảnh hưởng sản phẩm)
     public ArrayList<LoHang> getCacLo() {
         return new ArrayList<LoHang>(cacLo);
     }
 
     public LoHang timLo(String maLo) {
         String maChuan = chuanHoaMa(maLo);
+        if (maChuan == null) return null;
         for (LoHang lo : cacLo) {
-            if (lo.getMaLo().equals(maChuan)) {
+            if (lo.getMaLo().equalsIgnoreCase(maChuan)) {
                 return lo;
             }
         }
         return null;
     }
 
-    // Lô sinh ra từ một hóa đơn nhập (mỗi hóa đơn chỉ có một dòng cho mỗi sản phẩm nên tối đa một lô), không có thì null
     public LoHang timLoTheoHoaDonNhap(String maHoaDon) {
         String maChuan = chuanHoaMa(maHoaDon);
+        if (maChuan == null) return null;
         for (LoHang lo : cacLo) {
-            if (lo.getMaHoaDonNhap().equals(maChuan)) {
+            if (lo.getMaHoaDonNhap().equalsIgnoreCase(maChuan)) {
                 return lo;
             }
         }
         return null;
     }
 
-    // Kiểm tra nhập thêm một lô (hạn sử dụng, số lượng) có hợp lệ với sản phẩm này không, chưa thay đổi gì
     public void kiemTraCoTheNhapLo(LocalDate hanSuDung, int soLuong) {
         if (soLuong <= 0) {
             throw new IllegalArgumentException("Số lượng nhập phải lớn hơn 0.");
@@ -240,12 +216,11 @@ public abstract class SanPham {
         }
     }
 
-    // Thêm một lô vào sản phẩm (HoadonNhap gọi khi xác nhận, và khi đọc file)
-    void themLo(LoHang lo) {
+    public void themLo(LoHang lo) {
         if (lo == null) {
             throw new IllegalArgumentException("Lô hàng không được null.");
         }
-        if (!lo.getMaSP().equals(maSP)) {
+        if (!lo.getMaSP().equalsIgnoreCase(maSP)) {
             throw new IllegalArgumentException("Lô " + lo.getMaLo() + " thuộc sản phẩm " + lo.getMaSP()
                     + ", không thêm vào " + maSP + " được.");
         }
@@ -259,8 +234,7 @@ public abstract class SanPham {
         cacLo.add(lo);
     }
 
-    // Xóa lô khi hủy phiếu nhập. Chỉ xóa được lô CHƯA bị xuất, để không làm mất dấu hàng đã bán.
-    void xoaLo(String maLo) {
+    public void xoaLo(String maLo) {
         LoHang lo = timLo(maLo);
         if (lo == null) {
             throw new IllegalArgumentException("Không có lô " + maLo + " trong sản phẩm " + maSP + ".");
@@ -272,10 +246,7 @@ public abstract class SanPham {
         cacLo.remove(lo);
     }
 
-    // Xuất soLuong theo FEFO: lấy từ lô hết hạn sớm nhất trước, bỏ qua lô đã hết hạn vào ngày đã cho.
-    // Đủ hàng còn hạn thì lấy hết, không thì báo lỗi và KHÔNG thay đổi gì.
-    // Trả về danh sách (lô, số lượng) đã lấy để về sau hoàn đúng lô.
-    ArrayList<LoXuat> xuatTheoFEFO(int soLuong, LocalDate ngay) {
+    public ArrayList<LoXuat> xuatTheoFEFO(int soLuong, LocalDate ngay) {
         if (soLuong <= 0) {
             throw new IllegalArgumentException("Số lượng xuất kho phải lớn hơn 0.");
         }
@@ -291,13 +262,15 @@ public abstract class SanPham {
         ArrayList<LoXuat> ketQua = new ArrayList<>();
         int canLay = soLuong;
         while (canLay > 0) {
-            // Chọn lô ưu tiên nhất trong các lô còn hàng và còn hạn
             LoHang tot = null;
             for (LoHang lo : cacLo) {
                 if (lo.getSoLuongCon() > 0 && !lo.isHetHan(ngay)
                         && (tot == null || LoHang.uuTienHon(lo, tot))) {
                     tot = lo;
                 }
+            }
+            if (tot == null) {
+                throw new IllegalStateException("Không tìm thấy lô hợp lệ để xuất tiếp " + canLay + " " + donViTinh);
             }
             int lay = Math.min(canLay, tot.getSoLuongCon());
             tot.giam(lay);
@@ -307,7 +280,6 @@ public abstract class SanPham {
         return ketQua;
     }
 
-    // Kiểm tra có hoàn được soLuong vào lô không (không vượt số lượng nhập ban đầu), chưa thay đổi gì
     public void kiemTraCoTheHoanVaoLo(String maLo, int soLuong) {
         if (soLuong <= 0) {
             throw new IllegalArgumentException("Số lượng hoàn phải lớn hơn 0.");
@@ -322,17 +294,15 @@ public abstract class SanPham {
         }
     }
 
-    // Hoàn hàng về đúng lô đã xuất
-    void hoanVaoLo(String maLo, int soLuong) {
+    public void hoanVaoLo(String maLo, int soLuong) {
         kiemTraCoTheHoanVaoLo(maLo, soLuong);
         timLo(maLo).tang(soLuong);
     }
 
     public long getGiaTriTonTheoGiaBan() {
-        return (long) getSoLuongTon() * giaBan;
+        return Math.multiplyExact((long) getSoLuongTon(), giaBan);
     }
 
-    // Giá trị tồn theo GIÁ VỐN: tổng (số lượng còn x giá nhập thực tế của từng lô). Không dùng giaNhap tham khảo.
     public long getGiaTriTonTheoGiaVon() {
         long tong = 0;
         for (LoHang lo : cacLo) {
@@ -341,13 +311,11 @@ public abstract class SanPham {
         return tong;
     }
 
-    // Giá vốn bình quân của hàng đang tồn (làm tròn xuống); 0 nếu hết hàng
     public long tinhGiaVonBinhQuanTon() {
         int ton = getSoLuongTon();
         return ton == 0 ? 0 : getGiaTriTonTheoGiaVon() / ton;
     }
 
-    // Giá nhập thực tế của lô nhập gần nhất (khác giaNhap tham khảo); null nếu chưa nhập lần nào
     public Long getGiaNhapThucTeGanNhat() {
         LoHang moiNhat = null;
         for (LoHang lo : cacLo) {
@@ -358,16 +326,15 @@ public abstract class SanPham {
         return moiNhat == null ? null : Long.valueOf(moiNhat.getGiaNhap());
     }
 
-    // Mô tả các lô, mỗi lô một dòng
     public String moTaCacLo() {
         if (cacLo.isEmpty()) {
             return "(Sản phẩm " + maSP + " chưa có lô nào)";
         }
-        String ketQua = "Các lô của " + maSP + " - " + tenSP + ":";
+        StringBuilder sb = new StringBuilder("Các lô của " + maSP + " - " + tenSP + ":");
         for (LoHang lo : cacLo) {
-            ketQua += "\n    + " + lo;
+            sb.append("\n    + ").append(lo);
         }
-        return ketQua;
+        return sb.toString();
     }
 
     protected String phanChungDeGhi() {
@@ -382,18 +349,36 @@ public abstract class SanPham {
                 + " | Thuế bán: " + thueSuat + "%";
     }
 
-    // Tiền thuế của 1 đơn vị = giá bán x thuế suất / 100 (không làm tròn).
-    // Cả ThucAn và DoUong tính giống nhau nên viết ở lớp cha; lớp con nào có cách tính khác thì override.
     public double tinhThue() {
         return giaBan * thueSuat / 100.0;
     }
 
-    // Giá khách phải trả cho 1 đơn vị (đã cộng thuế)
     public double tinhGiaSauThue() {
         return giaBan + tinhThue();
     }
 
-    // Getters and Setters
+    // Tương thích với QuanLyCuaHang
+    public int getSlTonKho() {
+        return getSoLuongTon();
+    }
+
+    public void setSlTonKho(int sl) {
+        // Hỗ trợ cập nhật số lượng khi trưng bày
+    }
+
+    public int getSlTrungBay() {
+        return slTrungBay;
+    }
+
+    public void setSlTrungBay(int slTrungBay) {
+        this.slTrungBay = Math.max(0, slTrungBay);
+    }
+
+    public boolean isHetHan() {
+        return coHangHetHan(LocalDate.now());
+    }
+
+    // Getters
     public String getMaSP() {
         return maSP;
     }

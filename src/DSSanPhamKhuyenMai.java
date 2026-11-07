@@ -11,8 +11,9 @@ public class DSSanPhamKhuyenMai {
     }
 
     // Getter
-    public ArrayList<SPKhMai> getDanhSach() {
-        return danhSach;
+    public SPKhMai[] getDanhSach() {
+
+        return danhSach.toArray(new SPKhMai[0]);
     }
 
     public int getSoLuong() {

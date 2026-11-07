@@ -1,73 +1,102 @@
+
 import java.util.Locale;
 
-// Đồ uống: có dung tích (ml). Hạn sử dụng ở từng lô; đồ uống KHÔNG bắt buộc có hạn (nước suối có thể nhập lô không hạn).
 public class DoUong extends SanPham {
 
     public static final String TIEN_TO_MA = "DU";
     public static final int DUNG_TICH_TOI_DA_ML = 100_000;
-    private static int boDem = 0;
 
-    // Mức thuế mặc định của đồ uống (số giả định, nhóm/Kế toán chỉnh khi có quy định)
-    public static final double THUE_SUAT_MAC_DINH = 8.0;
+    private static int boDem = 0;
 
     private int dungTichMl;
 
-    public DoUong(String maSP, String tenSP, long giaNhap, long giaBan, String donViTinh,
-                  double thueSuat, int dungTichMl) {
-        super(maSP, tenSP, giaNhap, giaBan, donViTinh, thueSuat); // giaNhap do SanPham quản lý
+    // Constructor
+    public DoUong(String maSP, String tenSP, long giaNhap, long giaBan,
+                  String donViTinh, double thueSuat, int dungTichMl) {
+
+        super(maSP, tenSP, giaNhap, giaBan, donViTinh, thueSuat);
+
         this.dungTichMl = kiemTraDungTich(dungTichMl);
 
-        boDem = Math.max(boDem, laySoTuMa(chuanHoaMa(maSP), TIEN_TO_MA));
+        // Cập nhật bộ đếm theo mã sản phẩm đã tạo hoặc đọc từ file
+        boDem = Math.max(
+                boDem,
+                laySoTuMa(chuanHoaMa(maSP), TIEN_TO_MA)
+        );
     }
 
-    // Không truyền thuế: thuế do lớp DoUong quyết định
-    public DoUong(String maSP, String tenSP, long giaNhap, long giaBan, String donViTinh, int dungTichMl) {
-        this(maSP, tenSP, giaNhap, giaBan, donViTinh, THUE_SUAT_MAC_DINH, dungTichMl);
-    }
-
-    public static String maKeTiep() {
-        return String.format(Locale.ROOT, "%s%03d", TIEN_TO_MA, boDem + 1);
-    }
-
+    // Kiểm tra dung tích
     private static int kiemTraDungTich(int dungTichMl) {
+
         if (dungTichMl <= 0 || dungTichMl > DUNG_TICH_TOI_DA_ML) {
-            throw new IllegalArgumentException("Dung tích phải từ 1 đến " + DUNG_TICH_TOI_DA_ML + " ml.");
+            throw new IllegalArgumentException(
+                    "Dung tích phải lớn hơn 0 và không vượt quá "
+                            + DUNG_TICH_TOI_DA_ML + " ml."
+            );
         }
+
         return dungTichMl;
     }
 
+    // Sinh mã sản phẩm tiếp theo
+    public static synchronized String maKeTiep() {
+
+        boDem++;
+
+        return String.format(
+                Locale.ROOT,
+                "%s%03d",
+                TIEN_TO_MA,
+                boDem
+        );
+    }
+
+    // Getter
     public int getDungTichMl() {
         return dungTichMl;
     }
 
-    // Không public: sửa thông tin sản phẩm đi qua DSSanPham.sua (quy ước, cùng default package)
-    void setDungTichMl(int dungTichMl) {
+    // Setter
+    public void setDungTichMl(int dungTichMl) {
         this.dungTichMl = kiemTraDungTich(dungTichMl);
     }
 
+    // Xác định loại sản phẩm
     @Override
     public String getLoai() {
         return "Đồ uống";
     }
 
+    // Đồ uống không bắt buộc phải có hạn sử dụng
     @Override
     public boolean batBuocCoHanSuDung() {
         return false;
     }
 
+    // Chuyển thông tin sản phẩm thành một dòng để lưu file
     @Override
     public String toDongFile() {
         return "DOUONG|" + phanChungDeGhi() + "|" + dungTichMl;
     }
 
+    // Cập nhật thông tin riêng của đồ uống
     @Override
     protected void capNhatThongTinRieng(SanPham nguon) {
+
+        if (!(nguon instanceof DoUong)) {
+            throw new IllegalArgumentException(
+                    "Chỉ được cập nhật thông tin từ sản phẩm đồ uống."
+            );
+        }
+
         DoUong moi = (DoUong) nguon;
-        this.dungTichMl = moi.dungTichMl;
+
+        this.dungTichMl = kiemTraDungTich(moi.dungTichMl);
     }
 
+    // Hiển thị thông tin sản phẩm
     @Override
     public String toString() {
-        return thongTinChung() + " | Dung tích: " + dungTichMl + "ml";
+        return thongTinChung() + " | Dung tích: " + dungTichMl + " ml";
     }
 }

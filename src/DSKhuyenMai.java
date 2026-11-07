@@ -21,19 +21,30 @@ public class DSKhuyenMai {
         return soLuong;
     }
 
-    // Tìm khuyến mãi theo mã
+    // Tìm vị trí khuyến mãi theo mã
     public int timKhuyenMai(String maKM) {
+        if (maKM == null || maKM.trim().isEmpty()) {
+            return -1;
+        }
+        String maChuan = SanPham.chuanHoaMa(maKM);
         for (int i = 0; i < soLuong; i++) {
-            if (danhSach[i].getMaKM().equalsIgnoreCase(maKM)) {
+            if (danhSach[i] != null && danhSach[i].getMaKM() != null
+                    && danhSach[i].getMaKM().equalsIgnoreCase(maChuan)) {
                 return i;
             }
         }
         return -1;
     }
 
+    // Tìm đối tượng khuyến mãi theo mã
+    public Khuyenmai timTheoMa(String maKM) {
+        int viTri = timKhuyenMai(maKM);
+        return viTri == -1 ? null : danhSach[viTri];
+    }
+
     // Thêm khuyến mãi
     public void themKhuyenMai(Khuyenmai km) {
-        if (km == null) {
+        if (km == null || km.getMaKM() == null || km.getMaKM().trim().isEmpty()) {
             System.out.println("Khuyến mãi không hợp lệ!");
             return;
         }
@@ -73,43 +84,43 @@ public class DSKhuyenMai {
 
     // Sửa khuyến mãi
     public void suaKhuyenMai() {
-        String maKM = Ktradulieu.nhapChuoi(
+        String ma = Ktradulieu.nhapChuoi(
                 sc, "Nhập mã khuyến mãi cần sửa: ", ".+",
                 "Mã khuyến mãi không được để trống!");
 
-        int viTri = timKhuyenMai(maKM);
+        int viTri = timKhuyenMai(ma);
 
         if (viTri == -1) {
             System.out.println("Không tìm thấy khuyến mãi!");
             return;
         }
 
-        System.out.println("===== CHỌN THÔNG TIN CẦN SỬA =====");
-        System.out.println("1. Sửa toàn bộ thông tin khuyến mãi");
-        System.out.println("0. Thoát");
+        Khuyenmai tam = danhSach[viTri].taoKhuyenMaiRong();
+        tam.setKM();
 
-        int chon = Ktradulieu.luaChon(sc, "Nhập lựa chọn: ", 0, 1);
-
-        switch (chon) {
-            case 1:
-                danhSach[viTri].thietLapKhuyenMai();
-
-                // Kiểm tra mã sau khi sửa có bị trùng không
-                for (int i = 0; i < soLuong; i++) {
-                    if (i != viTri && danhSach[i].getMaKM()
-                            .equalsIgnoreCase(danhSach[viTri].getMaKM())) {
-                        System.out.println("Mã khuyến mãi đã tồn tại!");
-                        return;
-                    }
-                }
-
-                System.out.println("Cập nhật khuyến mãi thành công!");
-                break;
-
-            case 0:
-                System.out.println("Đã hủy sửa!");
-                break;
+        if (trungMa(tam.getMaKM(), viTri)) {
+            System.out.println("Mã khuyến mãi đã tồn tại! Không thể sửa.");
+            return;
         }
+
+        danhSach[viTri] = tam;
+        System.out.println("Sửa khuyến mãi thành công!");
+    }
+
+    // Kiểm tra trùng mã
+    public boolean trungMa(String maKM, int viTriBoQua) {
+        if (maKM == null || maKM.trim().isEmpty()) {
+            return false;
+        }
+        String maChuan = SanPham.chuanHoaMa(maKM);
+        for (int i = 0; i < soLuong; i++) {
+            if (i != viTriBoQua && danhSach[i] != null
+                    && danhSach[i].getMaKM() != null
+                    && danhSach[i].getMaKM().equalsIgnoreCase(maChuan)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     // Xóa khuyến mãi

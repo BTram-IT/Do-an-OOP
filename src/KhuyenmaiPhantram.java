@@ -1,86 +1,120 @@
-
-import java.time.LocalDateTime;
-import java.util.ArrayList;
+import java.time.LocalDate;
 
 public class KhuyenmaiPhantram extends Khuyenmai {
     private double phanTramGiamGia;
-    private double mucGiamGiaToiDa;
+    private long mucGiamToiDa;
 
     public KhuyenmaiPhantram() {
         super();
-        loaiKM = "Giam theo phan tram";
-        phanTramGiamGia = 0;
-        mucGiamGiaToiDa = 0;
+        this.phanTramGiamGia = 0;
+        this.mucGiamToiDa = 0;
+        setLoaiKM("Giảm theo phần trăm");
     }
 
     public KhuyenmaiPhantram(
-            String maKM, String tenKM,
-            LocalDateTime ngayBatDau,
-            LocalDateTime ngayKetThuc,
-            double mucChiToiThieu,
-            ArrayList<SanPham> danhSachKM,
+            String maKM,
+            String loaiKM,
+            LocalDate ngayBatDau,
+            LocalDate ngayKetThuc,
+            long mucChiToiThieu,
             double phanTramGiamGia,
-            double mucGiamGiaToiDa) {
-
-        super(maKM, tenKM, "Giam theo phan tram",
-                ngayBatDau, ngayKetThuc,
-                mucChiToiThieu, danhSachKM);
-
-        this.phanTramGiamGia = phanTramGiamGia;
-        this.mucGiamGiaToiDa = mucGiamGiaToiDa;
-    }
-
-    public void thietLapKhuyenMai() {
-        super.thietLapKhuyenMai();
-
-        loaiKM = "Giam theo phan tram";
-
-        do {
-            phanTramGiamGia = Ktradulieu.nhapSoThuc(
-                    sc,
-                    "Nhap phan tram giam gia (toi da 100%): "
-            );
-
-            if (phanTramGiamGia > 100) {
-                System.out.println("Phan tram giam gia khong duoc vuot qua 100%!");
-            }
-        } while (phanTramGiamGia > 100);
-
-        mucGiamGiaToiDa = Ktradulieu.nhapSoThuc(
-                sc,
-                "Nhap muc giam gia toi da: "
-        );
+            long mucGiamToiDa) {
+        super(maKM,
+                (loaiKM == null || loaiKM.trim().isEmpty()) ? "Giảm theo phần trăm" : loaiKM,
+                ngayBatDau, ngayKetThuc, mucChiToiThieu);
+        setPhanTramGiamGia(phanTramGiamGia);
+        setMucGiamToiDa(mucGiamToiDa);
     }
 
     @Override
-    public double traCuuGiaSanPhamSauKM(String maSP) {
-        int viTri = timKiemSP(maSP);
+    public void setKM() {
+        super.setKM();
 
-        if (viTri == -1 || !kiemTraThoiHan()) {
-            return -1;
+        do {
+            phanTramGiamGia = Ktradulieu.nhapSoThuc(
+                    sc, "Nhập phần trăm giảm (0 < % <= 100): ");
+
+            if (phanTramGiamGia <= 0 || phanTramGiamGia > 100) {
+                System.out.println("Phần trăm phải lớn hơn 0 và không quá 100!");
+            }
+        } while (phanTramGiamGia <= 0 || phanTramGiamGia > 100);
+
+        do {
+            mucGiamToiDa = Ktradulieu.nhapSoNguyen(
+                    sc, "Nhập mức giảm tối đa (0 = không giới hạn): ");
+
+            if (mucGiamToiDa < 0) {
+                System.out.println("Mức giảm tối đa không được âm!");
+            }
+        } while (mucGiamToiDa < 0);
+
+        setLoaiKM("Giảm " + phanTramGiamGia + "%");
+    }
+
+    @Override
+    public long tinhTienGiam(long giaBan) {
+        if (giaBan <= 0 || phanTramGiamGia <= 0 || mucGiamToiDa < 0) {
+            return 0;
         }
 
-        double giaGoc = danhSachKM.get(viTri).getGiaBan();
+        long tienGiam = Math.round(giaBan * phanTramGiamGia / 100.0);
 
-        double tienGiam = giaGoc * phanTramGiamGia / 100;
+        // Nếu mucGiamToiDa > 0 thì áp trần, còn = 0 nghĩa là không giới hạn mức giảm tối đa
+        if (mucGiamToiDa > 0) {
+            tienGiam = Math.min(tienGiam, mucGiamToiDa);
+        }
 
-        tienGiam = Math.min(tienGiam, mucGiamGiaToiDa);
+        return Math.min(tienGiam, giaBan);
+    }
 
-        return Math.max(0, giaGoc - tienGiam);
+    @Override
+    public long tinhTongTienGiam(long giaBan, int soLuong) {
+        if (giaBan <= 0 || soLuong <= 0 || phanTramGiamGia <= 0 || mucGiamToiDa < 0) {
+            return 0;
+        }
+        long thanhTien = Math.multiplyExact(giaBan, (long) soLuong);
+        long tongGiam = Math.round(thanhTien * phanTramGiamGia / 100.0);
+
+        if (mucGiamToiDa > 0) {
+            tongGiam = Math.min(tongGiam, mucGiamToiDa);
+        }
+
+        return Math.min(tongGiam, thanhTien);
+    }
+
+    @Override
+    public Khuyenmai taoKhuyenMaiRong() {
+        return new KhuyenmaiPhantram();
     }
 
     public double getPhanTramGiamGia() {
         return phanTramGiamGia;
     }
 
-    public double getMucGiamGiaToiDa() {
-        return mucGiamGiaToiDa;
+    public void setPhanTramGiamGia(double phanTramGiamGia) {
+        if (!Double.isFinite(phanTramGiamGia) || phanTramGiamGia <= 0 || phanTramGiamGia > 100) {
+            throw new IllegalArgumentException(
+                    "Phần trăm giảm phải lớn hơn 0 và không quá 100!");
+        }
+        this.phanTramGiamGia = phanTramGiamGia;
+    }
+
+    public long getMucGiamToiDa() {
+        return mucGiamToiDa;
+    }
+
+    public void setMucGiamToiDa(long mucGiamToiDa) {
+        if (mucGiamToiDa < 0) {
+            throw new IllegalArgumentException(
+                    "Mức giảm tối đa không được âm!");
+        }
+        this.mucGiamToiDa = mucGiamToiDa;
     }
 
     @Override
     public String toString() {
         return super.toString()
-                + "\nPhan tram giam: " + phanTramGiamGia + "%"
-                + "\nMuc giam toi da: " + mucGiamGiaToiDa;
+                + "\nPhần trăm giảm: " + phanTramGiamGia + "%"
+                + "\nMức giảm tối đa: " + (mucGiamToiDa == 0 ? "Không giới hạn" : mucGiamToiDa);
     }
 }

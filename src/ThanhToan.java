@@ -1,4 +1,6 @@
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Scanner;
 
 public abstract class ThanhToan {
 
@@ -6,15 +8,18 @@ public abstract class ThanhToan {
     public static final String THANH_CONG = "Thanh cong";
     public static final String THAT_BAI = "That bai";
 
+    private static final DateTimeFormatter DINH_DANG_NGAY_GIO =
+            DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
+
     protected String maGD;
     protected String trangThai;
     protected LocalDateTime ngayThanhToan;
     protected double soTien;
-    protected String maNV;             
+    protected String maNV;
     protected String loaiThanhToan;
 
     public ThanhToan(String maGD, String loaiThanhToan) {
-        this.maGD = maGD;
+        this.maGD = (maGD == null) ? "" : maGD.trim().toUpperCase();
         this.loaiThanhToan = loaiThanhToan;
         this.trangThai = CHO_THANH_TOAN;
         this.soTien = 0;
@@ -22,6 +27,8 @@ public abstract class ThanhToan {
     }
 
     public abstract void nhap();
+
+    public abstract void nhap(Scanner sc);
 
     public abstract boolean qTrinhThanhToan();
 
@@ -42,7 +49,7 @@ public abstract class ThanhToan {
     }
 
     public void setMaGD(String maGD) {
-        this.maGD = maGD;
+        this.maGD = (maGD == null) ? "" : maGD.trim().toUpperCase();
     }
 
     public String getTrangThai() {
@@ -58,7 +65,7 @@ public abstract class ThanhToan {
     }
 
     public void setSoTien(double soTien) {
-        this.soTien = soTien;
+        this.soTien = Math.max(0, soTien);
     }
 
     public String getMaNV() {
@@ -66,16 +73,20 @@ public abstract class ThanhToan {
     }
 
     public void setMaNV(String maNV) {
-        this.maNV = maNV;
+        this.maNV = (maNV == null) ? "" : maNV.trim();
     }
 
     public String getLoaiThanhToan() {
         return loaiThanhToan;
     }
 
+    public String getPhuongThuc() {
+        return loaiThanhToan;
+    }
+
     @Override
     public String toString() {
-        String ngay = ngayThanhToan == null ? "-" : ngayThanhToan.format(TienIch.NGAY_GIO);
+        String ngay = ngayThanhToan == null ? "-" : ngayThanhToan.format(DINH_DANG_NGAY_GIO);
         return String.format("%s | %s | %,.0f VND | %s | %s | NV: %s",
                 maGD, loaiThanhToan, soTien, trangThai, ngay, maNV);
     }

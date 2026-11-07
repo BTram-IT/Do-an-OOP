@@ -1,185 +1,105 @@
+
 import java.time.LocalDate;
 import java.time.Period;
 import java.util.Scanner;
 
 public class NhanVien extends Nguoidung {
-
     private String maNV;
     private double luongCoBan;
     private LocalDate ngayVaoLam;
     private String chucVu;
 
-    // Constructor mặc định
     public NhanVien() {
         super();
-
-        this.maNV = "";
-        this.luongCoBan = 5000000;
-        this.ngayVaoLam = LocalDate.now();
-        this.chucVu = "Nhan vien";
+        maNV = "";
+        luongCoBan = 5000000;
+        ngayVaoLam = LocalDate.now();
+        chucVu = "Nhan vien";
     }
 
-    // Constructor đầy đủ
-    public NhanVien(String ten, String sdt, String diaChi,
-                    String email, LocalDate ngaySinh,
-                    String maNV, double luongCoBan,
+    public NhanVien(String ten, String sdt, String diaChi, String email,
+                    LocalDate ngaySinh, String maNV, double luongCoBan,
                     LocalDate ngayVaoLam, String chucVu) {
-
         super(ten, sdt, diaChi, email, ngaySinh);
-
         setMaNV(maNV);
         setLuongCoBan(luongCoBan);
         setNgayVaoLam(ngayVaoLam);
         setChucVu(chucVu);
     }
 
-    // Getter và Setter
-    public String getMaNV() {
-        return maNV;
-    }
-
+    public String getMaNV() { return maNV; }
     public void setMaNV(String maNV) {
-        if (maNV == null || maNV.trim().isEmpty()) {
-            throw new IllegalArgumentException(
-                    "Ma nhan vien khong duoc de trong!"
-            );
-        }
-
-        this.maNV = maNV.trim().toUpperCase();
+        maNV = Ktradulieu.chuanHoaMa(maNV);
+        if (!maNV.matches("NV\\d{3}"))
+            throw new IllegalArgumentException("Mã nhân viên phải có dạng NV001!");
+        this.maNV = maNV;
     }
 
-    public double getLuongCoBan() {
-        return luongCoBan;
-    }
-
+    public double getLuongCoBan() { return luongCoBan; }
     public void setLuongCoBan(double luongCoBan) {
-        if (!Double.isFinite(luongCoBan) || luongCoBan <= 0) {
-            throw new IllegalArgumentException(
-                    "Luong co ban phai lon hon 0!"
-            );
-        }
-
+        if (!Double.isFinite(luongCoBan) || luongCoBan <= 0)
+            throw new IllegalArgumentException("Lương cơ bản phải lớn hơn 0!");
         this.luongCoBan = luongCoBan;
     }
 
-    public LocalDate getNgayVaoLam() {
-        return ngayVaoLam;
-    }
-
+    public LocalDate getNgayVaoLam() { return ngayVaoLam; }
     public void setNgayVaoLam(LocalDate ngayVaoLam) {
-        if (ngayVaoLam == null || ngayVaoLam.isAfter(LocalDate.now())) {
-            throw new IllegalArgumentException(
-                    "Ngay vao lam khong hop le!"
-            );
-        }
-
+        if (ngayVaoLam == null || ngayVaoLam.isAfter(LocalDate.now()))
+            throw new IllegalArgumentException("Ngày vào làm không hợp lệ!");
         this.ngayVaoLam = ngayVaoLam;
     }
 
-    public String getChucVu() {
-        return chucVu;
-    }
-
+    public String getChucVu() { return chucVu; }
     public void setChucVu(String chucVu) {
-        if (chucVu == null || chucVu.trim().isEmpty()) {
-            throw new IllegalArgumentException(
-                    "Chuc vu khong duoc de trong!"
-            );
-        }
-
+        if (chucVu == null || chucVu.trim().isEmpty())
+            throw new IllegalArgumentException("Chức vụ không được để trống!");
         this.chucVu = chucVu.trim();
     }
 
-    // Tinh kinh nghiem tai mot ngay cu the
-    // Moi du 6 thang tang 1 muc kinh nghiem
     public int TinhKinhNghiem(LocalDate ngayTinh) {
-
-        if (ngayVaoLam == null || ngayTinh == null
-                || ngayVaoLam.isAfter(ngayTinh)) {
+        if (ngayVaoLam == null || ngayTinh == null || ngayVaoLam.isAfter(ngayTinh))
             return 0;
-        }
-
         Period p = Period.between(ngayVaoLam, ngayTinh);
-
-        int soThang = p.getYears() * 12 + p.getMonths();
-
-        return soThang / 6;
+        return (p.getYears() * 12 + p.getMonths()) / 6;
     }
 
-    // Tinh kinh nghiem den ngay hien tai
     public int TinhKinhNghiem() {
         return TinhKinhNghiem(LocalDate.now());
     }
 
-    // Getter kinh nghiem neu cac lop khac can su dung
     public int getKinhNghiem() {
         return TinhKinhNghiem();
     }
 
-    // Tinh luong tai mot ngay cu the
     public double Tinhluong(LocalDate ngayTinh) {
-
-        if (ngayTinh == null) {
-            throw new IllegalArgumentException(
-                    "Ngay tinh luong khong hop le!"
-            );
-        }
-
-        int mucKinhNghiem = TinhKinhNghiem(ngayTinh);
-
-        return luongCoBan + mucKinhNghiem * 200000;
+        if (ngayTinh == null) throw new IllegalArgumentException("Ngày tính lương không hợp lệ!");
+        return luongCoBan + TinhKinhNghiem(ngayTinh) * 500000;
     }
 
-    // Tinh luong hien tai
     public double Tinhluong() {
         return Tinhluong(LocalDate.now());
     }
 
-    // Nhap thong tin nhan vien
     @Override
     public void nhap(Scanner sc) {
+        if (sc == null) throw new IllegalArgumentException("Scanner không hợp lệ!");
 
-        if (sc == null) {
-            throw new IllegalArgumentException(
-                    "Scanner khong hop le!"
-            );
-        }
-
-        this.maNV = Ktradulieu.nhapChuoi(
-                sc,
-                "Nhap ma nhan vien: ",
-                "NV\\d{3}",
-                "Ma nhan vien khong hop le! Vi du: NV001"
-        ).toUpperCase();
-
+        setMaNV(Ktradulieu.nhapChuoi(sc, "Nhập mã nhân viên: ",
+                "NV\\d{3}", "Mã phải có dạng NV001!"));
         super.nhap(sc);
-
-        this.luongCoBan = Ktradulieu.nhapSoNguyen(
-                sc,
-                "Nhap luong co ban: "
-        );
-
-        this.chucVu = Ktradulieu.nhapChuoi(
-                sc,
-                "Nhap chuc vu: ",
-                "^[\\p{L}]+(?:\\s[\\p{L}]+)*$",
-                "Chuc vu khong hop le!"
-        ).trim();
-
-        this.ngayVaoLam = LocalDate.now();
+        setLuongCoBan(Ktradulieu.nhapSoNguyen(sc, "Nhập lương cơ bản: "));
+        setChucVu(Ktradulieu.nhapChuoi(sc, "Nhập chức vụ: ",
+                "^[\\p{L}]+(?:\\s[\\p{L}]+)*$", "Chức vụ không hợp lệ!"));
+        setNgayVaoLam(LocalDate.now());
     }
 
-    // Hien thi thong tin nhan vien
     @Override
     public String toString() {
-
         return super.toString()
                 + " | MaNV: " + maNV
                 + " | Chuc vu: " + chucVu
                 + " | Ngay vao lam: " + ngayVaoLam
-                + " | Muc kinh nghiem: " + TinhKinhNghiem()
-                + " | Luong thuc nhan: "
-                + String.format("%,.0f", Tinhluong())
-                + " VND";
+                + " | Kinh nghiem: " + TinhKinhNghiem() + " muc"
+                + " | Luong: " + String.format("%,.0f", Tinhluong()) + " VND";
     }
 }

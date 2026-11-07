@@ -1,4 +1,3 @@
-
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
@@ -93,6 +92,12 @@ public class HoadonNhap extends HoaDon {
     // Dùng khi đọc file: giữ nguyên trạng thái và các dòng chi tiết đã lưu, KHÔNG đụng tới tồn kho
     public HoadonNhap(String maHoaDon, String maNhanVien, LocalDateTime thoiGianLap, LocalDate ngayNhap,
                       String maNhaCungCap, TrangThai trangThai, ArrayList<CTHDonNhap> cacDong) {
+        this(maHoaDon, maNhanVien, thoiGianLap, ngayNhap, maNhaCungCap, "", trangThai, cacDong);
+    }
+
+    // Dùng khi đọc file có mã đơn vị vận chuyển
+    public HoadonNhap(String maHoaDon, String maNhanVien, LocalDateTime thoiGianLap, LocalDate ngayNhap,
+                      String maNhaCungCap, String maDonViVanChuyen, TrangThai trangThai, ArrayList<CTHDonNhap> cacDong) {
         // HoaDon (nhóm) không có constructor có tham số: gán qua setter
         super();
         // Gọi super.setX (không phải setX của lớp này) vì HoadonNhap chặn việc đổi các giá trị này sau khi tạo
@@ -107,19 +112,18 @@ public class HoadonNhap extends HoaDon {
         }
         this.ngayNhap = ngayNhap;
         this.maNhaCungCap = SanPham.chuanHoaMa(SanPham.kiemTraVanBan(maNhaCungCap, "Mã nhà cung cấp"));
-        this.maDonViVanChuyen = "";
+        this.maDonViVanChuyen = (maDonViVanChuyen != null && !maDonViVanChuyen.trim().isEmpty())
+                ? SanPham.chuanHoaMa(maDonViVanChuyen) : "";
         if (trangThai == null) {
             throw new IllegalArgumentException("Trạng thái phiếu không được null.");
         }
         this.trangThai = trangThai;
 
-        // [ĐÃ SỬA] Kiểm tra danh sách chi tiết không null trước khi duyệt.
         if (cacDong == null) {
             throw new IllegalArgumentException("Danh sách chi tiết không được null.");
         }
 
         for (CTHDonNhap ct : cacDong) {
-            // [ĐÃ SỬA] Không cho phép phần tử null trong danh sách chi tiết.
             if (ct == null) {
                 throw new IllegalArgumentException("Chi tiết hóa đơn nhập không được null.");
             }
@@ -141,7 +145,6 @@ public class HoadonNhap extends HoaDon {
     }
 
     // Mã hóa đơn là khóa liên kết với các lô (LoHang.maHoaDonNhap) và với file lưu, nên không được đổi sau khi tạo.
-    // HoaDon của nhóm có setter public; ở đây chặn để không làm đứt liên kết giữa phiếu và lô.
     @Override
     public void setMaHD(String maHD) {
         throw new UnsupportedOperationException("Không được đổi mã hóa đơn nhập " + getMaHD() + " sau khi tạo.");
@@ -163,7 +166,6 @@ public class HoadonNhap extends HoaDon {
 
     // Mỗi sản phẩm một dòng; hạn sử dụng không được trước ngày nhập (không nhập hàng đã hết hạn)
     private void kiemTraChiTiet(CTHDonNhap ct) {
-        // [ĐÃ SỬA] Bảo vệ phương thức nếu được gọi với chi tiết null.
         if (ct == null) {
             throw new IllegalArgumentException("Chi tiết hóa đơn nhập không được null.");
         }
@@ -188,6 +190,19 @@ public class HoadonNhap extends HoaDon {
         kiemTraChiTiet(ct);
         ct.ganMaHD(getMaHD());
         chiTiet.add(ct);
+    }
+
+    public void themChiTiet(SanPham sp, int soLuong, double giaNhap) {
+        if (sp == null) throw new IllegalArgumentException("Sản phẩm không được null.");
+        themChiTiet(new CTHDonNhap(sp.getMaSP(), sp.getTenSP(), soLuong, (long) giaNhap, sp.getThueSuat(), null));
+    }
+
+    public long tongTienDS() {
+        return TongtienDS();
+    }
+
+    public void capNhatKho(DSSanPham kho) {
+        xacNhan(kho);
     }
 
     // Xóa dòng của một sản phẩm khỏi phiếu chưa xác nhận, trả về true nếu có xóa
@@ -245,11 +260,9 @@ public class HoadonNhap extends HoaDon {
     }
 
     // Tổng thanh toán cho nhà cung cấp = tiền hàng + thuế nhập.
-    // [HoaDon-thật] nhóm cần xác nhận Tongtienhoadon() của hóa đơn nhập có gồm thuế hay không (ở đây: có).
     @Override
-    public double Tongtienhoadon() {
-        // [ĐÃ SỬA] Chuyển từng giá trị sang double trước khi cộng để tránh tràn số kiểu long.
-        return (double) tinhTongTien() + (double) tinhTongThue();
+    public long Tongtienhoadon() {
+        return (long) tinhTongTien() + (long) tinhTongThue();
     }
 
     // In hóa đơn nhập ra màn hình (yêu cầu abstract của HoaDon)
@@ -291,8 +304,6 @@ public class HoadonNhap extends HoaDon {
     // ===================== XÁC NHẬN / HỦY =====================
 
     // Xác nhận phiếu: mỗi dòng tạo một lô hàng mới trong sản phẩm tương ứng.
-    // Bước 1: kiểm tra TẤT CẢ dòng (chưa đổi gì). Bước 2: mới tạo lô.
-    // Vì bước 1 đã kiểm tra đủ nên bước 2 không thể lỗi giữa chừng, không bao giờ cập nhật dở dang.
     public void xacNhan(DSSanPham kho) {
         if (kho == null) {
             throw new IllegalArgumentException("Cần cung cấp kho để xác nhận phiếu.");
@@ -311,7 +322,6 @@ public class HoadonNhap extends HoaDon {
             }
             sp.kiemTraCoTheNhapLo(ct.getHanSuDung(), ct.getSoLuongNhap());
         }
-        // Đã kiểm tra hết nên bước này không nên lỗi; vẫn phòng hờ: lỗi giữa chừng thì gỡ các lô vừa thêm
         ArrayList<LoHang> daThem = new ArrayList<>();
         try {
             for (CTHDonNhap ct : chiTiet) {
@@ -330,9 +340,6 @@ public class HoadonNhap extends HoaDon {
     }
 
     // Hủy phiếu.
-    // - Chờ xác nhận: chỉ đổi trạng thái (chưa có lô nào).
-    // - Đã xác nhận: xóa các lô của phiếu khỏi kho. Chỉ được nếu MỌI lô còn nguyên chưa bị xuất;
-    //   hàng đã bán mất thì từ chối. Kiểm tra hết rồi mới xóa.
     public void huy(DSSanPham kho) {
         if (trangThai == TrangThai.DA_HUY) {
             throw new IllegalStateException("Hóa đơn nhập " + getMaHD() + " đã bị hủy trước đó.");
@@ -398,25 +405,22 @@ public class HoadonNhap extends HoaDon {
         return trangThai;
     }
 
-    // Trả về bản sao, bên ngoài sửa danh sách này không ảnh hưởng phiếu
     public ArrayList<CTHDonNhap> getChiTiet() {
         return new ArrayList<CTHDonNhap>(chiTiet);
     }
 
     // ===================== FILE / HIỂN THỊ =====================
 
-    // Dòng HDN|maHoaDon|maNV|thoiGianLap|ngayNhap|maNhaCungCap|trangThai rồi các dòng CT
     public ArrayList<String> toCacDongFile() {
         ArrayList<String> cacDong = new ArrayList<>();
         cacDong.add("HDN|" + getMaHD() + "|" + getMaNV() + "|" + getThoigianin() + "|" + ngayNhap
-                + "|" + maNhaCungCap + "|" + trangThai.name());
+                + "|" + maNhaCungCap + "|" + trangThai.name() + "|" + (maDonViVanChuyen != null ? maDonViVanChuyen : ""));
         for (CTHDonNhap ct : chiTiet) {
             cacDong.add(ct.toDongFile());
         }
         return cacDong;
     }
 
-    // Mô tả đầy đủ; nhanNhaCungCap là chuỗi hiển thị cho nhà cung cấp (QuanlyKho truyền "mã - tên")
     public String moTaDayDu(String nhanNhaCungCap) {
         String ketQua = moTa(nhanNhaCungCap);
         for (CTHDonNhap ct : chiTiet) {
