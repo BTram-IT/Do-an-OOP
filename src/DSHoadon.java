@@ -1,3 +1,4 @@
+
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
@@ -9,44 +10,31 @@ public class DSHoadon {
     private ArrayList<HoaDon> ds;
     public static final String FILE_MAC_DINH = "hoadon.txt";
 
-<<<<<<< HEAD
-=======
-    // Constructor mặc định
->>>>>>> origin/main
     public DSHoadon() {
-        this.ds = new ArrayList<>();
+        ds = new ArrayList<>();
     }
 
-<<<<<<< HEAD
-=======
-    // Lấy số lượng hóa đơn
->>>>>>> origin/main
     public int getSoLuong() {
         return ds.size();
     }
 
-<<<<<<< HEAD
     public int size() {
         return ds.size();
     }
 
-=======
-    // Lấy bản sao danh sách hóa đơn
->>>>>>> origin/main
     public ArrayList<HoaDon> getDanhSach() {
         return new ArrayList<>(ds);
     }
 
-    // Lấy danh sách gốc (tương thích với KeToan.java)
     public ArrayList<HoaDon> getDs() {
         return new ArrayList<>(ds);
     }
 
     public ArrayList<Hoadonban> getDanhSachHoaDonBan() {
-        ArrayList<Hoadonban> ketQua = new ArrayList<>();
+        ArrayList<Hoadonban> kq = new ArrayList<>();
         for (HoaDon hd : ds)
-            if (hd instanceof Hoadonban) ketQua.add((Hoadonban) hd);
-        return ketQua;
+            if (hd instanceof Hoadonban) kq.add((Hoadonban) hd);
+        return kq;
     }
 
     public ArrayList<Hoadonban> layHoaDonBan() {
@@ -54,96 +42,50 @@ public class DSHoadon {
     }
 
     public ArrayList<HoadonNhap> layHoaDonNhap() {
-        ArrayList<HoadonNhap> ketQua = new ArrayList<>();
+        ArrayList<HoadonNhap> kq = new ArrayList<>();
         for (HoaDon hd : ds)
-            if (hd instanceof HoadonNhap) ketQua.add((HoadonNhap) hd);
-        return ketQua;
+            if (hd instanceof HoadonNhap) kq.add((HoadonNhap) hd);
+        return kq;
     }
 
-<<<<<<< HEAD
     public HoaDon timTheoMa(String maHD) {
         if (maHD == null || maHD.trim().isEmpty()) return null;
-        String maChuan = Ktradulieu.chuanHoaMa(maHD);
-        for (HoaDon hd : ds) {
-            if (hd != null && hd.getMaHD().equalsIgnoreCase(maChuan))
-=======
-    // Lấy riêng danh sách các Hóa đơn bán
-    public ArrayList<Hoadonban> getDanhSachHoaDonBan() {
-        ArrayList<Hoadonban> ketQua = new ArrayList<>();
-        for (HoaDon hd : ds) {
-            if (hd instanceof Hoadonban) {
-                ketQua.add((Hoadonban) hd);
-            }
-        }
-        return ketQua;
-    }
-
-    // Tìm hóa đơn theo mã
-    public HoaDon timTheoMa(String maHD) {
-        if (maHD == null || maHD.trim().isEmpty()) {
-            return null;
-        }
-
-        String maChuan = SanPham.chuanHoaMa(maHD);
+        String ma = Ktradulieu.chuanHoaMa(maHD);
 
         for (HoaDon hd : ds) {
             if (hd != null && hd.getMaHD() != null
-                    && hd.getMaHD().equalsIgnoreCase(maChuan)) {
->>>>>>> origin/main
+                    && hd.getMaHD().equalsIgnoreCase(ma))
                 return hd;
         }
         return null;
     }
 
-<<<<<<< HEAD
     public HoaDon timKiemTheoMa(String maHD) {
         return timTheoMa(maHD);
     }
 
-=======
-    // Kiểm tra mã hóa đơn đã tồn tại chưa
->>>>>>> origin/main
     public boolean daTonTaiMa(String maHD) {
         return timTheoMa(maHD) != null;
     }
 
-<<<<<<< HEAD
     public boolean them(HoaDon hd) {
-        if (hd == null || hd.getMaHD() == null || hd.getMaHD().trim().isEmpty()) {
+        if (hd == null || hd.getMaHD() == null
+                || hd.getMaHD().trim().isEmpty()) {
             System.out.println("Hóa đơn hoặc mã hóa đơn không hợp lệ!");
-=======
-    // Thêm hóa đơn
-    public boolean them(HoaDon hd) {
-        if (hd == null) {
-            System.out.println("Hóa đơn không hợp lệ!");
             return false;
         }
 
-        if (hd.getMaHD() == null || hd.getMaHD().trim().isEmpty()) {
-            System.out.println("Mã hóa đơn không được để trống!");
->>>>>>> origin/main
-            return false;
-        }
-
-        hd.setMaHD(SanPham.chuanHoaMa(hd.getMaHD()));
+        hd.setMaHD(Ktradulieu.chuanHoaMa(hd.getMaHD()));
 
         if (daTonTaiMa(hd.getMaHD())) {
-            System.out.println("Mã hóa đơn đã tồn tại: " + hd.getMaHD());
+            System.out.println("Mã hóa đơn đã tồn tại!");
             return false;
         }
 
         ds.add(hd);
-<<<<<<< HEAD
         return true;
     }
 
-=======
-        System.out.println("Thêm hóa đơn thành công!");
-        return true;
-    }
-
-    // Xuất toàn bộ danh sách hóa đơn
->>>>>>> origin/main
     public void xuatDS() {
         if (ds.isEmpty()) {
             System.out.println("Danh sách hóa đơn đang trống!");
@@ -151,7 +93,6 @@ public class DSHoadon {
         }
 
         System.out.println("\n========== DANH SÁCH HÓA ĐƠN (" + ds.size() + ") ==========");
-<<<<<<< HEAD
         for (HoaDon hd : ds)
             if (hd != null) hd.inhoadon();
     }
@@ -160,32 +101,19 @@ public class DSHoadon {
         xuatDS();
     }
 
-=======
-        for (HoaDon hd : ds) {
-            if (hd != null) {
-                hd.inhoadon();
-            }
-        }
-    }
-
-    // Xuất hóa đơn theo mã
->>>>>>> origin/main
     public boolean xuatTheoMa(String maHD) {
         HoaDon hd = timTheoMa(maHD);
         if (hd == null) {
-<<<<<<< HEAD
             System.out.println("Không tìm thấy hóa đơn: " + maHD);
-=======
-            System.out.println("Không tìm thấy hóa đơn có mã: " + maHD);
->>>>>>> origin/main
             return false;
         }
+
         hd.inhoadon();
         return true;
     }
 
-<<<<<<< HEAD
-    // Chỉ hóa đơn bán chưa thanh toán và hóa đơn nhập đang chờ xác nhận mới được sửa/xóa.
+    // Hóa đơn nhập chỉ sửa/xóa khi đang chờ xác nhận.
+    // Hóa đơn bán chỉ sửa/xóa khi chưa thanh toán.
     private boolean coTheSua(HoaDon hd) {
         if (hd instanceof HoadonNhap) {
             return ((HoadonNhap) hd).getTrangThai()
@@ -194,23 +122,16 @@ public class DSHoadon {
         return !hd.isDaThanhToan();
     }
 
-=======
-    // Xóa hóa đơn theo mã (chỉ cho phép xóa hóa đơn chưa thanh toán)
->>>>>>> origin/main
     public boolean xoa(String maHD) {
         HoaDon hd = timTheoMa(maHD);
+
         if (hd == null) {
             System.out.println("Không tìm thấy hóa đơn!");
             return false;
         }
 
-<<<<<<< HEAD
         if (!coTheSua(hd)) {
             System.out.println("Không thể xóa hóa đơn đã thanh toán, đã xác nhận hoặc đã hủy!");
-=======
-        if (hd.isDaThanhToan()) {
-            System.out.println("Không thể xóa hóa đơn đã thanh toán!");
->>>>>>> origin/main
             return false;
         }
 
@@ -219,7 +140,6 @@ public class DSHoadon {
         return true;
     }
 
-<<<<<<< HEAD
     public boolean sua(String maHD, HoaDon hdMoi) {
         HoaDon hdCu = timTheoMa(maHD);
 
@@ -230,24 +150,6 @@ public class DSHoadon {
 
         if (!coTheSua(hdCu)) {
             System.out.println("Không thể sửa hóa đơn đã thanh toán, đã xác nhận hoặc đã hủy!");
-=======
-    // Sửa hóa đơn theo mã (chỉ cho phép sửa hóa đơn chưa thanh toán)
-    public boolean sua(String maHD, HoaDon hdMoi) {
-        if (hdMoi == null) {
-            System.out.println("Hóa đơn mới không hợp lệ!");
-            return false;
-        }
-
-        HoaDon hdCu = timTheoMa(maHD);
-
-        if (hdCu == null) {
-            System.out.println("Không tìm thấy hóa đơn cần sửa!");
-            return false;
-        }
-
-        if (hdCu.isDaThanhToan()) {
-            System.out.println("Không thể sửa hóa đơn đã thanh toán!");
->>>>>>> origin/main
             return false;
         }
 
@@ -257,22 +159,11 @@ public class DSHoadon {
         }
 
         if (hdMoi.getMaHD() == null || hdMoi.getMaHD().trim().isEmpty()) {
-<<<<<<< HEAD
             System.out.println("Mã hóa đơn không được để trống!");
-=======
-            System.out.println("Mã hóa đơn mới không được để trống!");
             return false;
         }
 
-        hdMoi.setMaHD(SanPham.chuanHoaMa(hdMoi.getMaHD()));
-
-        // Kiểm tra mã mới có bị trùng với hóa đơn khác không
-        if (!hdCu.getMaHD().equalsIgnoreCase(hdMoi.getMaHD())
-                && daTonTaiMa(hdMoi.getMaHD())) {
-            System.out.println("Mã hóa đơn mới đã tồn tại!");
->>>>>>> origin/main
-            return false;
-        }
+        hdMoi.setMaHD(Ktradulieu.chuanHoaMa(hdMoi.getMaHD()));
 
         HoaDon trung = timTheoMa(hdMoi.getMaHD());
         if (trung != null && trung != hdCu) {
@@ -280,24 +171,19 @@ public class DSHoadon {
             return false;
         }
 
-<<<<<<< HEAD
         ds.set(ds.indexOf(hdCu), hdMoi);
-=======
->>>>>>> origin/main
         System.out.println("Sửa hóa đơn thành công!");
         return true;
     }
 
-<<<<<<< HEAD
     public void timKiem(Scanner sc) {
-        if (sc == null) sc = new Scanner(System.in);
-        String maHD = Ktradulieu.nhapChuoi(sc,
-                "Nhập mã hóa đơn cần tìm: ", ".+",
-                "Mã hóa đơn không được để trống!");
+        if (sc == null) return;
+
+        String maHD = Ktradulieu.nhapChuoi(
+                sc, "Nhập mã hóa đơn cần tìm: ",
+                ".+", "Mã hóa đơn không được để trống!");
         xuatTheoMa(maHD);
     }
-
-    // ===================== GHI FILE =====================
 
     public boolean ghiFile(String duongDan) {
         if (duongDan == null || duongDan.trim().isEmpty()) {
@@ -305,7 +191,6 @@ public class DSHoadon {
             return false;
         }
 
-        // Kiểm tra loại hóa đơn trước khi ghi để tránh lưu thiếu dữ liệu.
         for (HoaDon hd : ds) {
             if (!(hd instanceof Hoadonban) && !(hd instanceof HoadonNhap)) {
                 System.out.println("Có loại hóa đơn chưa hỗ trợ lưu file!");
@@ -315,8 +200,10 @@ public class DSHoadon {
 
         int soDaGhi = 0;
 
-        try (BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(
-                new FileOutputStream(duongDan), StandardCharsets.UTF_8))) {
+        try (BufferedWriter bw = new BufferedWriter(
+                new OutputStreamWriter(
+                        new FileOutputStream(duongDan),
+                        StandardCharsets.UTF_8))) {
 
             for (HoaDon hd : ds) {
                 if (hd instanceof Hoadonban) {
@@ -324,7 +211,9 @@ public class DSHoadon {
                     bw.newLine();
                     soDaGhi++;
                 } else if (hd instanceof HoadonNhap) {
-                    ArrayList<String> cacDong = ((HoadonNhap) hd).toCacDongFile();
+                    ArrayList<String> cacDong =
+                            ((HoadonNhap) hd).toCacDongFile();
+
                     for (String dong : cacDong) {
                         bw.write(dong);
                         bw.newLine();
@@ -333,6 +222,7 @@ public class DSHoadon {
                 }
             }
 
+            bw.flush();
             System.out.println("Đã lưu " + soDaGhi + " hóa đơn vào file: " + duongDan);
             return true;
 
@@ -345,8 +235,6 @@ public class DSHoadon {
     public boolean ghiFile() {
         return ghiFile(FILE_MAC_DINH);
     }
-
-    // ===================== ĐỌC FILE =====================
 
     public boolean docFile(String duongDan) {
         if (duongDan == null || duongDan.trim().isEmpty()) {
@@ -362,8 +250,10 @@ public class DSHoadon {
 
         ArrayList<String> cacDongFile = new ArrayList<>();
 
-        try (BufferedReader br = new BufferedReader(new InputStreamReader(
-                new FileInputStream(file), StandardCharsets.UTF_8))) {
+        try (BufferedReader br = new BufferedReader(
+                new InputStreamReader(
+                        new FileInputStream(file),
+                        StandardCharsets.UTF_8))) {
             String line;
             while ((line = br.readLine()) != null)
                 cacDongFile.add(line.trim());
@@ -383,16 +273,15 @@ public class DSHoadon {
             try {
                 HoaDon hd = null;
 
-                // Hóa đơn bán: một dòng dữ liệu.
                 if (line.startsWith("HDB|")) {
                     hd = Hoadonban.tuDongFile(line);
-                }
 
-                // Hóa đơn nhập: một dòng đầu phiếu + nhiều dòng CT.
-                else if (line.startsWith("HDN|")) {
+                } else if (line.startsWith("HDN|")) {
                     String[] t = line.split("\\|", -1);
+
                     if (t.length != 8)
-                        throw new IllegalArgumentException("Sai định dạng đầu hóa đơn nhập!");
+                        throw new IllegalArgumentException(
+                                "Sai định dạng đầu hóa đơn nhập!");
 
                     ArrayList<CTHDonNhap> chiTiet = new ArrayList<>();
                     boolean loiChiTiet = false;
@@ -401,7 +290,8 @@ public class DSHoadon {
                             && cacDongFile.get(i + 1).startsWith("CT|")) {
                         i++;
                         try {
-                            chiTiet.add(CTHDonNhap.tuDongFile(cacDongFile.get(i)));
+                            chiTiet.add(CTHDonNhap.tuDongFile(
+                                    cacDongFile.get(i)));
                         } catch (RuntimeException e) {
                             loiChiTiet = true;
                             break;
@@ -409,7 +299,8 @@ public class DSHoadon {
                     }
 
                     if (loiChiTiet)
-                        throw new IllegalArgumentException("Dòng chi tiết hóa đơn nhập không hợp lệ!");
+                        throw new IllegalArgumentException(
+                                "Dòng chi tiết hóa đơn nhập không hợp lệ!");
 
                     LocalDateTime thoiGianLap = LocalDateTime.parse(t[3]);
                     LocalDate ngayNhap = LocalDate.parse(t[4]);
@@ -418,12 +309,12 @@ public class DSHoadon {
 
                     hd = new HoadonNhap(
                             t[1], t[2], thoiGianLap, ngayNhap,
-                            t[5], t[7], trangThai, chiTiet
-                    );
+                            t[5], t[7], trangThai, chiTiet);
                 }
 
                 if (hd == null)
-                    throw new IllegalArgumentException("Không thể khôi phục hóa đơn!");
+                    throw new IllegalArgumentException(
+                            "Không thể khôi phục hóa đơn!");
 
                 boolean trungMa = false;
                 for (HoaDon daCo : dsMoi) {
@@ -458,15 +349,3 @@ public class DSHoadon {
         return docFile(FILE_MAC_DINH);
     }
 }
-=======
-    // Tìm kiếm hóa đơn từ bàn phím
-    public void timKiem(Scanner sc) {
-        if (sc == null) {
-            return;
-        }
-        String maHD = Ktradulieu.nhapChuoi(
-                sc, "Nhập mã hóa đơn cần tìm: ", ".+", "Mã hóa đơn không được để trống!");
-        xuatTheoMa(maHD);
-    }
-}
->>>>>>> origin/main

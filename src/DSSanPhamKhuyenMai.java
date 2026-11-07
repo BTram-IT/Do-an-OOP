@@ -139,6 +139,21 @@ public class DSSanPhamKhuyenMai {
         danhSach.remove(viTri);
         System.out.println("Xóa sản phẩm khuyến mãi thành công!");
     }
+    public boolean kiemTraLienKet(String maSP, String maKM) {
+        if (maSP == null || maKM == null) return false;
+
+        String sp = SanPham.chuanHoaMa(maSP);
+        String km = SanPham.chuanHoaMa(maKM);
+
+        for (SPKhMai item : danhSach) {
+            if (item != null
+                    && sp.equals(SanPham.chuanHoaMa(item.getMaSP()))
+                    && km.equals(SanPham.chuanHoaMa(item.getMaKM()))) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     // Xuất danh sách sản phẩm khuyến mãi
     public void xuatDanhSach() {

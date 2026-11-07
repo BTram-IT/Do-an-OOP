@@ -22,7 +22,6 @@ public class DonViVanChuyen extends DoiTac {
         taoDSXe(sc);
     }
 
-
     public void taoDSXe(Scanner sc) {
         System.out.println("Nhập danh sách xe (để trống mã xe để kết thúc):");
         while (true) {

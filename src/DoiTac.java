@@ -9,13 +9,20 @@ public abstract class DoiTac {
         this("", "", "", "", "", loaiDT);
     }
 
-    public DoiTac(String maDT, String tenDT, String diaChi, String email, String maSoThue, String loaiDT) {
+    public DoiTac(String maDT, String tenDT, String diaChi,
+                  String email, String maSoThue, String loaiDT) {
         this.loaiDT = loaiDT == null ? "" : loaiDT.trim();
-        setMaDT(maDT);
-        setTenDT(tenDT);
-        setDiaChi(diaChi);
-        setEmail(email);
-        setMaSoThue(maSoThue);
+        this.maDT = "";
+        this.tenDT = "";
+        this.diaChi = "";
+        this.email = "";
+        this.maSoThue = "";
+
+        if (maDT != null && !maDT.trim().isEmpty()) setMaDT(maDT);
+        if (tenDT != null && !tenDT.trim().isEmpty()) setTenDT(tenDT);
+        if (diaChi != null && !diaChi.trim().isEmpty()) setDiaChi(diaChi);
+        if (email != null && !email.trim().isEmpty()) setEmail(email);
+        if (maSoThue != null && !maSoThue.trim().isEmpty()) setMaSoThue(maSoThue);
     }
 
     public String getMaDT() { return maDT; }
@@ -26,10 +33,10 @@ public abstract class DoiTac {
     public String getLoaiDT() { return loaiDT; }
 
     public void setMaDT(String maDT) {
-        maDT = Ktradulieu.chuanHoaMa(maDT);
-        if (!maDT.isEmpty() && !maDT.matches("[A-Z0-9]+"))
+        String ma = Ktradulieu.chuanHoaMa(maDT);
+        if (!ma.isEmpty() && !ma.matches("[A-Z0-9]+"))
             throw new IllegalArgumentException("Mã đối tác không hợp lệ!");
-        this.maDT = maDT;
+        this.maDT = ma;
     }
 
     public void setTenDT(String tenDT) {
@@ -57,18 +64,31 @@ public abstract class DoiTac {
     }
 
     public void nhap(Scanner sc) {
-        setMaDT(Ktradulieu.nhapChuoi(sc, "Nhập mã đối tác: ", "[a-zA-Z0-9]+", "Mã không hợp lệ!"));
+        if (sc == null)
+            throw new IllegalArgumentException("Scanner không hợp lệ!");
+
+        setMaDT(Ktradulieu.nhapChuoi(
+                sc, "Nhập mã đối tác: ", "[a-zA-Z0-9]+", "Mã không hợp lệ!"));
+
         setTenDT(Ktradulieu.nhapChuoiKhongRong(sc, "Nhập tên đối tác: "));
         setDiaChi(Ktradulieu.nhapChuoiKhongRong(sc, "Nhập địa chỉ: "));
-        setEmail(Ktradulieu.nhapChuoi(sc, "Nhập email: ", Ktradulieu.emailRegex, "Email không hợp lệ!"));
-        setMaSoThue(Ktradulieu.nhapChuoi(sc, "Nhập mã số thuế: ", "\\d{10}(-\\d{3})?", "Mã số thuế không hợp lệ!"));
+
+        setEmail(Ktradulieu.nhapChuoi(
+                sc, "Nhập email: ", Ktradulieu.emailRegex, "Email không hợp lệ!"));
+
+        setMaSoThue(Ktradulieu.nhapChuoi(
+                sc, "Nhập mã số thuế: ", "\\d{10}(-\\d{3})?",
+                "Mã số thuế không hợp lệ!"));
     }
+
+    public abstract void nhap();
 
     public abstract String toDongFile();
 
     @Override
     public String toString() {
-        return String.format("[%s] %s | Loại: %s | MST: %s | Email: %s | ĐC: %s",
+        return String.format(
+                "[%s] %s | Loại: %s | MST: %s | Email: %s | ĐC: %s",
                 maDT, tenDT, loaiDT, maSoThue, email, diaChi);
     }
 }
