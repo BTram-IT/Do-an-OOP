@@ -1,5 +1,4 @@
 import java.time.LocalDateTime;
-import java.util.Scanner;
 
 public abstract class HoaDon {
     private String MaHD;
@@ -23,7 +22,11 @@ public abstract class HoaDon {
     }
 
     public void setMaHD(String maHD) {
+<<<<<<< HEAD
         this.MaHD = (maHD == null) ? "" : Ktradulieu.chuanHoaMa(maHD);
+=======
+        this.MaHD = (maHD == null) ? "" : SanPham.chuanHoaMa(maHD);
+>>>>>>> origin/main
     }
 
     public String getMaNV() {
@@ -31,7 +34,11 @@ public abstract class HoaDon {
     }
 
     public void setMaNV(String maNV) {
+<<<<<<< HEAD
         this.MaNV = (maNV == null) ? "" : Ktradulieu.chuanHoaMa(maNV);
+=======
+        this.MaNV = (maNV == null) ? "" : SanPham.chuanHoaMa(maNV);
+>>>>>>> origin/main
     }
 
     public LocalDateTime getThoigianin() {
@@ -41,6 +48,7 @@ public abstract class HoaDon {
     public void setThoigianin(LocalDateTime thoigianin) {
         this.thoigianin = (thoigianin == null) ? LocalDateTime.now() : thoigianin;
     }
+<<<<<<< HEAD
 
     public LocalDateTime getThoiGianIn() {
         return getThoigianin();
@@ -58,10 +66,13 @@ public abstract class HoaDon {
         setThoigianin(thoiGian);
     }
 
+=======
+>>>>>>> origin/main
     public boolean isDaThanhToan() {
         return false;
     }
 
+<<<<<<< HEAD
     // Nhập mã an toàn qua lớp Ktradulieu
     public static String nhapMaHD(Scanner sc) {
         return Ktradulieu.nhapChuoi(sc, "Nhập mã hóa đơn: ", ".+", "Mã hóa đơn không được để trống!").toUpperCase();
@@ -79,3 +90,10 @@ public abstract class HoaDon {
         return Tongtienhoadon();
     }
 }
+=======
+    public abstract void inhoadon();
+
+    public abstract long Tongtienhoadon();
+}
+
+>>>>>>> origin/main
