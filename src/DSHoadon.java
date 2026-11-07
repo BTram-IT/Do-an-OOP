@@ -1,36 +1,51 @@
 import java.util.ArrayList;
+import java.util.Scanner;
 
 public class DSHoadon {
     private ArrayList<HoaDon> ds;
 
-    // Constructor mac dinh
+    // Constructor mặc định
     public DSHoadon() {
-        ds = new ArrayList<>();
+        this.ds = new ArrayList<>();
     }
 
-    // lấy sl hóa đơn
+    // Lấy số lượng hóa đơn
     public int getSoLuong() {
         return ds.size();
     }
 
-    // Lấy ds hóa đơn
+    // Lấy bản sao danh sách hóa đơn
     public ArrayList<HoaDon> getDanhSach() {
         return new ArrayList<>(ds);
     }
 
+    // Lấy danh sách gốc (tương thích với KeToan.java)
     public ArrayList<HoaDon> getDs() {
         return ds;
     }
 
-    // Tiìm hđ theo mã
+    // Lấy riêng danh sách các Hóa đơn bán
+    public ArrayList<Hoadonban> getDanhSachHoaDonBan() {
+        ArrayList<Hoadonban> ketQua = new ArrayList<>();
+        for (HoaDon hd : ds) {
+            if (hd instanceof Hoadonban) {
+                ketQua.add((Hoadonban) hd);
+            }
+        }
+        return ketQua;
+    }
+
+    // Tìm hóa đơn theo mã
     public HoaDon timTheoMa(String maHD) {
         if (maHD == null || maHD.trim().isEmpty()) {
             return null;
         }
 
+        String maChuan = SanPham.chuanHoaMa(maHD);
+
         for (HoaDon hd : ds) {
-            if (hd.getMaHD() != null
-                    && hd.getMaHD().equalsIgnoreCase(maHD.trim())) {
+            if (hd != null && hd.getMaHD() != null
+                    && hd.getMaHD().equalsIgnoreCase(maChuan)) {
                 return hd;
             }
         }
@@ -38,52 +53,56 @@ public class DSHoadon {
         return null;
     }
 
-    // ktr hóa đơn tôồn tại k
+    // Kiểm tra mã hóa đơn đã tồn tại chưa
     public boolean daTonTaiMa(String maHD) {
         return timTheoMa(maHD) != null;
     }
 
-    // Them hoa don
+    // Thêm hóa đơn
     public boolean them(HoaDon hd) {
         if (hd == null) {
-            System.out.println("Hoa don khong hop le!");
+            System.out.println("Hóa đơn không hợp lệ!");
             return false;
         }
 
-        if (hd.getMaHD() == null
-                || hd.getMaHD().trim().isEmpty()) {
-            System.out.println("Ma hoa don khong duoc de trong!");
+        if (hd.getMaHD() == null || hd.getMaHD().trim().isEmpty()) {
+            System.out.println("Mã hóa đơn không được để trống!");
             return false;
         }
+
+        hd.setMaHD(SanPham.chuanHoaMa(hd.getMaHD()));
 
         if (daTonTaiMa(hd.getMaHD())) {
-            System.out.println("Ma hoa don da ton tai!");
+            System.out.println("Mã hóa đơn đã tồn tại: " + hd.getMaHD());
             return false;
         }
 
         ds.add(hd);
-        System.out.println("Them hoa don thanh cong!");
+        System.out.println("Thêm hóa đơn thành công!");
         return true;
     }
 
-
+    // Xuất toàn bộ danh sách hóa đơn
     public void xuatDS() {
         if (ds.isEmpty()) {
-            System.out.println("Danh sach hoa don dang trong!");
+            System.out.println("Danh sách hóa đơn đang trống!");
             return;
         }
 
+        System.out.println("\n========== DANH SÁCH HÓA ĐƠN (" + ds.size() + ") ==========");
         for (HoaDon hd : ds) {
-            hd.inhoadon();
+            if (hd != null) {
+                hd.inhoadon();
+            }
         }
     }
 
-    // xuất hđ theo mã
+    // Xuất hóa đơn theo mã
     public boolean xuatTheoMa(String maHD) {
         HoaDon hd = timTheoMa(maHD);
 
         if (hd == null) {
-            System.out.println("Khong tim thay hoa don!");
+            System.out.println("Không tìm thấy hóa đơn có mã: " + maHD);
             return false;
         }
 
@@ -91,65 +110,77 @@ public class DSHoadon {
         return true;
     }
 
-    // xóa hđ theo mã
+    // Xóa hóa đơn theo mã (chỉ cho phép xóa hóa đơn chưa thanh toán)
     public boolean xoa(String maHD) {
         HoaDon hd = timTheoMa(maHD);
 
         if (hd == null) {
-            System.out.println("Khong tim thay hoa don!");
+            System.out.println("Không tìm thấy hóa đơn!");
             return false;
         }
 
         if (hd.isDaThanhToan()) {
-            System.out.println(
-                    "Khong the xoa hoa don da thanh toan!"
-            );
+            System.out.println("Không thể xóa hóa đơn đã thanh toán!");
             return false;
         }
 
         ds.remove(hd);
-        System.out.println("Xoa hoa don thanh cong!");
+        System.out.println("Xóa hóa đơn thành công!");
         return true;
     }
 
-    // sửa hóa đơn theo mã
+    // Sửa hóa đơn theo mã (chỉ cho phép sửa hóa đơn chưa thanh toán)
     public boolean sua(String maHD, HoaDon hdMoi) {
         if (hdMoi == null) {
-            System.out.println("Hoa don moi khong hop le!");
+            System.out.println("Hóa đơn mới không hợp lệ!");
             return false;
         }
 
         HoaDon hdCu = timTheoMa(maHD);
 
         if (hdCu == null) {
-            System.out.println("Khong tim thay hoa don!");
+            System.out.println("Không tìm thấy hóa đơn cần sửa!");
             return false;
         }
 
         if (hdCu.isDaThanhToan()) {
-            System.out.println(
-                    "Khong the sua hoa don da thanh toan!"
-            );
+            System.out.println("Không thể sửa hóa đơn đã thanh toán!");
             return false;
         }
 
-        if (hdMoi.getMaHD() == null
-                || hdMoi.getMaHD().trim().isEmpty()) {
-            System.out.println("Ma hoa don khong duoc de trong!");
+        if (hdCu.getClass() != hdMoi.getClass()) {
+            System.out.println("Không thể đổi loại hóa đơn khi sửa!");
             return false;
         }
 
-        // Kiem tra ma moi co bi trung khong
-        if (!hdCu.getMaHD().equalsIgnoreCase(hdMoi.getMaHD().trim())
+        if (hdMoi.getMaHD() == null || hdMoi.getMaHD().trim().isEmpty()) {
+            System.out.println("Mã hóa đơn mới không được để trống!");
+            return false;
+        }
+
+        hdMoi.setMaHD(SanPham.chuanHoaMa(hdMoi.getMaHD()));
+
+        // Kiểm tra mã mới có bị trùng với hóa đơn khác không
+        if (!hdCu.getMaHD().equalsIgnoreCase(hdMoi.getMaHD())
                 && daTonTaiMa(hdMoi.getMaHD())) {
-            System.out.println("Ma hoa don moi da ton tai!");
+            System.out.println("Mã hóa đơn mới đã tồn tại!");
             return false;
         }
 
         int viTri = ds.indexOf(hdCu);
         ds.set(viTri, hdMoi);
 
-        System.out.println("Sua hoa don thanh cong!");
+        System.out.println("Sửa hóa đơn thành công!");
         return true;
+    }
+
+    // Tìm kiếm hóa đơn từ bàn phím
+    public void timKiem(Scanner sc) {
+        if (sc == null) {
+            return;
+        }
+        String maHD = Ktradulieu.nhapChuoi(
+                sc, "Nhập mã hóa đơn cần tìm: ", ".+", "Mã hóa đơn không được để trống!");
+        xuatTheoMa(maHD);
     }
 }
