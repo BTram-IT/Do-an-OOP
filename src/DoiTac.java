@@ -61,7 +61,7 @@ public abstract class DoiTac {
         this.maSoThue = mst;
     }
 
-    public void nhap(Scanner sc) {
+    public  void nhap(Scanner sc) {
         if (sc == null)
             throw new IllegalArgumentException("Scanner không hợp lệ!");
 

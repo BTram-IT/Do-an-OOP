@@ -414,13 +414,14 @@ public class Giaodien {
         int chon;
         do {
             hienThiMenu("MENU QUẢN LÝ CỬA HÀNG",
-                    "1. Quản lý sản phẩm",
-                    "2. Quản lý nhân viên",
-                    "3. Quản lý khách hàng",
-                    "4. Quản lý đối tác",
-                    "5. Quản lý khuyến mãi",
-                    "6. Quản lý hóa đơn",
-                    "7. Thống kê kinh doanh",
+                    "1. Quản lý nhân viên",
+                    "2. Quản lý khách hàng",
+                    "3. Quản lý đối tác",
+                    "4. Quản lý sản phẩm",
+                    "5. Quản lý sản phẩm khuyến mãi",
+                    "6. Quản lý khuyến mãi",
+                    "7. Quản lý hóa đơn",
+                    "8. Thống kê kinh doanh",
                     "0. Quay lại");
 
             chon = Ktradulieu.luaChon(
@@ -428,33 +429,34 @@ public class Giaodien {
             );
             switch (chon) {
                 case 1:
-                    quanLyCuaHang.menuQuanLySanPham();
-                    break;
-
-                case 2:
                     quanLyCuaHang.menuQuanLyNhanVien();
                     break;
 
-                case 3:
+                case 2:
                     quanLyCuaHang.menuQuanLyKhachHang();
                     break;
 
-                case 4:
+                case 3:
                     quanLyCuaHang.menuQuanLyDoiTac();
                     break;
 
+                case 4:
+                    quanLyCuaHang.menuQuanLySanPham();
+                    break;
+
                 case 5:
-                    quanLyCuaHang.menuQuanLyKhuyenMai();
+                    quanLyCuaHang.menuQuanLySPKhuyenMai();
                     break;
 
                 case 6:
-                    quanLyCuaHang.menuQuanLyHoaDon();
+                    quanLyCuaHang.menuQuanLyKhuyenMai();
                     break;
 
                 case 7:
-                    quanLyCuaHang.menuThongKeKinhDoanh();
+                    quanLyCuaHang.menuQuanLyHoaDon();
                     break;
-
+                case 8:
+                    quanLyCuaHang.menuThongKeKinhDoanh();
                 case 0:
                     System.out.println("Quay lại menu chính.");
                     break;
