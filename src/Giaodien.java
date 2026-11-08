@@ -1,4 +1,3 @@
-
 import java.time.LocalDate;
 import java.util.Scanner;
 
@@ -181,7 +180,6 @@ public class Giaodien {
     // ================= MENU THU NGÂN =================
 
     public void menuThuNgan() {
-
         int chon;
 
         do {
@@ -234,13 +232,11 @@ public class Giaodien {
                             thuNgan.timKhachHangTheoTen(tenKH);
                             break;
                         }
-
                         case 0:
                             break;
                     }
                     break;
                 }
-
                 case 6:
                     thuNgan.chonCaLamViec(sc);
                     break;
@@ -250,41 +246,6 @@ public class Giaodien {
             if (chon != 0) {
                 tamDung();
             }
-        } while (chon != 0);
-    }
-
-    // ================= QUẢN LÝ KHÁCH HÀNG =================
-
-    public void menuQuanLyKhachHang() {
-        int chon;
-
-        do {
-            hienThiMenu("QUẢN LÝ KHÁCH HÀNG",
-                    "1. Hiển thị danh sách khách hàng",
-                    "2. Hiển thị danh sách khách hàng VIP",
-                    "0. Quay lại");
-
-            chon = Ktradulieu.luaChon(
-                    sc, "Chọn chức năng: ", 0, 2
-            );
-
-            switch (chon) {
-                case 1:
-                    thuNgan.hienThiDanhSachKhachHang();
-                    break;
-
-                case 2:
-                    thuNgan.hienThiDanhSachKhachHangVIP();
-                    break;
-
-                case 0:
-                    break;
-            }
-
-            if (chon != 0) {
-                tamDung();
-            }
-
         } while (chon != 0);
     }
 
@@ -306,7 +267,6 @@ public class Giaodien {
             switch (chon) {
                 case 1:
                     int chonNhapKho;
-
                     do {
                         hienThiMenu("MENU QUẢN LÝ NHẬP KHO",
                                 "1. Tạo hóa đơn nhập hàng",
@@ -324,30 +284,59 @@ public class Giaodien {
 
                         switch (chonNhapKho) {
                             case 1:
-                                String maNhanVien = Ktradulieu.nhapChuoi(
-                                        sc, "Nhập mã nhân viên: ", ".+", "Không được để trống!");
-                                String maNhaCungCap = Ktradulieu.nhapChuoi(
-                                        sc, "Nhập mã nhà cung cấp: ", ".+", "Không được để trống!");
-                                LocalDate ngayNhap = Ktradulieu.nhapNgay(
-                                        sc, "Nhập ngày nhập (dd/MM/yyyy): ", true);
-                                quanLyKho.taoHoaDonNhap(maNhanVien, maNhaCungCap, ngayNhap);
+                                try {
+                                    String maNhanVien = Ktradulieu.nhapChuoi(
+                                            sc, "Nhập mã nhân viên: ", ".+", "Không được để trống!");
+                                    String maNhaCungCap = Ktradulieu.nhapChuoi(
+                                            sc, "Nhập mã nhà cung cấp: ", ".+", "Không được để trống!");
+                                    LocalDate ngayNhap = Ktradulieu.nhapNgay(
+                                            sc, "Nhập ngày nhập (dd/MM/yyyy): ", true);
+                                    if (ngayNhap == null) ngayNhap = LocalDate.now();
+                                    HoadonNhap phieu = quanLyKho.taoHoaDonNhap(maNhanVien, maNhaCungCap, ngayNhap);
+                                    System.out.println("Tạo hóa đơn nhập thành công! Mã hóa đơn: " + phieu.getMaHoaDon());
+                                } catch (Exception e) {
+                                    System.out.println("Lỗi: " + e.getMessage());
+                                }
+                                break;
 
                             case 2:
-                                System.out.println("Chức năng thêm sản phẩm vào hóa đơn nhập.");
+                                try {
+                                    String maPhieu = Ktradulieu.nhapChuoi(sc, "Nhập mã hóa đơn nhập: ", ".+", "Không được để trống!");
+                                    String maSP = Ktradulieu.nhapChuoi(sc, "Nhập mã sản phẩm: ", ".+", "Không được để trống!");
+                                    int soLuong = Ktradulieu.luaChon(sc, "Số lượng: ", 1, Integer.MAX_VALUE);
+                                    long giaNhap = Long.parseLong(Ktradulieu.nhapChuoi(sc, "Giá nhập: ", "\\d{1,18}", "Giá nhập không hợp lệ!"));
+                                    double thue = Double.parseDouble(Ktradulieu.nhapChuoi(sc, "Thuế suất nhập (%): ", "\\d{1,9}(\\.\\d{1,4})?", "Thuế suất không hợp lệ!"));
+                                    LocalDate hsd = Ktradulieu.nhapNgay(sc, "Hạn sử dụng (dd/MM/yyyy, Enter = không hạn): ", false);
+
+                                    quanLyKho.themChiTietPhieu(maPhieu, maSP, soLuong, giaNhap, thue, hsd);
+                                    System.out.println("Đã thêm sản phẩm vào hóa đơn nhập.");
+                                } catch (Exception e) {
+                                    System.out.println("Lỗi: " + e.getMessage());
+                                }
                                 break;
 
                             case 3:
-                                String maXacNhan = Ktradulieu.nhapChuoi(
-                                        sc, "Nhập mã hóa đơn cần xác nhận: ",
-                                        ".+", "Không được để trống!");
-                                quanLyKho.xacNhanHoaDonNhap(maXacNhan);
+                                try {
+                                    String maXacNhan = Ktradulieu.nhapChuoi(
+                                            sc, "Nhập mã hóa đơn cần xác nhận: ",
+                                            ".+", "Không được để trống!");
+                                    quanLyKho.xacNhanHoaDonNhap(maXacNhan);
+                                    System.out.println("Đã xác nhận hóa đơn nhập thành công!");
+                                } catch (Exception e) {
+                                    System.out.println("Lỗi: " + e.getMessage());
+                                }
                                 break;
 
                             case 4:
-                                String maHuy = Ktradulieu.nhapChuoi(
-                                        sc, "Nhập mã hóa đơn cần hủy: ",
-                                        ".+", "Không được để trống!");
-                                quanLyKho.huyHoaDonNhap(maHuy);
+                                try {
+                                    String maHuy = Ktradulieu.nhapChuoi(
+                                            sc, "Nhập mã hóa đơn cần hủy: ",
+                                            ".+", "Không được để trống!");
+                                    quanLyKho.huyHoaDonNhap(maHuy);
+                                    System.out.println("Đã hủy hóa đơn nhập.");
+                                } catch (Exception e) {
+                                    System.out.println("Lỗi: " + e.getMessage());
+                                }
                                 break;
 
                             case 5:
@@ -390,7 +379,8 @@ public class Giaodien {
                     break;
 
                 case 4:
-                    quanLyKho.inCanhBaoHangTonKho();
+                    quanLyKho.inDanhSachSapHet();
+                    quanLyKho.inDanhSachHetHang();
                     break;
 
                 case 5:
@@ -425,23 +415,23 @@ public class Giaodien {
                     "0. Quay lại");
 
             chon = Ktradulieu.luaChon(
-                    sc, "Chọn chức năng: ", 0, 7
+                    sc, "Chọn chức năng: ", 0, 8
             );
             switch (chon) {
                 case 1:
-                    quanLyCuaHang.quanLyCuaHang.menuQuanLyNhanVien();
+                    quanLyCuaHang.menuQuanLyNhanVien();
                     break;
 
                 case 2:
-                    quanLyCuaHang.quanLyCuaHang.menuQuanLyKhachHang();
+                    quanLyCuaHang.menuQuanLyKhachHang();
                     break;
 
                 case 3:
-                    quanLyCuaHang.quanLyCuaHang.menuQuanLyDoiTac();
+                    quanLyCuaHang.menuQuanLyDoiTac();
                     break;
 
                 case 4:
-                    quanLyCuaHang.quanLyCuaHang.menuQuanLySanPham();
+                    quanLyCuaHang.menuQuanLySanPham();
                     break;
 
                 case 5:
@@ -449,14 +439,17 @@ public class Giaodien {
                     break;
 
                 case 6:
-                    quanLyCuaHang.quanLyCuaHang.menuQuanLyKhuyenMai();
+                    quanLyCuaHang.menuQuanLyKhuyenMai();
                     break;
 
                 case 7:
-                    quanLyCuaHang.quanLyCuaHang.menuQuanLyHoaDon();
+                    quanLyCuaHang.menuQuanLyHoaDon();
                     break;
+
                 case 8:
-                    quanLyCuaHang.quanLyCuaHang.menuThongKeKinhDoanh();
+                    quanLyCuaHang.menuThongKeKinhDoanh();
+                    break; // Đã sửa thêm break để tránh trôi code
+
                 case 0:
                     System.out.println("Quay lại menu chính.");
                     break;

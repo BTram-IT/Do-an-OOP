@@ -48,6 +48,13 @@ public class ThuNgan extends NhanVien {
         this.Khachhang = (Khachhang == null) ? new DsKhachHang() : Khachhang;
     }
 
+    public ThuNgan(DsKhachHang khachhang, DSHoadon hoadon) {
+        super();
+        this.chucVu = "Thu ngan";
+        this.Khachhang = (khachhang == null) ? new DsKhachHang() : khachhang;
+        this.Hoadon = (hoadon == null) ? new DSHoadon() : hoadon;
+    }
+
     // ================= GETTER & SETTER =================
 
     public String getMaTN() { return getMaNV(); }

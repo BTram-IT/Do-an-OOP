@@ -1,4 +1,3 @@
-
 public class CTHoaDon {
     private String MaSP;
     private String TenSP;
@@ -6,7 +5,6 @@ public class CTHoaDon {
     private long Giaban;
     private String MaHD;
 
-    // Giá trị được chốt tại thời điểm thanh toán
     private long tienGiamThucTe;
     private long tienThueThucTe;
     private long tongTienSauThue;
@@ -35,7 +33,6 @@ public class CTHoaDon {
         setMaHD(MaHD);
     }
 
-    // Getter
     public String getMaSP() { return MaSP; }
     public String getTenSP() { return TenSP; }
     public int getSoluong() { return Soluong; }
@@ -49,7 +46,6 @@ public class CTHoaDon {
     public int getSoLuongTangThucTe() { return soLuongTangThucTe; }
     public boolean isDaChotThanhToan() { return daChotThanhToan; }
 
-    // Setter
     public void setMaSP(String MaSP) {
         if (MaSP == null || MaSP.trim().isEmpty())
             throw new IllegalArgumentException("Mã sản phẩm không được để trống!");
@@ -84,23 +80,19 @@ public class CTHoaDon {
     }
 
     public void setMaHD(String MaHD) {
-        // Cho phép rỗng khi chi tiết chưa được gắn vào hóa đơn
         this.MaHD = MaHD == null || MaHD.trim().isEmpty()
                 ? "" : SanPham.chuanHoaMa(MaHD);
     }
 
-    // Tính tiền hàng trước khuyến mãi
     public long TinhTienHang1SP() {
         return Math.multiplyExact((long) Soluong, Giaban);
     }
 
-    // Kiểm tra tổng tiền trước khuyến mãi
     private void kiemTraTongTien(long tongTien) {
         if (tongTien < 0)
             throw new IllegalArgumentException("Tổng tiền trước khuyến mãi không hợp lệ!");
     }
 
-    // Tính tiền giảm tốt nhất
     public long tinhTienGiamTotNhat(
             DSSanPhamKhuyenMai dsSPKM,
             DSKhuyenMai dsKM,
@@ -143,7 +135,6 @@ public class CTHoaDon {
         return tienGiamTotNhat;
     }
 
-    // Tính số lượng tặng kèm tốt nhất
     public int tinhSoLuongTangTotNhat(
             DSSanPhamKhuyenMai dsSPKM,
             DSKhuyenMai dsKM,
@@ -184,7 +175,6 @@ public class CTHoaDon {
         return tangTotNhat;
     }
 
-    // Tính tiền sau khuyến mãi
     public long tinhTienSauKM(
             DSSanPhamKhuyenMai dsSPKM,
             DSKhuyenMai dsKM,
@@ -199,7 +189,6 @@ public class CTHoaDon {
         );
     }
 
-    // Giá trung bình một sản phẩm sau khuyến mãi
     public long traCuuGiaSauKM(
             DSSanPhamKhuyenMai dsSPKM,
             DSKhuyenMai dsKM,
@@ -211,10 +200,9 @@ public class CTHoaDon {
                 ? tienGiamThucTe
                 : tinhTienGiamTotNhat(dsSPKM, dsKM, TongTienTruocKM);
 
-        return Giaban - tienGiam / Soluong;
+        return (TinhTienHang1SP() - tienGiam) / Soluong;
     }
 
-    // Kiểm tra sản phẩm
     private void kiemTraSanPham(SanPham sp) {
         if (sp == null)
             throw new IllegalArgumentException("Sản phẩm không được null!");
@@ -223,7 +211,6 @@ public class CTHoaDon {
             throw new IllegalArgumentException("Mã sản phẩm không khớp với chi tiết hóa đơn!");
     }
 
-    // Tính tiền thuế
     public long tinhTienThue(
             SanPham sp,
             DSSanPhamKhuyenMai dsSPKM,
@@ -242,7 +229,6 @@ public class CTHoaDon {
         return Math.round(tienSauKM * thue / 100.0);
     }
 
-    // Tổng tiền sau khuyến mãi và thuế
     public long tinhTongTienSauThue(
             SanPham sp,
             DSSanPhamKhuyenMai dsSPKM,
@@ -257,7 +243,6 @@ public class CTHoaDon {
         return Math.addExact(tienSauKM, tienThue);
     }
 
-    // Chốt giá trị tại thời điểm thanh toán
     public void chotThanhToan(
             SanPham sp,
             DSSanPhamKhuyenMai dsSPKM,
@@ -289,7 +274,6 @@ public class CTHoaDon {
         this.daChotThanhToan = true;
     }
 
-    // Nạp số liệu đã chốt từ file
     public void napSoLieuDaChot(long giam, long thue, long tong, int tang) {
         if (daChotThanhToan)
             throw new IllegalStateException("Chi tiết hóa đơn đã được chốt thanh toán!");
@@ -315,14 +299,12 @@ public class CTHoaDon {
         this.daChotThanhToan = true;
     }
 
-    // Chuyển thành dòng dữ liệu lưu file
     public String toDongFile() {
         return MaSP + "|" + TenSP + "|" + Soluong + "|" + Giaban + "|" + MaHD
                 + "|" + daChotThanhToan + "|" + tienGiamThucTe + "|" + tienThueThucTe
                 + "|" + tongTienSauThue + "|" + soLuongTangThucTe;
     }
 
-    // Đọc dữ liệu từ file
     public static CTHoaDon tuDongFile(String dong) {
         if (dong == null || dong.trim().isEmpty()) return null;
 

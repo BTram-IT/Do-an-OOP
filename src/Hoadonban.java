@@ -1,4 +1,3 @@
-
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Scanner;
@@ -235,7 +234,6 @@ public class Hoadonban extends HoaDon {
         if (dsSanPham == null)
             throw new IllegalStateException("Chưa có danh sách sản phẩm!");
 
-        // Kiểm tra sản phẩm và tính lại tổng tiền trước khi nhận thanh toán.
         for (CTHoaDon ct : dsChiTietHoaDon) {
             if (ct == null)
                 throw new IllegalStateException("Chi tiết hóa đơn không hợp lệ!");
@@ -287,7 +285,6 @@ public class Hoadonban extends HoaDon {
             }
         }
 
-        // Chốt số liệu từng chi tiết sau khi thanh toán thành công.
         long truocKM = tinhTongTienTruocKM();
 
         for (CTHoaDon ct : dsChiTietHoaDon) {
