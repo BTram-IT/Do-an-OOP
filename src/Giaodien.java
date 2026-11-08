@@ -333,7 +333,7 @@ public class Giaodien {
                                 quanLyKho.taoHoaDonNhap(maNhanVien, maNhaCungCap, ngayNhap);
 
                             case 2:
-                                quanLyKho
+                                System.out.println("Chức năng thêm sản phẩm vào hóa đơn nhập.");
                                 break;
 
                             case 3:
@@ -428,31 +428,31 @@ public class Giaodien {
             );
             switch (chon) {
                 case 1:
-                    menuQuanLySanPham();
+                    quanLyCuaHang.menuQuanLySanPham();
                     break;
 
                 case 2:
-                    menuQuanLyNhanVien();
+                    quanLyCuaHang.menuQuanLyNhanVien();
                     break;
 
                 case 3:
-                    menuQuanLyKhachHang();
+                    quanLyCuaHang.menuQuanLyKhachHang();
                     break;
 
                 case 4:
-                    menuQuanLyDoiTac();
+                    quanLyCuaHang.menuQuanLyDoiTac();
                     break;
 
                 case 5:
-                    menuQuanLyKhuyenMai();
+                    quanLyCuaHang.menuQuanLyKhuyenMai();
                     break;
 
                 case 6:
-                    menuQuanLyHoaDon();
+                    quanLyCuaHang.menuQuanLyHoaDon();
                     break;
 
                 case 7:
-                    menuThongKeKinhDoanh();
+                    quanLyCuaHang.menuThongKeKinhDoanh();
                     break;
 
                 case 0:
