@@ -124,7 +124,7 @@ public class DSKhuyenMai {
     }
 
     // Xóa khuyến mãi
-    public void xoaKhuyenMai() {
+    public boolean xoaKhuyenMai() {
         String maKM = Ktradulieu.nhapChuoi(
                 sc, "Nhập mã khuyến mãi cần xóa: ", ".+",
                 "Mã khuyến mãi không được để trống!");
@@ -133,7 +133,7 @@ public class DSKhuyenMai {
 
         if (viTri == -1) {
             System.out.println("Không tìm thấy khuyến mãi!");
-            return;
+            return false;
         }
 
         for (int i = viTri; i < soLuong - 1; i++) {
@@ -144,6 +144,7 @@ public class DSKhuyenMai {
         soLuong--;
 
         System.out.println("Xóa khuyến mãi thành công!");
+        return false;
     }
 
     // Xuất danh sách khuyến mãi

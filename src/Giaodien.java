@@ -1,3 +1,4 @@
+
 import java.util.Scanner;
 
 public class Giaodien {
@@ -8,7 +9,6 @@ public class Giaodien {
     private ThuNgan thuNgan;
     private QuanlyKho quanLyKho;
     private QuanLyCuaHang quanLyCuaHang;
-
 
     public Giaodien(KeToan keToan, ThuNgan thuNgan,
                     QuanlyKho quanLyKho,
@@ -26,41 +26,36 @@ public class Giaodien {
 
         do {
             hienThiTrangChu();
-            chon = nhapSo("Mời bạn chọn chức năng: ");
-
+            chon = Ktradulieu.luaChon(
+                    sc, "Mời bạn chọn chức năng: ", 0, 4
+            );
             switch (chon) {
                 case 1:
                     if (dangNhap("QuanLy")) {
                         menuQuanLyCuaHang();
                     }
                     break;
-
                 case 2:
                     if (dangNhap("KeToan")) {
                         menuKeToan();
                     }
                     break;
-
                 case 3:
                     if (dangNhap("ThuNgan")) {
                         menuThuNgan();
                     }
                     break;
-
                 case 4:
                     if (dangNhap("QuanLyKho")) {
                         menuQuanLyKho();
                     }
                     break;
-
                 case 0:
-                    System.out.println("Cảm ơn bạn đã sử dụng chương trình!");
+                    System.out.println(
+                            "Cảm ơn bạn đã sử dụng chương trình!"
+                    );
                     break;
-
-                default:
-                    System.out.println("Lựa chọn không hợp lệ!");
             }
-
             if (chon != 0) {
                 tamDung();
             }
@@ -69,75 +64,63 @@ public class Giaodien {
     }
 
     public void hienThiTrangChu() {
-        System.out.println();
-        System.out.println("  ============================================================");
-        System.out.println("  ||                                                        ||");
-        System.out.println("  ||                  QUẢN LÝ CỬA HÀNG                       ||");
-        System.out.println("  ||                                                        ||");
-        System.out.println("  ||                THỨC ĂN VÀ NƯỚC UỐNG                    ||");
-        System.out.println("  ||                                                        ||");
-        System.out.println("  ============================================================");
-        System.out.println();
-        System.out.println("                 ===== TRANG ĐĂNG NHẬP =====");
-        System.out.println();
-
-        System.out.println("  +----------------------------------------------------------+");
-        System.out.println("  |  [1]  ĐĂNG NHẬP QUẢN LÝ CỬA HÀNG                         |");
-        System.out.println("  +----------------------------------------------------------+");
-        System.out.println("  |  [2]  ĐĂNG NHẬP KẾ TOÁN                                  |");
-        System.out.println("  +----------------------------------------------------------+");
-        System.out.println("  |  [3]  ĐĂNG NHẬP THU NGÂN                                 |");
-        System.out.println("  +----------------------------------------------------------+");
-        System.out.println("  |  [4]  ĐĂNG NHẬP QUẢN LÝ KHO                              |");
-        System.out.println("  +----------------------------------------------------------+");
-        System.out.println("  |  [0]  THOÁT CHƯƠNG TRÌNH                                 |");
-        System.out.println("  +----------------------------------------------------------+");
-
-        System.out.println();
+        System.out.println("\n============================================================");
+        System.out.println("                  QUẢN LÝ CỬA HÀNG");
+        System.out.println("                 THỨC ĂN VÀ NƯỚC UỐNG");
+        System.out.println("============================================================");
+        System.out.println("                    TRANG ĐĂNG NHẬP");
+        System.out.println("------------------------------------------------------------");
+        System.out.println("  1. Đăng nhập quản lý cửa hàng");
+        System.out.println("  2. Đăng nhập kế toán");
+        System.out.println("  3. Đăng nhập thu ngân");
+        System.out.println("  4. Đăng nhập quản lý kho");
+        System.out.println("  0. Thoát chương trình");
+        System.out.println("------------------------------------------------------------");
         System.out.println("       CHÚC BẠN MỘT NGÀY LÀM VIỆC HIỆU QUẢ!");
-        System.out.println();
     }
 
     // ================= ĐĂNG NHẬP =================
 
     public boolean dangNhap(String chucVu) {
         System.out.println("\n===== ĐĂNG NHẬP =====");
+        String tenTaiKhoan = Ktradulieu.nhapChuoiKhongRong(
+                sc, "Tên tài khoản: "
+        );
 
-        System.out.print("Tên tài khoản: ");
-        String tenTaiKhoan = sc.nextLine();
+        String matKhau = Ktradulieu.nhapChuoiKhongRong(
+                sc, "Mật khẩu: "
+        );
 
-        System.out.print("Mật khẩu: ");
-        String matKhau = sc.nextLine();
-
-        boolean hopLe = false;
+        String taiKhoan = "";
 
         switch (chucVu) {
             case "QuanLy":
-                hopLe = tenTaiKhoan.equals("quanly")
-                        && matKhau.equals("123");
+                taiKhoan = "quanly";
                 break;
 
             case "KeToan":
-                hopLe = tenTaiKhoan.equals("ketoan")
-                        && matKhau.equals("123");
+                taiKhoan = "ketoan";
                 break;
 
             case "ThuNgan":
-                hopLe = tenTaiKhoan.equals("thungan")
-                        && matKhau.equals("123");
+                taiKhoan = "thungan";
                 break;
 
             case "QuanLyKho":
-                hopLe = tenTaiKhoan.equals("kho")
-                        && matKhau.equals("123");
+                taiKhoan = "kho";
                 break;
+
+            default:
+                System.out.println("Chức vụ không hợp lệ!");
+                return false;
         }
 
-        if (hopLe) {
-            System.out.println("Đăng nhập thành công!");
-        } else {
-            System.out.println("Sai tên tài khoản hoặc mật khẩu!");
-        }
+        boolean hopLe = tenTaiKhoan.equals(taiKhoan)
+                && matKhau.equals("123");
+
+        System.out.println(hopLe
+                ? "Đăng nhập thành công!"
+                : "Sai tên tài khoản hoặc mật khẩu!");
 
         return hopLe;
     }
@@ -148,48 +131,47 @@ public class Giaodien {
         int chon;
 
         do {
-            System.out.println("\n===== MENU KẾ TOÁN =====");
-            System.out.println("1. Thống kê doanh thu");
-            System.out.println("2. Thống kê lợi nhuận");
-            System.out.println("3. Thống kê thuế");
-            System.out.println("4. Thống kê sản phẩm bán được");
-            System.out.println("5. Thống kê lương nhân viên");
-            System.out.println("0. Quay lại");
+            hienThiMenu("MENU KẾ TOÁN",
+                    "1. Thống kê doanh thu",
+                    "2. Thống kê lợi nhuận",
+                    "3. Thống kê thuế",
+                    "4. Thống kê sản phẩm bán được",
+                    "5. Thống kê lương nhân viên",
+                    "0. Quay lại");
 
-            chon = nhapSo("Chọn chức năng: ");
+            chon = Ktradulieu.luaChon(
+                    sc, "Chọn chức năng: ", 0, 5
+            );
 
             switch (chon) {
                 case 1:
-                    System.out.println("Chức năng thống kê doanh thu");
                     keToan.menuDoanhThu();
                     break;
 
                 case 2:
-                    System.out.println("Chức năng thống kê lợi nhuận");
                     keToan.menuLoiNhuan();
                     break;
 
                 case 3:
-                    System.out.println("Chức năng thống kê thuế");
                     keToan.menuThue();
                     break;
 
                 case 4:
-                    System.out.println("Chức năng thống kê sản phẩm bán được");
                     keToan.menuThongKeSanPham();
                     break;
 
                 case 5:
-                    System.out.println("Chức năng thống kê lương nhân viên");
                     keToan.menuLuong();
                     break;
 
                 case 0:
                     break;
-
-                default:
-                    System.out.println("Lựa chọn không hợp lệ!");
             }
+
+            if (chon != 0) {
+                tamDung();
+            }
+
         } while (chon != 0);
     }
 
@@ -199,39 +181,88 @@ public class Giaodien {
         int chon;
 
         do {
-            System.out.println("\n===== MENU THU NGÂN =====");
-            System.out.println("1. Bán hàng");
-            System.out.println("2. Quản lý giỏ hàng");
-            System.out.println("3. Thanh toán");
-            System.out.println("4. Xem hóa đơn");
-            System.out.println("0. Quay lại");
+            hienThiMenu("MENU THU NGÂN",
+                    "1. Hiển thị thông tin thu ngân",
+                    "2. Chọn ca làm việc",
+                    "3. Quản lý khách hàng",
+                    "4. Tra cứu hóa đơn",
+                    "5. In hóa đơn theo khách hàng",
+                    "0. Quay lại");
 
-            chon = nhapSo("Chọn chức năng: ");
+            chon = Ktradulieu.luaChon(
+                    sc, "Chọn chức năng: ", 0, 5
+            );
 
             switch (chon) {
                 case 1:
-                    // Gọi phương thức bán hàng của ThuNgan
-                    System.out.println("Chức năng bán hàng");
+                    thuNgan.hienThiThongTin();
                     break;
 
                 case 2:
-                    System.out.println("Chức năng quản lý giỏ hàng");
+                    thuNgan.chonCaLamViec(sc);
                     break;
 
                 case 3:
-                    System.out.println("Chức năng thanh toán");
+                    menuQuanLyKhachHang();
                     break;
 
                 case 4:
-                    System.out.println("Chức năng xem hóa đơn");
+                    String maHD = Ktradulieu.nhapChuoiKhongRong(
+                            sc, "Nhập mã hóa đơn: "
+                    );
+                    thuNgan.traCuuHoaDon(maHD);
+                    break;
+
+                case 5:
+                    String maKH = Ktradulieu.nhapChuoiKhongRong(
+                            sc, "Nhập mã khách hàng: "
+                    );
+                    thuNgan.inDanhSachHoaDonTheoKhachHang(maKH);
                     break;
 
                 case 0:
                     break;
-
-                default:
-                    System.out.println("Lựa chọn không hợp lệ!");
             }
+
+            if (chon != 0) {
+                tamDung();
+            }
+
+        } while (chon != 0);
+    }
+
+    // ================= QUẢN LÝ KHÁCH HÀNG =================
+
+    public void menuQuanLyKhachHang() {
+        int chon;
+
+        do {
+            hienThiMenu("QUẢN LÝ KHÁCH HÀNG",
+                    "1. Hiển thị danh sách khách hàng",
+                    "2. Hiển thị danh sách khách hàng VIP",
+                    "0. Quay lại");
+
+            chon = Ktradulieu.luaChon(
+                    sc, "Chọn chức năng: ", 0, 2
+            );
+
+            switch (chon) {
+                case 1:
+                    thuNgan.hienThiDanhSachKhachHang();
+                    break;
+
+                case 2:
+                    thuNgan.hienThiDanhSachKhachHangVIP();
+                    break;
+
+                case 0:
+                    break;
+            }
+
+            if (chon != 0) {
+                tamDung();
+            }
+
         } while (chon != 0);
     }
 
@@ -241,14 +272,16 @@ public class Giaodien {
         int chon;
 
         do {
-            System.out.println("\n===== MENU QUẢN LÝ KHO =====");
-            System.out.println("1. Quản lý sản phẩm");
-            System.out.println("2. Lập phiếu nhập");
-            System.out.println("3. Xem danh sách phiếu nhập");
-            System.out.println("4. Kiểm tra tồn kho");
-            System.out.println("0. Quay lại");
+            hienThiMenu("MENU QUẢN LÝ KHO",
+                    "1. Quản lý sản phẩm",
+                    "2. Lập phiếu nhập",
+                    "3. Xem danh sách phiếu nhập",
+                    "4. Kiểm tra tồn kho",
+                    "0. Quay lại");
 
-            chon = nhapSo("Chọn chức năng: ");
+            chon = Ktradulieu.luaChon(
+                    sc, "Chọn chức năng: ", 0, 4
+            );
 
             switch (chon) {
                 case 1:
@@ -269,10 +302,12 @@ public class Giaodien {
 
                 case 0:
                     break;
-
-                default:
-                    System.out.println("Lựa chọn không hợp lệ!");
             }
+
+            if (chon != 0) {
+                tamDung();
+            }
+
         } while (chon != 0);
     }
 
@@ -282,13 +317,15 @@ public class Giaodien {
         int chon;
 
         do {
-            System.out.println("\n===== MENU QUẢN LÝ CỬA HÀNG =====");
-            System.out.println("1. Quản lý nhân viên");
-            System.out.println("2. Quản lý tài khoản");
-            System.out.println("3. Xem thông tin cửa hàng");
-            System.out.println("0. Quay lại");
+            hienThiMenu("MENU QUẢN LÝ CỬA HÀNG",
+                    "1. Quản lý nhân viên",
+                    "2. Quản lý tài khoản",
+                    "3. Xem thông tin cửa hàng",
+                    "0. Quay lại");
 
-            chon = nhapSo("Chọn chức năng: ");
+            chon = Ktradulieu.luaChon(
+                    sc, "Chọn chức năng: ", 0, 3
+            );
 
             switch (chon) {
                 case 1:
@@ -305,24 +342,22 @@ public class Giaodien {
 
                 case 0:
                     break;
-
-                default:
-                    System.out.println("Lựa chọn không hợp lệ!");
             }
+
+            if (chon != 0) {
+                tamDung();
+            }
+
         } while (chon != 0);
     }
 
     // ================= HỖ TRỢ =================
 
-    public int nhapSo(String thongBao) {
-        while (true) {
-            System.out.print(thongBao);
+    private void hienThiMenu(String tieuDe, String... chucNang) {
+        System.out.println("\n========== " + tieuDe + " ==========");
 
-            try {
-                return Integer.parseInt(sc.nextLine());
-            } catch (NumberFormatException e) {
-                System.out.println("Vui lòng nhập số nguyên hợp lệ!");
-            }
+        for (String muc : chucNang) {
+            System.out.println(muc);
         }
     }
 

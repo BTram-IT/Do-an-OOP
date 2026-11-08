@@ -73,16 +73,12 @@ public static void main(String[] args) {
 public static void hienThiTrangChu() {
     System.out.println();
     System.out.println("  ============================================================");
-    System.out.println("  ||                                                        ||");
     System.out.println("  ||                 QUẢN LÝ CỬA HÀNG                       ||");
     System.out.println("  ||                                                        ||");
     System.out.println("  ||                THỨC ĂN VÀ NƯỚC UỐNG                    ||");
-    System.out.println("  ||                                                        ||");
     System.out.println("  ============================================================");
-    System.out.println();
     System.out.println("                 ===== TRANG ĐĂNG NHẬP =====");
     System.out.println();
-
     System.out.println("  +----------------------------------------------------------+");
     System.out.println("  |  [1]  ĐĂNG NHẬP QUẢN LÝ CỬA HÀNG                         |");
     System.out.println("  +----------------------------------------------------------+");

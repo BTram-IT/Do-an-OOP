@@ -1,3 +1,4 @@
+
 import java.util.ArrayList;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -17,53 +18,53 @@ public class DSDoiTac {
         return dsDoiTac.size();
     }
 
+    // Tìm đối tác theo mã
     public DoiTac timTheoMa(String maDT) {
-        if (maDT == null || maDT.trim().isEmpty()) return null;
-
         String ma = Ktradulieu.chuanHoaMa(maDT);
+        if (ma.isEmpty()) return null;
 
         for (DoiTac dt : dsDoiTac) {
-            if (dt != null && ma.equals(Ktradulieu.chuanHoaMa(dt.getMaDT()))) {
-                return dt;
-            }
+            if (ma.equals(dt.getMaDT())) return dt;
         }
         return null;
     }
 
+    // Thêm đối tác
     public void them(DoiTac dt) {
-        if (dt == null) throw new IllegalArgumentException("Đối tác không hợp lệ!");
-        if (dt.getMaDT() == null || dt.getMaDT().trim().isEmpty())
-            throw new IllegalArgumentException("Mã đối tác không được rỗng!");
+        if (dt == null || dt.getMaDT() == null || dt.getMaDT().trim().isEmpty())
+            throw new IllegalArgumentException("Đối tác không hợp lệ!");
+
         if (timTheoMa(dt.getMaDT()) != null)
             throw new IllegalArgumentException("Mã đối tác đã tồn tại!");
 
         dsDoiTac.add(dt);
     }
 
+    // Xóa đối tác
     public boolean xoa(String maDT) {
         DoiTac dt = timTheoMa(maDT);
-        if (dt == null) return false;
-
-        dsDoiTac.remove(dt);
-        return true;
+        return dt != null && dsDoiTac.remove(dt);
     }
 
+    // Sửa đối tác
     public boolean sua(String maDT, DoiTac moi) {
-        if (moi == null) throw new IllegalArgumentException("Đối tác mới không hợp lệ!");
+        if (moi == null)
+            throw new IllegalArgumentException("Đối tác mới không hợp lệ!");
 
         DoiTac cu = timTheoMa(maDT);
         if (cu == null) return false;
 
-        String maCu = Ktradulieu.chuanHoaMa(maDT);
-        String maMoi = Ktradulieu.chuanHoaMa(moi.getMaDT());
+        if (!cu.getLoaiDT().equals(moi.getLoaiDT()))
+            throw new IllegalArgumentException("Không được thay đổi loại đối tác!");
 
-        if (!maCu.equals(maMoi))
+        if (!cu.getMaDT().equals(moi.getMaDT()))
             throw new IllegalArgumentException("Không được thay đổi mã đối tác!");
 
         dsDoiTac.set(dsDoiTac.indexOf(cu), moi);
         return true;
     }
 
+    // Xuất danh sách
     public void xuatDanhSach() {
         if (dsDoiTac.isEmpty()) {
             System.out.println("Danh sách đối tác trống!");
@@ -76,10 +77,11 @@ public class DSDoiTac {
         }
     }
 
+    // Ghi file
     public void ghiFile(String filePath) {
         try (BufferedWriter bw = new BufferedWriter(
-                new OutputStreamWriter(new FileOutputStream(filePath),
-                        StandardCharsets.UTF_8))) {
+                new OutputStreamWriter(
+                        new FileOutputStream(filePath), StandardCharsets.UTF_8))) {
 
             for (DoiTac dt : dsDoiTac) {
                 bw.write(dt.toDongFile());
@@ -93,12 +95,13 @@ public class DSDoiTac {
         }
     }
 
+    // Đọc file
     public void docFile(String filePath) {
         ArrayList<DoiTac> dsTam = new ArrayList<>();
 
         try (BufferedReader br = new BufferedReader(
-                new InputStreamReader(new FileInputStream(filePath),
-                        StandardCharsets.UTF_8))) {
+                new InputStreamReader(
+                        new FileInputStream(filePath), StandardCharsets.UTF_8))) {
 
             String dong;
 
@@ -107,18 +110,15 @@ public class DSDoiTac {
 
                 try {
                     String loai = dong.split("\\|", 2)[0];
-
-                    DoiTac dt = null;
+                    DoiTac dt;
 
                     switch (loai) {
                         case "NCC":
                             dt = NhaCungCap.tuDongFile(dong);
                             break;
-
                         case "VC":
                             dt = DonViVanChuyen.tuDongFile(dong);
                             break;
-
                         default:
                             System.out.println("Loại đối tác không hợp lệ: " + loai);
                             continue;
@@ -128,7 +128,7 @@ public class DSDoiTac {
                         boolean trung = false;
 
                         for (DoiTac item : dsTam) {
-                            if (item.getMaDT().equalsIgnoreCase(dt.getMaDT())) {
+                            if (item.getMaDT().equals(dt.getMaDT())) {
                                 trung = true;
                                 break;
                             }

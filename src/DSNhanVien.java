@@ -185,7 +185,12 @@ public class DSNhanVien implements IQuanLy<NhanVien> {
                                 Double.parseDouble(p[6]),
                                 LocalDate.parse(p[8]),
                                 p[7]
-                        );
+                        ) {
+                            @Override
+                            public String getVaiTro() {
+                                return "";
+                            }
+                        };
 
                         // Khong them trung ma nhan vien
                         if (timKiemTheoMa(nv.getMaNV()) == null) {

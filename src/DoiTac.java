@@ -6,17 +6,12 @@ public abstract class DoiTac {
     protected final String loaiDT;
 
     public DoiTac(String loaiDT) {
-        this("", "", "", "", "", loaiDT);
+        this.loaiDT = loaiDT == null ? "" : loaiDT.trim();
     }
 
     public DoiTac(String maDT, String tenDT, String diaChi,
                   String email, String maSoThue, String loaiDT) {
-        this.loaiDT = loaiDT == null ? "" : loaiDT.trim();
-        this.maDT = "";
-        this.tenDT = "";
-        this.diaChi = "";
-        this.email = "";
-        this.maSoThue = "";
+        this(loaiDT);
 
         if (maDT != null && !maDT.trim().isEmpty()) setMaDT(maDT);
         if (tenDT != null && !tenDT.trim().isEmpty()) setTenDT(tenDT);
@@ -34,7 +29,7 @@ public abstract class DoiTac {
 
     public void setMaDT(String maDT) {
         String ma = Ktradulieu.chuanHoaMa(maDT);
-        if (!ma.isEmpty() && !ma.matches("[A-Z0-9]+"))
+        if (!ma.matches("[A-Z0-9]+"))
             throw new IllegalArgumentException("Mã đối tác không hợp lệ!");
         this.maDT = ma;
     }
@@ -42,7 +37,7 @@ public abstract class DoiTac {
     public void setTenDT(String tenDT) {
         if (tenDT == null || tenDT.trim().isEmpty())
             throw new IllegalArgumentException("Tên đối tác không được để trống!");
-        this.tenDT = tenDT.trim();
+        this.tenDT = Ktradulieu.chuanHoaChuoi(tenDT);
     }
 
     public void setDiaChi(String diaChi) {
@@ -52,36 +47,35 @@ public abstract class DoiTac {
     }
 
     public void setEmail(String email) {
-        if (email == null || !email.trim().matches(Ktradulieu.emailRegex))
+        String mail = email == null ? "" : email.trim();
+        if (!mail.matches(Ktradulieu.emailRegex))
             throw new IllegalArgumentException("Email không hợp lệ!");
-        this.email = email.trim();
+        this.email = mail;
     }
 
     public void setMaSoThue(String maSoThue) {
-        if (maSoThue == null || !maSoThue.trim().matches("\\d{10}(-\\d{3})?"))
+        String mst = maSoThue == null ? "" : maSoThue.trim();
+        if (!mst.matches("\\d{10}(-\\d{3})?"))
             throw new IllegalArgumentException("Mã số thuế không hợp lệ!");
-        this.maSoThue = maSoThue.trim();
+        this.maSoThue = mst;
     }
 
     public void nhap(Scanner sc) {
         if (sc == null)
             throw new IllegalArgumentException("Scanner không hợp lệ!");
 
-        setMaDT(Ktradulieu.nhapChuoi(
-                sc, "Nhập mã đối tác: ", "[a-zA-Z0-9]+", "Mã không hợp lệ!"));
+        setMaDT(Ktradulieu.nhapChuoi(sc, "Nhập mã đối tác: ",
+                "[a-zA-Z0-9]+", "Mã không hợp lệ!"));
 
         setTenDT(Ktradulieu.nhapChuoiKhongRong(sc, "Nhập tên đối tác: "));
         setDiaChi(Ktradulieu.nhapChuoiKhongRong(sc, "Nhập địa chỉ: "));
 
-        setEmail(Ktradulieu.nhapChuoi(
-                sc, "Nhập email: ", Ktradulieu.emailRegex, "Email không hợp lệ!"));
+        setEmail(Ktradulieu.nhapChuoi(sc, "Nhập email: ",
+                Ktradulieu.emailRegex, "Email không hợp lệ!"));
 
-        setMaSoThue(Ktradulieu.nhapChuoi(
-                sc, "Nhập mã số thuế: ", "\\d{10}(-\\d{3})?",
-                "Mã số thuế không hợp lệ!"));
+        setMaSoThue(Ktradulieu.nhapChuoi(sc, "Nhập mã số thuế: ",
+                "\\d{10}(-\\d{3})?", "Mã số thuế không hợp lệ!"));
     }
-
-    public abstract void nhap();
 
     public abstract String toDongFile();
 

@@ -22,6 +22,10 @@ public class QuanLyCuaHang extends NhanVien {
         this.dsHoaDonNhap = dsHoaDonNhap;
     }
 
+    public QuanLyCuaHang() {
+        super();
+    }
+
     public QuanLyCuaHang(String ten, String sdt, String diaChi, String email, LocalDate ngaySinh, String maNV, double luongCoBan, LocalDate ngayVaoLam, String chucVu, DsKhachHang dsKH, DSSanPham dsSP, DSNhanVien dsNV, DSDoiTac dsDoiTac, DSKhuyenMai dsKhuyenMai, DSHoadon dsHoaDonBan, DSHoadon dsHoaDonNhap) {
         super(ten, sdt, diaChi, email, ngaySinh, maNV, luongCoBan, ngayVaoLam, chucVu);
         this.dsKH = dsKH;
@@ -74,13 +78,13 @@ public class QuanLyCuaHang extends NhanVien {
     }
 
     public boolean xoaKhuyenMai(String ma) {
-        return dsKhuyenMai.xoaKhuyenMai(ma);
+        return dsKhuyenMai.xoaKhuyenMai();
     }
 
     public HoadonNhap nhapThemHang(NhaCungCap ncc, String maSP, int soLuong, double giaNhap) {
         SanPham sp = dsSP.timTheoMa(maSP);
         if (ncc == null || sp == null || soLuong <= 0 || giaNhap < 0) return null;
-        HoadonNhap hd = new HoadonNhap(Ktradulieu.taoMa("HN%03d", dsHoaDonNhap.size() + 1), getMa(),
+        HoadonNhap hd = new HoadonNhap(Ktradulieu.taoMa("HN%03d", dsHoaDonNhap.size() + 1),getMaNV(),
                 LocalDate.now(), ncc.getMaDT());
         hd.themChiTiet(sp, soLuong, giaNhap);
         if (!ncc.kiemTraHanMucNoCong(hd.tongTienDS())) {
@@ -96,8 +100,8 @@ public class QuanLyCuaHang extends NhanVien {
     private int[] demSoLuongBan() {
         int[] ban = new int[dsSP.size()];
         for (Hoadonban hd : dsHoaDonBan.layHoaDonBan()) {
-            if (hd.getChiTiet() == null) continue;
-            for (CTGioHang gh : hd.getChiTiet().getDsGioHang()) {
+            if (hd.getCTHoaDon() == null) continue;
+            for (CTHoaDon gh : hd.getCTHoaDon()) {
                 for (int i = 0; i < dsSP.size(); i++) {
                     if (dsSP.get(i).getMaSP().equalsIgnoreCase(gh.getMaSP())) {
                         ban[i] += gh.getSoLuong();

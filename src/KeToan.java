@@ -21,6 +21,11 @@ public class KeToan extends NhanVien implements Thongke {
         this.quanLyKho = null;
     }
 
+    @Override
+    public String getVaiTro() {
+        return "";
+    }
+
     // Constructor ket noi cac danh sach
     public KeToan(DSNhanVien nhanVien,
                   DSSanPham DSSanPham,

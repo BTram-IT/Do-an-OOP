@@ -3,7 +3,7 @@ import java.time.LocalDate;
 import java.time.Period;
 import java.util.Scanner;
 
-public class NhanVien extends Nguoidung {
+public abstract class NhanVien extends Nguoidung {
     private String maNV;
     private double luongCoBan;
     private LocalDate ngayVaoLam;
@@ -30,8 +30,11 @@ public class NhanVien extends Nguoidung {
     public String getMaNV() { return maNV; }
     public void setMaNV(String maNV) {
         maNV = Ktradulieu.chuanHoaMa(maNV);
-        if (!maNV.matches("NV\\d{3}"))
-            throw new IllegalArgumentException("Mã nhân viên phải có dạng NV001!");
+
+        if (maNV == null || !maNV.matches("(NV|TN|KT|QL)\\d{3}")) {
+            throw new IllegalArgumentException("Mã nhân viên không hợp lệ!");
+        }
+
         this.maNV = maNV;
     }
 
@@ -102,4 +105,6 @@ public class NhanVien extends Nguoidung {
                 + " | Kinh nghiem: " + TinhKinhNghiem() + " muc"
                 + " | Luong: " + String.format("%,.0f", Tinhluong()) + " VND";
     }
+
+    public abstract String getVaiTro();
 }
