@@ -56,19 +56,19 @@ public class QuanlyKho {
         return ncc == null ? ma : ncc.getMaDT() + " - " + ncc.getTenDT();
     }
 
-    public void themSanPham(SanPham sp) { dsSanPham.them(sp); }
-    public int themNhieuSanPham(SanPham[] dsMoi) { return dsSanPham.themNhieu(dsMoi); }
-    public void suaSanPham(String ma, SanPham thongTinMoi) { dsSanPham.sua(ma, thongTinMoi); }
+        public void themSanPham(SanPham sp) { dsSanPham.them(sp); }
+        public int themNhieuSanPham(SanPham[] dsMoi) { return dsSanPham.themNhieu(dsMoi); }
+        public void suaSanPham(String ma, SanPham thongTinMoi) { dsSanPham.sua(ma, thongTinMoi); }
 
-    public void xoaSanPham(String ma) {
-        String maChuan = SanPham.chuanHoaMa(ma);
-        for (HoadonNhap phieu : dsHoaDonNhap) {
-            if (phieu.coSanPham(maChuan)) {
-                throw new IllegalStateException("Không thể xóa " + maChuan + " vì đã có trong phiếu nhập " + phieu.getMaHoaDon());
+        public void xoaSanPham(String ma) {
+            String maChuan = SanPham.chuanHoaMa(ma);
+            for (HoadonNhap phieu : dsHoaDonNhap) {
+                if (phieu.coSanPham(maChuan)) {
+                    throw new IllegalStateException("Không thể xóa " + maChuan + " vì đã có trong phiếu nhập " + phieu.getMaHoaDon());
+                }
             }
+            dsSanPham.xoaTheoMa(maChuan);
         }
-        dsSanPham.xoaTheoMa(maChuan);
-    }
 
     public SanPham timSanPham(String ma) { return dsSanPham.timTheoMa(ma); }
     public boolean tonTaiSanPham(String ma) { return dsSanPham.tonTaiMa(ma); }

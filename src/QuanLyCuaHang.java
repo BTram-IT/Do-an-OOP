@@ -134,4 +134,14 @@ public class QuanLyCuaHang extends NhanVien {
     public DSDoiTac getDsDoiTac() { return dsDoiTac; }
     public DSKhuyenMai getDsKhuyenMai() { return dsKhuyenMai; }
     public ArrayList<Hoadonban> getHoaDonBan() { return dsHoaDonBan.layHoaDonBan(); }
+
+    public void menuQuanLySanPham() {}
+    public void menuQuanLyNhanVien() {}
+    public void menuQuanLyKhachHang() {}
+    public void menuQuanLyDoiTac() {}
+    public void menuQuanLyKhuyenMai() {}
+    public void menuQuanLySPKhuyenMai() {}
+    public void menuQuanLyHoaDon() {}
+    public void menuThongKeKinhDoanh() {}
+
 }
