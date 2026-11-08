@@ -21,6 +21,7 @@ public abstract class DoiTac {
     }
 
     public String getMaDT() { return maDT; }
+    public String getMa() { return maDT; }
     public String getTenDT() { return tenDT; }
     public String getDiaChi() { return diaChi; }
     public String getEmail() { return email; }
