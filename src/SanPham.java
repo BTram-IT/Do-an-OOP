@@ -379,6 +379,7 @@ public abstract class SanPham {
     }
 
     // Getters
+    public String getMa() { return maSP; }
     public String getMaSP() {
         return maSP;
     }
