@@ -429,19 +429,19 @@ public class Giaodien {
             );
             switch (chon) {
                 case 1:
-                    quanLyCuaHang.menuQuanLyNhanVien();
+                    quanLyCuaHang.quanLyCuaHang.menuQuanLyNhanVien();
                     break;
 
                 case 2:
-                    quanLyCuaHang.menuQuanLyKhachHang();
+                    quanLyCuaHang.quanLyCuaHang.menuQuanLyKhachHang();
                     break;
 
                 case 3:
-                    quanLyCuaHang.menuQuanLyDoiTac();
+                    quanLyCuaHang.quanLyCuaHang.menuQuanLyDoiTac();
                     break;
 
                 case 4:
-                    quanLyCuaHang.menuQuanLySanPham();
+                    quanLyCuaHang.quanLyCuaHang.menuQuanLySanPham();
                     break;
 
                 case 5:
@@ -449,14 +449,14 @@ public class Giaodien {
                     break;
 
                 case 6:
-                    quanLyCuaHang.menuQuanLyKhuyenMai();
+                    quanLyCuaHang.quanLyCuaHang.menuQuanLyKhuyenMai();
                     break;
 
                 case 7:
-                    quanLyCuaHang.menuQuanLyHoaDon();
+                    quanLyCuaHang.quanLyCuaHang.menuQuanLyHoaDon();
                     break;
                 case 8:
-                    quanLyCuaHang.menuThongKeKinhDoanh();
+                    quanLyCuaHang.quanLyCuaHang.menuThongKeKinhDoanh();
                 case 0:
                     System.out.println("Quay lại menu chính.");
                     break;
