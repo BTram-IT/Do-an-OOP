@@ -1,3 +1,4 @@
+import java.io.IOException;
 import java.time.LocalDate;
 import java.util.Scanner;
 
@@ -9,17 +10,73 @@ public class Giaodien {
     private ThuNgan thuNgan;
     private QuanlyKho quanLyKho;
     private QuanLyCuaHang quanLyCuaHang;
-    private DSSanPhamKhuyenMai dsSPKM;
-    private DSKhuyenMai dsKM;
 
-    public Giaodien(KeToan keToan, ThuNgan thuNgan,
-                    QuanlyKho quanLyKho,
-                    QuanLyCuaHang quanLyCuaHang) {
+
+    private DSSanPhamKhuyenMai dsSanPhamKhuyenMai;
+    private DSKhuyenMai dsKM;
+    private DSSanPham dsSanPham;
+    private DSDoiTac dsDoiTac;
+    private DSHoadon dsHoaDon;
+    private DSNhaCungCap dsNhaCungCap; // (Hoặc gộp chung với DSDoiTac tùy thiết kế của bạn)
+    private DSNhanVien dsNhanVien;
+    private DsKhachHang dsKhachHang;
+
+    public Giaodien(KeToan keToan, ThuNgan thuNgan, QuanlyKho quanLyKho, QuanLyCuaHang quanLyCuaHang) {
         this.keToan = keToan;
         this.thuNgan = thuNgan;
         this.quanLyKho = quanLyKho;
         this.quanLyCuaHang = quanLyCuaHang;
+
+        // Tự động khởi tạo và đọc file luôn trong này cho gọn
+        khoiTaoVaDocFile();
     }
+
+    public void khoiTaoVaDocFile(){
+        System.out.println("Đang tải dữ liệu hệ thống...");
+
+        try {
+            dsSanPham = new DSSanPham();
+            dsSanPham.docFile("data/sanpham.txt");
+
+            dsDoiTac = new DSDoiTac();
+            dsDoiTac.docFile("data/doitac.txt");
+
+            dsKhachHang=new DsKhachHang();
+            dsKhachHang.docFile("data/khachhang.txt");
+
+            dsNhanVien=new DSNhanVien();
+            dsNhanVien.docFile("data/nhanvien.txt");
+
+            dsKM=new DSKhuyenMai();
+            dsKM.docFile("data/khuyenmai.txt");
+
+            dsNhaCungCap=new DSNhaCungCap();
+            dsNhaCungCap.docFile("data/nhaCungCap.txt");
+
+            dsHoaDon=new DSHoadon();
+            dsHoaDon.docFile("data/hoadon.txt");
+
+            dsSanPhamKhuyenMai=new DSSanPhamKhuyenMai();
+            dsSanPhamKhuyenMai.docFile("data/sanphamKhuyenMai.txt");
+
+        } catch (IOException e) {
+            System.out.println("Lỗi đọc file dữ liệu: " + e.getMessage());
+        }
+
+        System.out.println("-> Hoàn tất tải dữ liệu!\n");
+    }
+
+    // --- CÁC GETTER ĐỂ CÁC PHÂN HỆ KHÁC DỄ DÀNG TRUY XUẤT ---
+
+    public DSSanPham getDsSanPham() { return dsSanPham; }
+    public DSDoiTac getDsDoiTac() { return dsDoiTac; }
+    public DSHoadon getDsHoaDon() { return dsHoaDon; }
+    public DSKhuyenMai getDsKM() { return dsKM; }
+    public DSSanPhamKhuyenMai getDsSPKM() { return dsSanPhamKhuyenMai; }
+    public DSNhanVien getDsNhanVien() { return dsNhanVien; }
+    public DsKhachHang getDsKhachHang() { return dsKhachHang; }
+
+
 
     // ================= TRANG CHỦ =================
 
@@ -198,7 +255,7 @@ public class Giaodien {
 
             switch (chon) {
                 case 1:
-                    thuNgan.taoHoaDonMoi(sc, quanLyKho.getDsSanPham(), dsSPKM, dsKM);
+                    thuNgan.taoHoaDonMoi(sc, quanLyKho.getDsSanPham(), dsSanPhamKhuyenMai, dsKM);
                     break;
                 case 2:
                     String maHD = Ktradulieu.nhapChuoiKhongRong(sc, "Nhập mã hóa đơn: ");

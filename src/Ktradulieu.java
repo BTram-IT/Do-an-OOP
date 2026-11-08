@@ -11,6 +11,8 @@ import java.util.Scanner;
  */
 public class Ktradulieu {
 
+
+
     // =========================================================================
     // CÁC REGEX THÔNG DỤNG (GIỮ NGUYÊN 100% KHÔNG ĐỔI)
     // =========================================================================
@@ -212,12 +214,6 @@ public class Ktradulieu {
         }
     }
 
-    /** Chuẩn hóa mã: bỏ khoảng trắng thừa hai đầu và viết hoa toàn bộ */
-    public static String chuanHoaMa(String ma) {
-        if (ma == null) return "";
-        return ma.trim().toUpperCase();
-    }
-
     /** Chuẩn hóa chuỗi họ tên hoặc văn bản: viết hoa chữ cái đầu mỗi từ */
     public static String chuanHoaChuoi(String str) {
         if (str == null || str.trim().isEmpty()) return "";
@@ -240,5 +236,26 @@ public class Ktradulieu {
 
     public static String dinhDangTien(double soTien) {
         return DINH_DANG_TIEN.format(Math.round(soTien));
+    }
+
+    // tự động điền mã
+    // Chuẩn hóa mã (Viết hoa và xóa khoảng trắng)
+    public static String chuanHoaMa(String ma) {
+        if (ma == null) return "";
+        return ma.trim().toUpperCase();
+    }
+
+    // Tách số từ mã (Ví dụ: "TA005" -> lấy ra số 5)
+    public static int laySoTuMa(String ma, String tienTo) {
+        String maChuan = chuanHoaMa(ma);
+        if (maChuan == null || !maChuan.startsWith(tienTo)) {
+            return 0;
+        }
+        String phanSo = maChuan.substring(tienTo.length());
+        try {
+            return Integer.parseInt(phanSo);
+        } catch (NumberFormatException e) {
+            return 0;
+        }
     }
 }

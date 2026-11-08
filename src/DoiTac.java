@@ -1,4 +1,5 @@
 
+import java.util.Locale;
 import java.util.Scanner;
 
 public abstract class DoiTac {
@@ -61,21 +62,56 @@ public abstract class DoiTac {
         this.maSoThue = mst;
     }
 
-    public  void nhap(Scanner sc) {
-        if (sc == null)
-            throw new IllegalArgumentException("Scanner không hợp lệ!");
+    public static final String TIEN_TO_MA = "DT";
+    private static int boDem = 0;
 
-        setMaDT(Ktradulieu.nhapChuoi(sc, "Nhập mã đối tác: ",
-                "[a-zA-Z0-9]+", "Mã không hợp lệ!"));
+    public static synchronized String maKeTiep() {
+        boDem++;
+        return String.format(Locale.ROOT, "%s%03d", TIEN_TO_MA, boDem);
+    }
 
-        setTenDT(Ktradulieu.nhapChuoiKhongRong(sc, "Nhập tên đối tác: "));
-        setDiaChi(Ktradulieu.nhapChuoiKhongRong(sc, "Nhập địa chỉ: "));
+    public static void capNhatBoDem(String maDT) {
+        // Gọi thẳng từ Ktradulieu, không cần viết lại hàm phụ trợ nữa!
+        int so = Ktradulieu.laySoTuMa(Ktradulieu.chuanHoaMa(maDT), TIEN_TO_MA);
+        if (so > boDem) {
+            boDem = so;
+        }
+    }
 
-        setEmail(Ktradulieu.nhapChuoi(sc, "Nhập email: ",
-                Ktradulieu.emailRegex, "Email không hợp lệ!"));
+    public static void resetBoDem() {
+        boDem = 0;
+    }
+    public void nhap(Scanner sc) {
+        if (sc == null) sc = new Scanner(System.in);
 
-        setMaSoThue(Ktradulieu.nhapChuoi(sc, "Nhập mã số thuế: ",
-                "\\d{10}(-\\d{3})?", "Mã số thuế không hợp lệ!"));
+        System.out.println("\n--- NHẬP THÔNG TIN ĐỐI TÁC ---");
+
+        // 1. Nhập mã đối tác (Enter = tự lấy mã tiếp theo)
+        String maGoiY = maKeTiep();
+        String thongBaoMa = String.format("Nhập mã đối tác (Enter = tự tạo %s): ", maGoiY);
+
+        String nhapMa = Ktradulieu.nhapChuoiTuyChon(sc, thongBaoMa, "^[a-zA-Z0-9]+$", "Mã không hợp lệ!");
+
+        this.maDT = nhapMa.isEmpty() ? maGoiY : Ktradulieu.chuanHoaMa(nhapMa);
+        capNhatBoDem(this.maDT); // Đảm bảo bộ đếm luôn được cập nhật chính xác
+
+        // 2. Nhập tên đối tác (Có gợi ý ví dụ mẫu)
+        String tenNhap = Ktradulieu.nhapChuoiKhongRong(sc, "Nhập tên đối tác (VD: Công Ty TNHH Thực Phẩm Sạch): ");
+        this.tenDT = Ktradulieu.chuanHoaChuoi(tenNhap);
+
+        // 3. Nhập địa chỉ
+        String diaChiNhap = Ktradulieu.nhapChuoiKhongRong(sc, "Nhập địa chỉ (VD: 123 Nguyễn Văn Linh, Q.7, TP.HCM): ");
+        this.diaChi = Ktradulieu.chuanHoaChuoi(diaChiNhap);
+
+        // 4. Nhập email (Sử dụng regex chuẩn có sẵn trong Ktradulieu)
+        this.email = Ktradulieu.nhapChuoi(sc, "Nhập email (VD: lienhe@thucphamsach.vn): ",
+                Ktradulieu.emailRegex, "Email không hợp lệ! (Phải đúng định dạng như abc@gmail.com)");
+
+        // 5. Nhập mã số thuế (Sử dụng regex kiểm tra 10 số hoặc kèm nhánh -xxx)
+        this.maSoThue = Ktradulieu.nhapChuoi(sc, "Nhập mã số thuế (VD: 0312345678 hoặc 0312345678-001): ",
+                "\\d{10}(-\\d{3})?", "Mã số thuế không hợp lệ! (Phải gồm 10 chữ số hoặc kèm nhánh -xxx)");
+
+        System.out.println("-> Thêm đối tác [" + this.maDT + "] thành công!");
     }
 
     public abstract String toDongFile();

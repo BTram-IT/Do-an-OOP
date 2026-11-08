@@ -1,3 +1,12 @@
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Scanner;
 
@@ -12,7 +21,6 @@ public class DSSanPhamKhuyenMai {
 
     // Getter
     public SPKhMai[] getDanhSach() {
-
         return danhSach.toArray(new SPKhMai[0]);
     }
 
@@ -139,6 +147,7 @@ public class DSSanPhamKhuyenMai {
         danhSach.remove(viTri);
         System.out.println("Xóa sản phẩm khuyến mãi thành công!");
     }
+
     public boolean kiemTraLienKet(String maSP, String maKM) {
         if (maSP == null || maKM == null) return false;
 
@@ -171,5 +180,60 @@ public class DSSanPhamKhuyenMai {
         }
 
         System.out.println("Tổng số sản phẩm khuyến mãi: " + danhSach.size());
+    }
+
+    // =========================================================================
+    // XỬ LÝ FILE (ĐỌC & GHI)
+    // =========================================================================
+
+    // Ghi danh sách liên kết sản phẩm - khuyến mãi xuống file
+    public void ghiFile(String filePath) {
+        File file = new File(filePath);
+        File parentDir = file.getParentFile();
+        if (parentDir != null && !parentDir.exists()) {
+            parentDir.mkdirs(); // Tự động tạo thư mục data nếu chưa có
+        }
+
+        try (BufferedWriter bw = new BufferedWriter(
+                new OutputStreamWriter(new FileOutputStream(filePath), StandardCharsets.UTF_8))) {
+            for (SPKhMai item : danhSach) {
+                if (item != null) {
+                    // Gọi hàm toDongFile() của đối tượng SPKhMai
+                    bw.write(item.toDongFile());
+                    bw.newLine();
+                }
+            }
+            System.out.println("-> Lưu file sản phẩm khuyến mãi thành công tại: " + filePath);
+        } catch (IOException e) {
+            System.out.println("Lỗi ghi file sản phẩm khuyến mãi: " + e.getMessage());
+        }
+    }
+
+    // Đọc danh sách liên kết sản phẩm - khuyến mãi từ file
+    public void docFile(String filePath) {
+        File file = new File(filePath);
+        if (!file.exists()) {
+            System.out.println("Chưa có file dữ liệu sản phẩm khuyến mãi cũ, hệ thống sẽ tạo mới khi lưu.");
+            return;
+        }
+
+        try (BufferedReader br = new BufferedReader(
+                new InputStreamReader(new FileInputStream(filePath), StandardCharsets.UTF_8))) {
+            String dong;
+            danhSach.clear(); // Làm sạch danh sách hiện tại trước khi load
+            while ((dong = br.readLine()) != null) {
+                dong = dong.trim();
+                if (dong.isEmpty()) continue;
+
+                // Gọi hàm tĩnh tuDongFile(String) của lớp SPKhMai để khôi phục đối tượng
+                SPKhMai item = SPKhMai.tuDongFile(dong);
+                if (item != null) {
+                    danhSach.add(item);
+                }
+            }
+            System.out.println("-> Đọc file sản phẩm khuyến mãi thành công! Tổng số: " + danhSach.size());
+        } catch (IOException e) {
+            System.out.println("Lỗi đọc file sản phẩm khuyến mãi: " + e.getMessage());
+        }
     }
 }

@@ -113,6 +113,39 @@ public abstract class Khuyenmai {
     // Tạo đối tượng rỗng cùng loại để sửa khuyến mãi
     public abstract Khuyenmai taoKhuyenMaiRong();
 
+    // =========================================================================
+    // XỬ LÝ FILE (TO DÒNG & TỪ ĐÒNG FILE)
+    // =========================================================================
+
+    // Chuyển đối tượng thành định dạng chuỗi ngăn cách bằng dấu "|" để ghi file
+    public String toDongFile() {
+        return maKM + "|" + loaiKM + "|" + ngayBatDau + "|" + ngayKetThuc + "|" + mucChiToiThieu;
+    }
+
+    // Hàm tĩnh đọc dòng từ file và trả về đối tượng Khuyến Mãi phù hợp
+    public static Khuyenmai tuDongFile(String dong) {
+        if (dong == null || dong.trim().isEmpty()) {
+            return null;
+        }
+        String[] parts = dong.split("\\|");
+        if (parts.length < 5) {
+            return null;
+        }
+
+        String maKM = parts[0];
+        String loaiKM = parts[1];
+        LocalDate ngayBatDau = LocalDate.parse(parts[2]);
+        LocalDate ngayKetThuc = LocalDate.parse(parts[3]);
+        long mucChiToiThieu = Long.parseLong(parts[4]);
+
+
+        return null; // Thay thế bằng logic trả về lớp con tương ứng của bạn
+    }
+
+    // =========================================================================
+    // GETTER & SETTER
+    // =========================================================================
+
     public String getMaKM() {
         return maKM;
     }
@@ -180,4 +213,3 @@ public abstract class Khuyenmai {
                 + "\nMức chi tối thiểu: " + mucChiToiThieu;
     }
 }
-

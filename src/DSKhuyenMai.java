@@ -1,3 +1,12 @@
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.Scanner;
 
 public class DSKhuyenMai {
@@ -144,7 +153,7 @@ public class DSKhuyenMai {
         return xoaKhuyenMai(maKM);
     }
 
-    // Xóa khuyến mãi
+    // Xóa khuyến mãi (Giao diện nhập)
     public boolean xoaKhuyenMai() {
         String maKM = Ktradulieu.nhapChuoi(
                 sc, "Nhập mã khuyến mãi cần xóa: ", ".+",
@@ -156,28 +165,6 @@ public class DSKhuyenMai {
             System.out.println("Không tìm thấy khuyến mãi!");
         }
         return kq;
-    }
-    private boolean xoaKhuyenMaiCu() {
-        String maKM = Ktradulieu.nhapChuoi(
-                sc, "Nhập mã khuyến mãi cần xóa: ", ".+",
-                "Mã khuyến mãi không được để trống!");
-
-        int viTri = timKhuyenMai(maKM);
-
-        if (viTri == -1) {
-            System.out.println("Không tìm thấy khuyến mãi!");
-            return false;
-        }
-
-        for (int i = viTri; i < soLuong - 1; i++) {
-            danhSach[i] = danhSach[i + 1];
-        }
-
-        danhSach[soLuong - 1] = null;
-        soLuong--;
-
-        System.out.println("Xóa khuyến mãi thành công!");
-        return false;
     }
 
     // Xuất danh sách khuyến mãi
@@ -196,5 +183,64 @@ public class DSKhuyenMai {
         }
 
         System.out.println("Tổng số chương trình khuyến mãi: " + soLuong);
+    }
+
+    // =========================================================================
+    // PHƯƠNG THỨC XỬ LÝ FILE (ĐỌC & GHI)
+    // =========================================================================
+
+    // Ghi danh sách khuyến mãi xuống file
+    public void ghiFile(String filePath) {
+        File file = new File(filePath);
+        File parentDir = file.getParentFile();
+        if (parentDir != null && !parentDir.exists()) {
+            parentDir.mkdirs(); // Tự động tạo thư mục data nếu chưa có
+        }
+
+        try (BufferedWriter bw = new BufferedWriter(
+                new OutputStreamWriter(new FileOutputStream(filePath), StandardCharsets.UTF_8))) {
+            for (int i = 0; i < soLuong; i++) {
+                if (danhSach[i] != null) {
+                    // Gọi phương thức chuyển đối tượng thành dòng văn bản (giả sử Khuyenmai có toDongFile())
+                    bw.write(danhSach[i].toDongFile());
+                    bw.newLine();
+                }
+            }
+            System.out.println("-> Lưu file khuyến mãi thành công tại: " + filePath);
+        } catch (IOException e) {
+            System.out.println("Lỗi ghi file khuyến mãi: " + e.getMessage());
+        }
+    }
+
+    // Đọc danh sách khuyến mãi từ file
+    public void docFile(String filePath) {
+        File file = new File(filePath);
+        if (!file.exists()) {
+            System.out.println("Chưa có file dữ liệu khuyến mãi cũ, hệ thống sẽ tạo mới khi lưu.");
+            return;
+        }
+
+        try (BufferedReader br = new BufferedReader(
+                new InputStreamReader(new FileInputStream(filePath), StandardCharsets.UTF_8))) {
+            String dong;
+            soLuong = 0; // Reset số lượng hiện tại trước khi load
+            while ((dong = br.readLine()) != null) {
+                dong = dong.trim();
+                if (dong.isEmpty()) continue;
+
+                // Phân tích dòng file thành đối tượng Khuyenmai
+                // (Giả sử lớp Khuyenmai hoặc lớp con có phương thức tuDongFile(dong))
+                Khuyenmai km = Khuyenmai.tuDongFile(dong);
+                if (km != null && soLuong < MAX) {
+                    danhSach[soLuong] = km;
+                    soLuong++;
+                    // Đồng thời cập nhật bộ đếm mã nếu có cơ chế tự tăng
+                    // Khuyenmai.capNhatBoDem(km.getMaKM());
+                }
+            }
+            System.out.println("-> Đọc file khuyến mãi thành công! Tổng số: " + soLuong);
+        } catch (IOException e) {
+            System.out.println("Lỗi đọc file khuyến mãi: " + e.getMessage());
+        }
     }
 }

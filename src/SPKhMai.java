@@ -31,6 +31,29 @@ public class SPKhMai {
         );
     }
 
+    // =========================================================================
+    // XỬ LÝ FILE (TO DÒNG & TỪ ĐÒNG FILE)
+    // =========================================================================
+
+    // Chuyển đối tượng thành chuỗi ngăn cách bằng dấu "|" để lưu file
+    public String toDongFile() {
+        return maSP + "|" + maKM;
+    }
+
+    // Hàm tĩnh đọc dòng từ file và chuyển đổi thành đối tượng SPKhMai
+    public static SPKhMai tuDongFile(String dong) {
+        if (dong == null || dong.trim().isEmpty()) {
+            return null;
+        }
+        String[] parts = dong.split("\\|");
+        if (parts.length >= 2) {
+            String maSP = parts[0].trim();
+            String maKM = parts[1].trim();
+            return new SPKhMai(maSP, maKM);
+        }
+        return null;
+    }
+
     // Getter và Setter
     public String getMaSP() {
         return maSP;

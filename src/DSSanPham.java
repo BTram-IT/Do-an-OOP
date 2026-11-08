@@ -418,6 +418,13 @@ public class DSSanPham {
         Path dich = Paths.get(duongDan);
         Path tam = Paths.get(duongDan + ".tmp");
 
+        // Tự động tạo thư mục chứa file nếu chưa tồn tại
+        Path thuMuc = dich.getParent();
+
+        if (thuMuc != null && !Files.exists(thuMuc)) {
+            Files.createDirectories(thuMuc);
+        }
+
         try {
             ghiRaFile(tam.toString());
             Files.move(tam, dich, StandardCopyOption.REPLACE_EXISTING);
@@ -465,9 +472,17 @@ public class DSSanPham {
         Set<String> cacMaLo = new HashSet<>();
         boolean dungPhienBan = false;
 
+        File file = new File(duongDan);
+
+        // Kiểm tra file có tồn tại không
+        if (!file.exists()) {
+            System.out.println("Chưa có file sản phẩm. Khởi tạo danh sách rỗng!");
+            return dsMoi;
+        }
+
         try (BufferedReader doc = new BufferedReader(
                 new InputStreamReader(
-                        new FileInputStream(duongDan),
+                        new FileInputStream(file),
                         StandardCharsets.UTF_8))) {
 
             String dong;
