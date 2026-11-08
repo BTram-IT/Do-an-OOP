@@ -123,8 +123,41 @@ public class DSKhuyenMai {
         return false;
     }
 
+    // Xóa khuyến mãi theo mã
+    public boolean xoaKhuyenMai(String maKM) {
+        if (maKM == null || maKM.trim().isEmpty()) {
+            return false;
+        }
+        int viTri = timKhuyenMai(maKM);
+        if (viTri == -1) {
+            return false;
+        }
+        for (int i = viTri; i < soLuong - 1; i++) {
+            danhSach[i] = danhSach[i + 1];
+        }
+        danhSach[soLuong - 1] = null;
+        soLuong--;
+        return true;
+    }
+
+    public boolean xoa(String maKM) {
+        return xoaKhuyenMai(maKM);
+    }
+
     // Xóa khuyến mãi
     public boolean xoaKhuyenMai() {
+        String maKM = Ktradulieu.nhapChuoi(
+                sc, "Nhập mã khuyến mãi cần xóa: ", ".+",
+                "Mã khuyến mãi không được để trống!");
+        boolean kq = xoaKhuyenMai(maKM);
+        if (kq) {
+            System.out.println("Xóa khuyến mãi thành công!");
+        } else {
+            System.out.println("Không tìm thấy khuyến mãi!");
+        }
+        return kq;
+    }
+    private boolean xoaKhuyenMaiCu() {
         String maKM = Ktradulieu.nhapChuoi(
                 sc, "Nhập mã khuyến mãi cần xóa: ", ".+",
                 "Mã khuyến mãi không được để trống!");
