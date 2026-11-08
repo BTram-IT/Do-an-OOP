@@ -12,6 +12,7 @@ public class QuanLyCuaHang extends NhanVien {
     private DsKhachHang dsKH = new DsKhachHang();
     private DSDoiTac dsDoiTac = new DSDoiTac();
     private DSKhuyenMai dsKhuyenMai = new DSKhuyenMai();
+    private DSSanPhamKhuyenMai dsSPKM = new DSSanPhamKhuyenMai();
     private DSHoadon dsHoaDonBan = new DSHoadon();
     private DSHoadon dsHoaDonNhap = new DSHoadon();
 
@@ -21,6 +22,17 @@ public class QuanLyCuaHang extends NhanVien {
         this.dsNV = dsNV;
         this.dsDoiTac = dsDoiTac;
         this.dsKhuyenMai = dsKhuyenMai;
+        this.dsHoaDonBan = dsHoaDonBan;
+        this.dsHoaDonNhap = dsHoaDonNhap;
+    }
+
+    public QuanLyCuaHang(DsKhachHang dsKH, DSSanPham dsSP, DSNhanVien dsNV, DSDoiTac dsDoiTac, DSKhuyenMai dsKhuyenMai, DSSanPhamKhuyenMai dsSPKM, DSHoadon dsHoaDonBan, DSHoadon dsHoaDonNhap) {
+        this.dsKH = dsKH;
+        this.dsSP = dsSP;
+        this.dsNV = dsNV;
+        this.dsDoiTac = dsDoiTac;
+        this.dsKhuyenMai = dsKhuyenMai;
+        this.dsSPKM = (dsSPKM == null) ? new DSSanPhamKhuyenMai() : dsSPKM;
         this.dsHoaDonBan = dsHoaDonBan;
         this.dsHoaDonNhap = dsHoaDonNhap;
     }
@@ -51,7 +63,12 @@ public class QuanLyCuaHang extends NhanVien {
         if (dsHoaDonNhap != null) this.dsHoaDonNhap = dsHoaDonNhap;
     }
 
-    @Override
+    public void ketNoi(DSSanPham dsSP, DSNhanVien dsNV, DsKhachHang dsKH, DSDoiTac dsDoiTac,
+                       DSKhuyenMai dsKhuyenMai, DSSanPhamKhuyenMai dsSPKM, DSHoadon dsHoaDonBan, DSHoadon dsHoaDonNhap) {
+        ketNoi(dsSP, dsNV, dsKH, dsDoiTac, dsKhuyenMai, dsHoaDonBan, dsHoaDonNhap);
+        if (dsSPKM != null) this.dsSPKM = dsSPKM;
+    }
+
     public String getVaiTro() {
         return "QuanLyCuaHang";
     }
@@ -140,9 +157,11 @@ public class QuanLyCuaHang extends NhanVien {
     public DsKhachHang getDsKH() { return dsKH; }
     public DSDoiTac getDsDoiTac() { return dsDoiTac; }
     public DSKhuyenMai getDsKhuyenMai() { return dsKhuyenMai; }
+    public DSSanPhamKhuyenMai getDsSPKM() { return dsSPKM; }
+    public void setDsSPKM(DSSanPhamKhuyenMai dsSPKM) { this.dsSPKM = dsSPKM; }
     public ArrayList<Hoadonban> getHoaDonBan() { return dsHoaDonBan.layHoaDonBan(); }
 
-    // ==================== CÁC MENU QUẢN LÝ (THEO GIAO DIỆN) ====================
+    // ==================== CÁC MENU QUẢN LÝ ====================
 
     public void menuQuanLySanPham() {
         int chon;
@@ -197,19 +216,15 @@ public class QuanLyCuaHang extends NhanVien {
         do {
             System.out.println("\n--- QUẢN LÝ NHÂN VIÊN ---");
             System.out.println("1. Hiển thị danh sách nhân viên");
-            System.out.println("2. Thêm nhân viên mới (tạm chưa hỗ trợ nhập phím đầy đủ trong demo)");
-            System.out.println("3. Xóa nhân viên theo mã");
-            System.out.println("4. Tìm kiếm nhân viên");
+            System.out.println("2. Xóa nhân viên theo mã");
+            System.out.println("3. Tìm kiếm nhân viên");
             System.out.println("0. Quay lại");
-            chon = Ktradulieu.luaChon(sc, "Chọn: ", 0, 4);
+            chon = Ktradulieu.luaChon(sc, "Chọn: ", 0, 3);
             switch (chon) {
                 case 1:
                     dsNV.xuatDanhSach();
                     break;
                 case 2:
-                    System.out.println("Chức năng thêm NV đang phát triển form nhập liệu.");
-                    break;
-                case 3:
                     String ma = Ktradulieu.nhapChuoiKhongRong(sc, "Nhập mã nhân viên cần xóa: ");
                     if (xoaNhanVien(ma)) {
                         System.out.println("Xóa thành công!");
@@ -217,7 +232,7 @@ public class QuanLyCuaHang extends NhanVien {
                         System.out.println("Không thể xóa (mã không tồn tại hoặc trùng mã quản lý hiện tại)!");
                     }
                     break;
-                case 4:
+                case 3:
                     String maTK = Ktradulieu.nhapChuoiKhongRong(sc, "Nhập mã nhân viên: ");
                     NhanVien nv = dsNV.timKiemTheoMa(maTK);
                     if (nv != null) System.out.println(nv);
@@ -260,56 +275,192 @@ public class QuanLyCuaHang extends NhanVien {
         } while (chon != 0);
     }
 
+    // ==================== QUẢN LÝ ĐỐI TÁC (THÊM / XÓA / SỬA / TÌM) ====================
     public void menuQuanLyDoiTac() {
         int chon;
         do {
             System.out.println("\n--- QUẢN LÝ ĐỐI TÁC ---");
             System.out.println("1. Hiển thị danh sách đối tác");
-            System.out.println("2. Xóa đối tác");
-            System.out.println("3. Tìm đối tác theo mã");
+            System.out.println("2. Thêm đối tác mới");
+            System.out.println("3. Sửa thông tin đối tác");
+            System.out.println("4. Xóa đối tác");
+            System.out.println("5. Tìm đối tác theo mã");
             System.out.println("0. Quay lại");
-            chon = Ktradulieu.luaChon(sc, "Chọn: ", 0, 3);
+            chon = Ktradulieu.luaChon(sc, "Chọn: ", 0, 5);
             switch (chon) {
                 case 1:
                     dsDoiTac.xuatDanhSach();
                     break;
                 case 2:
+                    themDoiTacTuBanPhim();
+                    break;
+                case 3:
+                    suaDoiTacTuBanPhim();
+                    break;
+                case 4:
                     String ma = Ktradulieu.nhapChuoiKhongRong(sc, "Nhập mã đối tác cần xóa: ");
                     if (dsDoiTac.xoa(ma)) System.out.println("Xóa thành công!");
                     else System.out.println("Không tìm thấy đối tác!");
                     break;
-                case 3:
+                case 5:
                     String maTK = Ktradulieu.nhapChuoiKhongRong(sc, "Nhập mã đối tác: ");
                     DoiTac dt = dsDoiTac.timTheoMa(maTK);
                     if (dt != null) System.out.println(dt);
-                    else System.out.println("Không tìm thấy!");
+                    else System.out.println("Không tìm thấy đối tác!");
                     break;
             }
         } while (chon != 0);
     }
 
+    private void themDoiTacTuBanPhim() {
+        System.out.println("\nChọn loại đối tác cần thêm:");
+        System.out.println("1. Nhà cung cấp");
+        System.out.println("2. Đơn vị vận chuyển");
+        int loai = Ktradulieu.luaChon(sc, "Chọn: ", 1, 2);
+        try {
+            if (loai == 1) {
+                NhaCungCap ncc = new NhaCungCap();
+                ncc.nhap(sc);
+                dsDoiTac.them(ncc);
+            } else {
+                DonViVanChuyen vc = new DonViVanChuyen();
+                vc.nhap(sc);
+                dsDoiTac.them(vc);
+            }
+            System.out.println("Thêm đối tác thành công!");
+        } catch (Exception e) {
+            System.out.println("Lỗi thêm đối tác: " + e.getMessage());
+        }
+    }
+
+    private void suaDoiTacTuBanPhim() {
+        String ma = Ktradulieu.nhapChuoiKhongRong(sc, "Nhập mã đối tác cần sửa: ");
+        DoiTac cu = dsDoiTac.timTheoMa(ma);
+        if (cu == null) {
+            System.out.println("Không tìm thấy đối tác với mã: " + ma);
+            return;
+        }
+        System.out.println("Thông tin hiện tại: " + cu);
+        try {
+            if (cu instanceof NhaCungCap) {
+                NhaCungCap moi = new NhaCungCap();
+                moi.setMaDT(cu.getMaDT());
+                moi.nhap(sc);
+                moi.setMaDT(cu.getMaDT());
+                dsDoiTac.sua(ma, moi);
+            } else if (cu instanceof DonViVanChuyen) {
+                DonViVanChuyen moi = new DonViVanChuyen();
+                moi.setMaDT(cu.getMaDT());
+                moi.nhap(sc);
+                moi.setMaDT(cu.getMaDT());
+                dsDoiTac.sua(ma, moi);
+            }
+            System.out.println("Cập nhật đối tác thành công!");
+        } catch (Exception e) {
+            System.out.println("Lỗi sửa đối tác: " + e.getMessage());
+        }
+    }
+
+    // ==================== QUẢN LÝ KHUYẾN MÃI (THÊM / XÓA / SỬA / TÌM) ====================
     public void menuQuanLyKhuyenMai() {
         int chon;
         do {
             System.out.println("\n--- QUẢN LÝ KHUYẾN MÃI ---");
             System.out.println("1. Hiển thị danh sách chương trình khuyến mãi");
-            System.out.println("2. Xóa chương trình khuyến mãi");
+            System.out.println("2. Thêm chương trình khuyến mãi mới");
+            System.out.println("3. Sửa chương trình khuyến mãi");
+            System.out.println("4. Xóa chương trình khuyến mãi");
+            System.out.println("5. Tìm kiếm chương trình khuyến mãi");
+            System.out.println("6. Quản lý sản phẩm khuyến mãi (SPKM)");
             System.out.println("0. Quay lại");
-            chon = Ktradulieu.luaChon(sc, "Chọn: ", 0, 2);
+            chon = Ktradulieu.luaChon(sc, "Chọn: ", 0, 6);
             switch (chon) {
                 case 1:
                     dsKhuyenMai.xuatDanhSach();
                     break;
                 case 2:
+                    themKhuyenMaiTuBanPhim();
+                    break;
+                case 3:
+                    dsKhuyenMai.suaKhuyenMai();
+                    break;
+                case 4:
                     dsKhuyenMai.xoaKhuyenMai();
+                    break;
+                case 5:
+                    dsKhuyenMai.timKiemKhuyenMai();
+                    break;
+                case 6:
+                    menuQuanLySPKhuyenMai();
                     break;
             }
         } while (chon != 0);
     }
 
+    private void themKhuyenMaiTuBanPhim() {
+        System.out.println("\nChọn loại khuyến mãi:");
+        System.out.println("1. Giảm giá trực tiếp");
+        System.out.println("2. Giảm giá theo phần trăm");
+        System.out.println("3. Mua tặng");
+        int loai = Ktradulieu.luaChon(sc, "Chọn: ", 1, 3);
+        Khuyenmai km = null;
+        switch (loai) {
+            case 1:
+                km = new KhuyenmaiTructiep();
+                break;
+            case 2:
+                km = new KhuyenmaiPhantram();
+                break;
+            case 3:
+                km = new KhuyenmaiMuatang();
+                break;
+        }
+        if (km != null) {
+            try {
+                km.setKM();
+                dsKhuyenMai.themKhuyenMai(km);
+            } catch (Exception e) {
+                System.out.println("Lỗi tạo khuyến mãi: " + e.getMessage());
+            }
+        }
+    }
+
+    // ==================== QUẢN LÝ SẢN PHẨM KHUYẾN MÃI (THÊM / XÓA / SỬA / TÌM) ====================
     public void menuQuanLySPKhuyenMai() {
-        System.out.println("\n--- SẢN PHẨM KHUYẾN MÃI ---");
-        dsKhuyenMai.xuatDanhSach();
+        int chon;
+        do {
+            System.out.println("\n--- QUẢN LÝ SẢN PHẨM KHUYẾN MÃI ---");
+            System.out.println("1. Xem danh sách sản phẩm khuyến mãi");
+            System.out.println("2. Thêm sản phẩm vào khuyến mãi");
+            System.out.println("3. Sửa sản phẩm khuyến mãi");
+            System.out.println("4. Xóa sản phẩm khỏi khuyến mãi");
+            System.out.println("5. Kiểm tra liên kết (Tìm kiếm)");
+            System.out.println("0. Quay lại");
+            chon = Ktradulieu.luaChon(sc, "Chọn: ", 0, 5);
+            switch (chon) {
+                case 1:
+                    dsSPKM.xuatDanhSach();
+                    break;
+                case 2:
+                    dsSPKM.themSP();
+                    break;
+                case 3:
+                    dsSPKM.suaSP();
+                    break;
+                case 4:
+                    dsSPKM.xoaSP();
+                    break;
+                case 5:
+                    String maSP = Ktradulieu.nhapChuoiKhongRong(sc, "Nhập mã sản phẩm: ");
+                    String maKM = Ktradulieu.nhapChuoiKhongRong(sc, "Nhập mã khuyến mãi: ");
+                    if (dsSPKM.kiemTraLienKet(maSP, maKM)) {
+                        System.out.println("Sản phẩm [" + maSP + "] ĐANG ĐƯỢC ÁP DỤNG chương trình [" + maKM + "]!");
+                    } else {
+                        System.out.println("Không tìm thấy liên kết giữa sản phẩm và mã KM này!");
+                    }
+                    break;
+            }
+        } while (chon != 0);
     }
 
     public void menuQuanLyHoaDon() {
