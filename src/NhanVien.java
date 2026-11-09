@@ -4,24 +4,21 @@ import java.util.Scanner;
 
 public abstract class NhanVien extends Nguoidung {
     private String maNV;
-    private double luongCoBan;
     private LocalDate ngayVaoLam;
     private String chucVu;
 
     public NhanVien() {
         super();
         maNV = "";
-        luongCoBan = 5000000;
         ngayVaoLam = LocalDate.now();
         chucVu = "Nhan vien";
     }
 
     public NhanVien(String ten, String sdt, String diaChi, String email,
-                    LocalDate ngaySinh, String maNV, double luongCoBan,
+                    LocalDate ngaySinh, String maNV,
                     LocalDate ngayVaoLam, String chucVu) {
         super(ten, sdt, diaChi, email, ngaySinh);
         setMaNV(maNV);
-        setLuongCoBan(luongCoBan);
         setNgayVaoLam(ngayVaoLam);
         setChucVu(chucVu);
     }
@@ -37,12 +34,9 @@ public abstract class NhanVien extends Nguoidung {
         this.maNV = maNV;
     }
 
-    public double getLuongCoBan() { return luongCoBan; }
-    public void setLuongCoBan(double luongCoBan) {
-        if (!Double.isFinite(luongCoBan) || luongCoBan <= 0)
-            throw new IllegalArgumentException("Lương cơ bản phải lớn hơn 0!");
-        this.luongCoBan = luongCoBan;
-    }
+    // Chuyển mức lương cơ bản thành phương thức trừu tượng
+    // Mỗi lớp con (ThuNgan, KeToan, QuanLy...) sẽ override và return mức lương cố định riêng
+    public abstract double getLuongCoBan();
 
     public LocalDate getNgayVaoLam() { return ngayVaoLam; }
     public void setNgayVaoLam(LocalDate ngayVaoLam) {
@@ -75,7 +69,8 @@ public abstract class NhanVien extends Nguoidung {
 
     public double Tinhluong(LocalDate ngayTinh) {
         if (ngayTinh == null) throw new IllegalArgumentException("Ngày tính lương không hợp lệ!");
-        return luongCoBan + TinhKinhNghiem(ngayTinh) * 500000;
+        // Gọi phương thức getLuongCoBan() thay vì dùng thuộc tính
+        return getLuongCoBan() + TinhKinhNghiem(ngayTinh) * 500000;
     }
 
     public double Tinhluong() {
@@ -89,7 +84,7 @@ public abstract class NhanVien extends Nguoidung {
         setMaNV(Ktradulieu.nhapChuoi(sc, "Nhập mã nhân viên: ",
                 "NV\\d{3}", "Mã phải có dạng NV001!"));
         super.nhap(sc);
-        setLuongCoBan(Ktradulieu.nhapSoNguyen(sc, "Nhập lương cơ bản: "));
+        // Đã bỏ dòng nhập lương cơ bản vì mức lương được gắn cứng theo từng chức vụ con
         setChucVu(Ktradulieu.nhapChuoi(sc, "Nhập chức vụ: ",
                 "^[\\p{L}]+(?:\\s[\\p{L}]+)*$", "Chức vụ không hợp lệ!"));
         setNgayVaoLam(LocalDate.now());
@@ -100,6 +95,7 @@ public abstract class NhanVien extends Nguoidung {
         return super.toString()
                 + " | MaNV: " + maNV
                 + " | Chuc vu: " + chucVu
+                + " | Luong co ban: " + String.format("%,.0f", getLuongCoBan()) + " VND"
                 + " | Ngay vao lam: " + ngayVaoLam
                 + " | Kinh nghiem: " + TinhKinhNghiem() + " muc"
                 + " | Luong: " + String.format("%,.0f", Tinhluong()) + " VND";
