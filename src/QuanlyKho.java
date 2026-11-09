@@ -4,7 +4,8 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Scanner;
 
-public class QuanlyKho {
+public class QuanlyKho extends NhanVien {
+
     public static final int NGUONG_SAP_HET_HANG = 10;
     public static final int SO_NGAY_CANH_BAO_HET_HAN = 7;
     public static final String THU_MUC_MAC_DINH = "du_lieu_kho";
@@ -20,6 +21,12 @@ public class QuanlyKho {
     public  QuanlyKho() {
         super();
     }
+
+    @Override
+    public String getVaiTro() {
+        return "Quản lý kho";
+    }
+
     public QuanlyKho(DSNhaCungCap dsNhaCungCap) {
         this(new DSSanPham(), dsNhaCungCap, new DSHoadon());
     }

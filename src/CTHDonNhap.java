@@ -1,15 +1,7 @@
-
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.Scanner;
 
-// Một dòng của hóa đơn nhập (HoadonNhap): nhập sản phẩm nào, bao nhiêu, GIÁ NHẬP BAO NHIÊU, HẠN SỬ DỤNG nào ở lần nhập này.
-// Khi phiếu được xác nhận, mỗi dòng sinh ra đúng MỘT lô hàng (LoHang) mang hạn sử dụng và số lượng của dòng đó.
-// Không có setter: dòng đã tạo thì không sửa được, muốn đổi thì xóa dòng và thêm lại (khi phiếu chưa xác nhận).
-// - giaNhap: đơn giá trên hóa đơn nhà cung cấp, CHƯA thuế (đồng).
-// - thueSuatNhap: phần trăm thuế của lần nhập này, độc lập với thuế bán của SanPham. Kho chỉ lưu, không tính tiền thuế.
-// - tenSP: tên sản phẩm tại lúc nhập, để sau này đổi tên sản phẩm không làm sai phiếu cũ.
-// - hanSuDung: hạn của lô này; null = hàng không có hạn (chỉ cho phép với loại sản phẩm không bắt buộc hạn).
 public class CTHDonNhap {
 
     private String maSP;

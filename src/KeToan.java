@@ -1,16 +1,10 @@
-package ConNguoi;
-
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Scanner;
 
 // Import các lớp quản lý từ thư mục gốc (src) vào package ConNguoi
-import DSNhanVien;
-import DSSanPham;
-import DSHoadon;
-import QuanlyKho;
-import Thongke;
+
 
 public class KeToan extends NhanVien implements Thongke {
 

@@ -66,6 +66,53 @@ public class Giaodien {
         System.out.println("-> Hoàn tất tải dữ liệu!\n");
     }
 
+    public static Scanner getSc() {
+        return sc;
+    }
+
+    public KeToan getKeToan() {
+        return keToan;
+    }
+
+    public ThuNgan getThuNgan() {
+        return thuNgan;
+    }
+
+    public QuanlyKho getQuanLyKho() {
+        return quanLyKho;
+    }
+
+    public QuanLyCuaHang getQuanLyCuaHang() {
+        return quanLyCuaHang;
+    }
+
+    public DSSanPhamKhuyenMai getDsSanPhamKhuyenMai() {
+        return dsSanPhamKhuyenMai;
+    }
+
+    public DSNhaCungCap getDsNhaCungCap() {
+        return dsNhaCungCap;
+    }
+
+    public static void setSc(Scanner sc) {
+        Giaodien.sc = sc;
+    }
+
+    public void setKeToan(KeToan keToan) {
+        this.keToan = keToan;
+    }
+
+    public void setQuanLyKho(QuanlyKho quanLyKho) {
+        this.quanLyKho = quanLyKho;
+    }
+
+    public void setThuNgan(ThuNgan thuNgan) {
+        this.thuNgan = thuNgan;
+    }
+
+    public void setQuanLyCuaHang(QuanLyCuaHang quanLyCuaHang) {
+        this.quanLyCuaHang = quanLyCuaHang;
+    }
     // --- CÁC GETTER ĐỂ CÁC PHÂN HỆ KHÁC DỄ DÀNG TRUY XUẤT ---
 
     public DSSanPham getDsSanPham() { return dsSanPham; }
@@ -75,6 +122,7 @@ public class Giaodien {
     public DSSanPhamKhuyenMai getDsSPKM() { return dsSanPhamKhuyenMai; }
     public DSNhanVien getDsNhanVien() { return dsNhanVien; }
     public DsKhachHang getDsKhachHang() { return dsKhachHang; }
+
 
 
 

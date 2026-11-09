@@ -30,7 +30,7 @@ public abstract class SanPham {
         this.thueSuat = kiemTraThueSuat(thueSuat);
     }
 
-    protected static String kiemTraVanBan(String giaTri, String tenTruong) {
+    public static String kiemTraVanBan(String giaTri, String tenTruong) {
         if (giaTri == null || giaTri.trim().isEmpty()) {
             throw new IllegalArgumentException(tenTruong + " không được để trống.");
         }
@@ -41,7 +41,7 @@ public abstract class SanPham {
         return sach;
     }
 
-    protected static long kiemTraGiaNhap(long giaNhap) {
+    public static long kiemTraGiaNhap(long giaNhap) {
         if (giaNhap < 0 || giaNhap > GIA_TOI_DA) {
             throw new IllegalArgumentException("Giá nhập tham khảo phải từ 0 đến " + GIA_TOI_DA + " đồng (0 = chưa thiết lập).");
         }
@@ -89,7 +89,7 @@ public abstract class SanPham {
         return ma == null ? null : ma.trim().toUpperCase(Locale.ROOT);
     }
 
-    protected static int laySoTuMa(String ma, String tienTo) {
+    public static int laySoTuMa(String ma, String tienTo) {
         if (ma == null || !ma.startsWith(tienTo)) {
             return 0;
         }
