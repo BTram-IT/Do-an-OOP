@@ -4,38 +4,38 @@ import java.time.LocalDateTime;
 import java.util.Scanner;
 import util.Ktradulieu;
 
-public abstract class HoaDon {
-    private String MaHD;
-    private String MaNV;
+public abstract class HoaDon implements IHoaDon{
+    private String maHD;
+    private String maNV;
     private LocalDateTime thoigianin;
 
     public HoaDon() {
-        this.MaHD = "";
-        this.MaNV = "";
+        this.maHD = "";
+        this.maNV = "";
         this.thoigianin = LocalDateTime.now();
     }
 
     public HoaDon(String maHD, String maNV, LocalDateTime thoigianin) {
-        this();
-        setMaHD(maHD);
-        setMaNV(maNV);
-        setThoigianin(thoigianin);
+        this.maHD = maHD;
+        this.maNV = maNV;
+        this.thoigianin = thoigianin;
     }
 
-    public String getMaHD() {
-        return MaHD;
+    public String getmaHoaDon() {
+        return maHD;
     }
-
-    public void setMaHD(String maHD) {
-        this.MaHD = (maHD == null) ? "" : Ktradulieu.chuanHoaMa(maHD);
-    }
-
-    public String getMaNV() {
-        return MaNV;
+    public void setMaHoaDon() {
+        if (maHD == null || maHD.trim().isEmpty()) {
+            throw new IllegalArgumentException("Mã hóa đơn không được để trống!");
+        }
+        this.maHD = maHD;
     }
 
     public void setMaNV(String maNV) {
-        this.MaNV = (maNV == null) ? "" : Ktradulieu.chuanHoaMa(maNV);
+        if (maNV == null || maNV.trim().isEmpty()) {
+            throw new IllegalArgumentException("Mã nhân viên không được để trống!");
+        }
+        this.maNV = maNV.trim();
     }
 
     public LocalDateTime getThoigianin() {
@@ -43,49 +43,27 @@ public abstract class HoaDon {
     }
 
     public void setThoigianin(LocalDateTime thoigianin) {
-        this.thoigianin = (thoigianin == null)
-                ? LocalDateTime.now() : thoigianin;
+        if (thoigianin == null) {
+            throw new IllegalArgumentException("Thời gian in không được để trống!");
+        }
+        this.thoigianin = thoigianin;
     }
 
-    public LocalDateTime getThoiGianIn() {
-        return getThoigianin();
+    public void thanhTien() {
     }
-
-    public void setThoiGianIn(LocalDateTime thoiGianIn) {
-        setThoigianin(thoiGianIn);
-    }
-
-    public LocalDateTime getThoiGian() {
-        return getThoigianin();
-    }
-
-    public void setThoiGian(LocalDateTime thoiGian) {
-        setThoigianin(thoiGian);
-    }
-
     public boolean isDaThanhToan() {
         return false;
     }
 
     public static String nhapMaHD(Scanner sc) {
-        return Ktradulieu.nhapChuoi(
-                sc,
-                "Nhập mã hóa đơn: ",
-                ".+",
-                "Mã hóa đơn không được để trống!"
-        ).toUpperCase();
+        return Ktradulieu.nhapChuoi(sc, "Nhập mã hóa đơn: ", "", "Mã hóa đơn không được để trống!").toUpperCase();
     }
 
     public static String nhapMaNV(Scanner sc) {
-        return Ktradulieu.nhapChuoi(
-                sc,
-                "Nhập mã nhân viên: ",
-                ".+",
-                "Mã nhân viên không được để trống!"
-        ).toUpperCase();
+        return Ktradulieu.nhapChuoi(sc, "Nhập mã nhân viên: ", ".+", "Mã nhân viên không được để trống!").toUpperCase();
     }
 
-    public abstract void inhoadon();
+    public abstract void inhoadon() ;
 
     public abstract long Tongtienhoadon();
 

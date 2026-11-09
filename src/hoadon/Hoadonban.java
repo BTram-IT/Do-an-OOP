@@ -14,6 +14,27 @@ import thanhtoan.TienMat;
 import util.Ktradulieu;
 
 public class Hoadonban extends HoaDon {
+    @Override
+    public void setmaHoaDon() {
+
+    }
+
+    @Override
+    public String getmaHoaDon() {
+
+        return null;
+    }
+
+    @Override
+    public void thanhTien() {
+
+    }
+
+    @Override
+    public void hienThiHoaDon() {
+
+    }
+
     private String MaKH;
     private ArrayList<CTHoaDon> dsChiTietHoaDon;
     private ThanhToan thanhtoan;
@@ -70,15 +91,6 @@ public class Hoadonban extends HoaDon {
         dsKM = km;
     }
 
-    @Override
-    public void setMaHD(String maHD) {
-        super.setMaHD(maHD);
-        if (dsChiTietHoaDon != null) {
-            for (CTHoaDon ct : dsChiTietHoaDon) {
-                if (ct != null) ct.setMaHD(getMaHD());
-            }
-        }
-    }
 
     public void Nhap(Scanner sc) {
         if (sc == null)
