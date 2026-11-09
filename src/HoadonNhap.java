@@ -5,15 +5,28 @@ import java.util.ArrayList;
 import java.util.Locale;
 import java.util.Scanner;
 
-// Hóa đơn nhập kho (thay PhieuNhap cũ), kế thừa HoaDon của nhóm: một lần nhập hàng từ một nhà cung cấp, gồm nhiều dòng CTHDonNhap.
-// Trạng thái: CHO_XAC_NHAN -> DA_XAC_NHAN -> DA_HUY (hoặc CHO_XAC_NHAN -> DA_HUY).
-// Hàng chỉ vào kho ở xacNhan(): mỗi dòng chi tiết tạo MỘT LÔ (LoHang) cho sản phẩm, mang hạn sử dụng và ngày nhập.
-// xacNhan() chỉ chạy khi đang CHO_XAC_NHAN nên mỗi phiếu tạo lô đúng MỘT lần.
-// huy() phiếu đã xác nhận thì xóa các lô của phiếu, và chỉ được khi các lô đó chưa bị xuất.
-// Phần thừa hưởng từ HoaDon: mã hóa đơn (MaHD), mã nhân viên (MaNV), thời gian lập (thoigianin).
-// Phần riêng của nhập kho: ngayNhap (ngày hàng về, dùng cho lô), mã nhà cung cấp, trạng thái, các dòng chi tiết.
-// Nhà cung cấp: hóa đơn chỉ lưu MÃ nhà cung cấp; QuanlyKho kiểm tra mã đó có trong DSNhaCungCap khi tạo phiếu.
 public class HoadonNhap extends HoaDon {
+
+    @Override
+    public void setmaHoaDon(String maHD) {
+
+    }
+
+    @Override
+    public String getmaHoaDon() {
+
+        return null;
+    }
+
+    @Override
+    public void thanhTien() {
+
+    }
+
+    @Override
+    public void hienThiHoaDon() {
+
+    }
 
     public enum TrangThai {
         CHO_XAC_NHAN("Chờ xác nhận"),
@@ -101,7 +114,7 @@ public class HoadonNhap extends HoaDon {
         // HoaDon (nhóm) không có constructor có tham số: gán qua setter
         super();
         // Gọi super.setX (không phải setX của lớp này) vì HoadonNhap chặn việc đổi các giá trị này sau khi tạo
-        super.setMaHD(SanPham.chuanHoaMa(SanPham.kiemTraVanBan(maHoaDon, "Mã hóa đơn nhập")));
+        super.setmaHoaDon(SanPham.chuanHoaMa(SanPham.kiemTraVanBan(maHoaDon, "Mã hóa đơn nhập")));
         super.setMaNV(SanPham.chuanHoaMa(SanPham.kiemTraVanBan(maNhanVien, "Mã nhân viên")));
         super.setThoigianin(thoiGianLap);
         if (thoiGianLap == null) {

@@ -58,9 +58,7 @@ public class ChuyenKhoan extends ThanhToan {
         );
     }
 
-    /**
-     * Thành công khi đã có mã giao dịch ngân hàng và số tài khoản hợp lệ.
-     */
+
     @Override
     public boolean qTrinhThanhToan() {
         boolean hopLe = (maGDNganHang != null && !maGDNganHang.isEmpty())
