@@ -1,256 +1,269 @@
 package hoadon;
 
 import java.time.LocalDate;
-import java.time.format.DateTimeParseException;
+import java.time.format.DateTimeFormatter;
 import java.util.Scanner;
+import sanpham.DSSanPham;
 import sanpham.SanPham;
+import sanpham.ThucAn;
+import sanpham.DoUong;
 import util.Ktradulieu;
 
-public class CTHDonNhap {
+public class CTHDonNhap extends CTHoaDon {
 
-    private String maSP;
-    private String tenSP;
-    private int soLuongNhap;
-    private long giaNhap;
     private double thueSuatNhap;
     private LocalDate hanSuDung;
-    private String maHD;
 
-    public CTHDonNhap(String maSP, String tenSP, int soLuongNhap, long giaNhap, double thueSuatNhap,
-                      LocalDate hanSuDung) {
-        this.maSP = SanPham.chuanHoaMa(SanPham.kiemTraVanBan(maSP, "Mã sản phẩm"));
-        this.tenSP = SanPham.kiemTraVanBan(tenSP, "Tên sản phẩm");
-        if (soLuongNhap <= 0) {
-            throw new IllegalArgumentException("Số lượng nhập phải lớn hơn 0.");
-        }
-        if (giaNhap < 0 || giaNhap > SanPham.GIA_TOI_DA) {
-            throw new IllegalArgumentException("Giá nhập phải từ 0 đến " + SanPham.GIA_TOI_DA + " đồng.");
-        }
-        try {
-            Math.multiplyExact((long) soLuongNhap, giaNhap); // thành tiền không được tràn long
-        } catch (ArithmeticException e) {
-            throw new IllegalArgumentException("Thành tiền (số lượng x giá nhập) quá lớn.");
-        }
-        this.soLuongNhap = soLuongNhap;
-        this.giaNhap = giaNhap;
-        this.thueSuatNhap = SanPham.kiemTraThueSuat(thueSuatNhap);
-        this.hanSuDung = hanSuDung;
-        this.maHD = ""; // sẽ đc gán khi thêm vào hóa đơn nhập
+    private static final DateTimeFormatter DINH_DANG_NGAY = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
+
+    public CTHDonNhap() {
+        super();
+        this.thueSuatNhap = 0.0;
+        this.hanSuDung = LocalDate.now().plusMonths(6);
     }
 
-    // Nhập thông tin chi tiết hóa đơn nhập
-    public static CTHDonNhap Nhap(Scanner sc) {
-        if (sc == null) {
-            throw new IllegalArgumentException("Scanner không hợp lệ!");
-        }
 
-        // Nhập mã sản phẩm
-        String maSP = Ktradulieu.nhapChuoi(
-                sc,
-                "Nhập mã sản phẩm (TA### hoặc DU###): ",
-                "(?i)(TA|DU)\\d{3}",
-                "Mã sản phẩm không hợp lệ!"
-        );
+    public CTHDonNhap(String maHD, String maSP, String tenSP, int soLuongNhap,
+                    double donGiaNhap, double thueSuatNhap, LocalDate hanSuDung) {
+        super(maHD, maSP, tenSP, soLuongNhap, donGiaNhap);
+        setThueSuatNhap(thueSuatNhap);
+        setHanSuDung(hanSuDung);
+    }
 
-        // Nhập tên sản phẩm
-        String tenSP = Ktradulieu.nhapChuoi(
-                sc,
-                "Nhập tên sản phẩm: ",
-                ".+",
-                "Tên sản phẩm không được để trống!"
-        );
 
-        // Nhập số lượng
-        long soLuong;
-        do {
-            soLuong = Ktradulieu.nhapSoNguyen(
-                    sc,
-                    "Nhập số lượng nhập: "
-            );
+    public CTHDonNhap(String maHD, SanPham sp, int soLuongNhap, double donGiaNhap, LocalDate hanSuDung) {
+        super(maHD, sp.getMaSP(), sp.getTenSP(), soLuongNhap, donGiaNhap > 0 ? donGiaNhap : sp.getDonGiaNhap());
+        setThueSuatNhap(sp.getPhanTramThue());
+        setHanSuDung(hanSuDung);
+    }
 
-            if (soLuong > Integer.MAX_VALUE) {
-                System.out.println("Số lượng quá lớn! Vui lòng nhập lại.");
-            }
-        } while (soLuong > Integer.MAX_VALUE);
 
-        // Nhập giá nhập, cho phép bằng 0
-        long giaNhap;
+    public int getSoLuongNhap() { return getSoLuong(); }
+    public void setSoLuongNhap(int sl) { setSoLuong(sl); }
+
+    public double getDonGiaNhap() { return getDonGia(); }
+    public void setDonGiaNhap(double dg) { setDonGia(dg); }
+
+
+    public boolean nhapThongTin(Scanner sc, String maHoaDon, DSSanPham dsSP) {
+        if (sc == null) sc = new Scanner(System.in);
+        setMaHD(maHoaDon);
+
+        SanPham spDuocChon = null;
 
         while (true) {
-            String gia = Ktradulieu.nhapChuoi(
-                    sc,
-                    "Nhập giá nhập: ",
-                    "\\d+",
-                    "Giá nhập phải là số nguyên không âm!"
-            );
+            System.out.print("Nhập mã sản phẩm cần nhập kho (Ví dụ: TA001, DU001): ");
+            String input = sc.nextLine().trim();
 
             try {
-                giaNhap = Long.parseLong(gia);
-
-                if (giaNhap > SanPham.GIA_TOI_DA) {
-                    System.out.println(
-                            "Giá nhập không được vượt quá "
-                                    + SanPham.GIA_TOI_DA + " đồng!"
-                    );
+                String maChuan = Ktradulieu.chuanHoaMa(input);
+                if (!maChuan.startsWith("TA") && !maChuan.startsWith("DU") && !maChuan.startsWith("SP")) {
+                    System.out.println("[Lỗi] Mã sản phẩm phải bắt đầu bằng 'TA' (Thức ăn) hoặc 'DU' (Đồ uống)!");
                     continue;
                 }
 
-                break;
-            } catch (NumberFormatException e) {
-                System.out.println("Giá nhập quá lớn! Vui lòng nhập lại.");
-            }
-        }
+                if (dsSP != null) {
+                    spDuocChon = dsSP.timKiem(maChuan);
 
-        // Nhập thuế suất, cho phép bằng 0
-        double thueSuat;
+                    // Truong hop 1: San pham da co trong kho
+                    if (spDuocChon != null) {
+                        setMaSP(spDuocChon.getMaSP());
+                        setTenSP(spDuocChon.getTenSP());
+                        setDonGia(spDuocChon.getDonGiaNhap());
+                        setThueSuatNhap(spDuocChon.getPhanTramThue());
+                        System.out.println("-> Đã nhận diện sản phẩm có sẵn: [" + this.maSP + "] " + this.tenSP);
+                        break;
+                    }
 
-        while (true) {
-            String thue = Ktradulieu.nhapChuoi(
-                    sc,
-                    "Nhập thuế suất nhập (%): ",
-                    "\\d+(\\.\\d+)?",
-                    "Thuế suất phải là số không âm!"
-            );
+                    // Truong hop 2: San pham moi chua co trong kho -> Trinh Quan ly duyet
+                    System.out.println("[Thông báo] Mã sản phẩm '" + maChuan + "' CHƯA TỒN TẠI trong danh mục kho!");
+                    System.out.print("Bạn có muốn lập hồ sơ sản phẩm mới để gửi Quản lý duyệt không? (1: Có / 0: Hủy bỏ): ");
+                    String chon = sc.nextLine().trim();
+                    if (!chon.equals("1")) {
+                        return false;
+                    }
 
-            try {
-                thueSuat = Double.parseDouble(thue);
+                    SanPham spMoi = taoHoSoSanPhamMoi(sc, maChuan);
+                    if (spMoi == null) return false;
 
-                if (!Double.isFinite(thueSuat)) {
-                    System.out.println("Thuế suất không hợp lệ!");
-                    continue;
+                    boolean duyet = pheDuyetQuanLy(sc, spMoi);
+                    if (!duyet) {
+                        System.out.println("[Từ chối] Quản lý KHÔNG DUYỆT sản phẩm mới này vào kho! Hủy bỏ dòng nhập hàng.");
+                        return false;
+                    }
+
+                    spMoi.setTrangThaiDuyet("Đã duyệt");
+                    dsSP.themSP(spMoi);
+                    System.out.println("[Thành công] Quản lý ĐÃ DUYỆT! Sản phẩm [" + spMoi.getMaSP() + "] đã được thêm vào kho.");
+
+                    setMaSP(spMoi.getMaSP());
+                    setTenSP(spMoi.getTenSP());
+                    setDonGia(spMoi.getDonGiaNhap());
+                    setThueSuatNhap(spMoi.getPhanTramThue());
+                    break;
+                } else {
+                    setMaSP(maChuan);
+                    String tenNhap = Ktradulieu.nhapChuoi(sc, "Nhập tên sản phẩm: ", ".+", "Tên không được để trống!");
+                    setTenSP(tenNhap);
+                    break;
                 }
-
-                thueSuat = SanPham.kiemTraThueSuat(thueSuat);
-                break;
-
-            } catch (NumberFormatException e) {
-                System.out.println("Thuế suất không hợp lệ!");
             } catch (IllegalArgumentException e) {
                 System.out.println(e.getMessage());
             }
         }
 
-        // Nhập hạn sử dụng, được phép bỏ trống
-        LocalDate hanSuDung = null;
-
+        // Nhap so luong nhap
         while (true) {
-            System.out.println(
-                    "Nhập hạn sử dụng (yyyy-MM-dd), bỏ trống nếu không có:"
-            );
-
-            String ngay = sc.nextLine().trim();
-
-            if (ngay.isEmpty()) {
-                break;
-            }
-
             try {
-                hanSuDung = LocalDate.parse(ngay);
+                int sl = (int) Ktradulieu.nhapSoNguyen(sc, "Nhập số lượng nhập kho: ");
+                setSoLuong(sl);
                 break;
-            } catch (DateTimeParseException e) {
-                System.out.println(
-                        "Ngày không hợp lệ! Nhập theo dạng yyyy-MM-dd."
-                );
+            } catch (IllegalArgumentException e) {
+                System.out.println(e.getMessage());
             }
         }
 
-        return new CTHDonNhap(
-                maSP,
-                tenSP,
-                (int) soLuong,
-                giaNhap,
-                thueSuat,
-                hanSuDung
-        );
+        // Don gia nhap
+        while (true) {
+            try {
+                System.out.print("Đơn giá nhập gốc là: " + Ktradulieu.dinhDangTien(this.donGia)
+                        + ". Nhấn ENTER để giữ nguyên, hoặc nhập đơn giá mới: ");
+                String dgInput = sc.nextLine().trim();
+                if (!dgInput.isEmpty()) {
+                    double dgMoi = Double.parseDouble(dgInput);
+                    setDonGia(dgMoi);
+                }
+                break;
+            } catch (NumberFormatException e) {
+                System.out.println("[Lỗi] Đơn giá phải là số hợp lệ!");
+            } catch (IllegalArgumentException e) {
+                System.out.println(e.getMessage());
+            }
+        }
+
+        // Han su dung
+        while (true) {
+            try {
+                LocalDate hsd = Ktradulieu.nhapNgay(sc, "Nhập hạn sử dụng cho lô hàng mới (dd/MM/yyyy): ");
+                setHanSuDung(hsd);
+                break;
+            } catch (IllegalArgumentException e) {
+                System.out.println(e.getMessage());
+            }
+        }
+
+        return true;
     }
 
-    public String getMaHD() {
-    return maHD;
-}
+    private SanPham taoHoSoSanPhamMoi(Scanner sc, String maSP) {
+        System.out.println("\n--- KHAI BÁO HỒ SƠ SẢN PHẨM MỚI ---");
+        String ten = Ktradulieu.nhapChuoi(sc, "Nhập tên sản phẩm mới: ", ".+", "Tên không được để trống!");
+        double giaNhap = Ktradulieu.nhapSoThucKhongAm(sc, "Nhập đơn giá nhập dự kiến (VND): ");
+        double giaBan = Ktradulieu.nhapSoThucKhongAm(sc, "Nhập đơn giá bán niêm yết (VND): ");
+        String dvt = Ktradulieu.nhapChuoi(sc, "Nhập đơn vị tính (gói, lon, chai...): ", ".+", "DVT không được để trống!");
+        double thue = Ktradulieu.nhapSoThucKhongAm(sc, "Nhập thuế suất VAT (%): ");
+        LocalDate nsx = Ktradulieu.nhapNgay(sc, "Nhập ngày sản xuất (dd/MM/yyyy): ");
+        LocalDate hsd = Ktradulieu.nhapNgay(sc, "Nhập hạn sử dụng (dd/MM/yyyy): ");
 
-    // Gắn mã hóa đơn khi thêm chi tiết vào hóa đơn nhập
-    void ganMaHD(String maHD) {
-       if (this.maHD.isEmpty()) {
-        this.maHD = maHD;
-       }
-   }
+        String nsxStr = nsx.format(DINH_DANG_NGAY);
+        String hsdStr = hsd.format(DINH_DANG_NGAY);
 
-    public String getMaSP() {
-        return maSP;
+        // Khởi tạo đối tượng tương ứng
+        SanPham spMoi;
+        if (maSP.startsWith("DU")) {
+            spMoi = new DoUong();
+        } else {
+            spMoi = new ThucAn();
+        }
+
+        spMoi.setMaSP(maSP);
+        spMoi.setTenSP(ten);
+        spMoi.setDonGiaNhap(giaNhap);
+        spMoi.setDonGiaBan(giaBan);
+        spMoi.setSoLuongTon(0);
+        spMoi.setDonViTinh(dvt);
+        spMoi.setHSD(nsxStr, hsdStr);
+        spMoi.setPhanTramThue(thue);
+        spMoi.setTrangThaiDuyet("Chờ duyệt");
+        spMoi.setDaXoa(false);
+
+        return spMoi;
     }
 
-    public String getTenSP() {
-        return tenSP;
+    private boolean pheDuyetQuanLy(Scanner sc, SanPham spMoi) {
+        System.out.println("\n================ PHIẾU TRÌNH DUYỆT SẢN PHẨM MỚI ================");
+        System.out.println("Mã SP     : " + spMoi.getMaSP());
+        System.out.println("Tên SP    : " + spMoi.getTenSP());
+        System.out.println("Giá nhập  : " + Ktradulieu.dinhDangTien(spMoi.getDonGiaNhap()));
+        System.out.println("Giá bán   : " + Ktradulieu.dinhDangTien(spMoi.getDonGiaBan()));
+        System.out.println("----------------------------------------------------------------");
+        System.out.print("👉 Ý KIẾN QUẢN LÝ (1: Đồng ý duyệt vào kho  |  0: Từ chối): ");
+        String yKien = sc.nextLine().trim();
+        return yKien.equals("1");
     }
 
-    public int getSoLuongNhap() {
-        return soLuongNhap;
+    // =========================================================================
+    // TÍNH TOÁN TIỀN (TRIỂN KHAI TỪ LỚP CHA CTHoaDon)
+    // =========================================================================
+    @Override
+    public double tinhTienHang() {
+        return this.soLuong * this.donGia;
     }
 
-    public long getGiaNhap() {
-        return giaNhap;
+    @Override
+    public double tinhTienThue() {
+        return tinhTienHang() * (this.thueSuatNhap / 100.0);
     }
 
-    public double getThueSuatNhap() {
-        return thueSuatNhap;
+    @Override
+    public double tinhThanhTien() {
+        return tinhTienHang() + tinhTienThue();
     }
 
-    // null = không có hạn sử dụng
-    public LocalDate getHanSuDung() {
-        return hanSuDung;
-    }
-
-    // Thành tiền = số lượng x giá nhập (chưa thuế)
-    public long getThanhTien() {
-        return soLuongNhap * giaNhap; // đã kiểm tra không tràn ở constructor
-    }
-
-    // Tổng tiền của chi tiết hóa đơn nhập
-    public long Tongtien() { 
-        return getThanhTien();
-    }
-
-    // Tiền thuế nhập của dòng = thành tiền x thueSuatNhap%, làm tròn đến đồng
-    public long tienThueNhap() {
-        return Math.round(getThanhTien() * thueSuatNhap / 100.0);
-    }
-
-    // Dòng ghi file: CT|maSP|tenSP|soLuongNhap|giaNhap|thueSuatNhap|hanSuDung
+    @Override
     public String toDongFile() {
-        String hanChuoi = "";
-        if (hanSuDung != null) {
-            hanChuoi = hanSuDung.toString();
-        }
-        return "CT|" + maSP + "|" + tenSP + "|" + soLuongNhap + "|" + giaNhap + "|" + thueSuatNhap + "|" + hanChuoi;
+        String hsdStr = (this.hanSuDung != null) ? this.hanSuDung.format(DINH_DANG_NGAY) : "";
+        return String.format("%s;%s;%s;%d;%.0f;%.2f;%s",
+                maHD, maSP, tenSP, soLuong, donGia, thueSuatNhap, hsdStr);
     }
 
-    // Đọc lại từ dòng file, sai định dạng thì ném IllegalArgumentException
     public static CTHDonNhap tuDongFile(String dong) {
-        String[] t = dong.split("\\|", -1);
-        if (t.length != 7 || !t[0].equals("CT")) {
-            throw new IllegalArgumentException("Dòng chi tiết cần dạng CT|maSP|tenSP|soLuong|giaNhap|thueSuat|hanSuDung.");
+        if (dong == null || dong.trim().isEmpty()) return null;
+        String[] p = dong.split(";");
+        if (p.length >= 7) {
+            String maHD = p[0].trim();
+            String maSP = p[1].trim();
+            String tenSP = p[2].trim();
+            int sl = Integer.parseInt(p[3].trim());
+            double dg = Double.parseDouble(p[4].trim());
+            double thue = Double.parseDouble(p[5].trim());
+            LocalDate hsd = LocalDate.parse(p[6].trim(), DINH_DANG_NGAY);
+            return new CTHDonNhap(maHD, maSP, tenSP, sl, dg, thue, hsd);
         }
-        LocalDate han = null;
-        if (!t[6].isEmpty()) {
-            han = LocalDate.parse(t[6]);
+        return null;
+    }
+
+    public double getThueSuatNhap() { return thueSuatNhap; }
+    public void setThueSuatNhap(double thueSuatNhap) {
+        if (thueSuatNhap < 0 || thueSuatNhap > 100) throw new IllegalArgumentException("[Lỗi] Thuế suất phải từ 0% đến 100%!");
+        this.thueSuatNhap = thueSuatNhap;
+    }
+
+    public LocalDate getHanSuDung() { return hanSuDung; }
+    public void setHanSuDung(LocalDate hanSuDung) {
+        if (hanSuDung == null) throw new IllegalArgumentException("[Lỗi] Hạn sử dụng không được để trống!");
+        if (hanSuDung.isBefore(LocalDate.now())) {
+            throw new IllegalArgumentException("[Lỗi Logic] Hàng nhập kho không được là hàng đã hết hạn (" + hanSuDung.format(DINH_DANG_NGAY) + ")!");
         }
-        return new CTHDonNhap(t[1], t[2], Integer.parseInt(t[3]), Long.parseLong(t[4]), Double.parseDouble(t[5]), han);
+        this.hanSuDung = hanSuDung;
     }
 
     @Override
     public String toString() {
-        String han = "không HSD";
-        if (hanSuDung != null) {
-            han = "HSD " + SanPham.dinhDangNgay(hanSuDung);
-       }
-
-        return "MaHD: " + maHD
-            + " | MaSP: " + maSP
-            + " | TenSP: " + tenSP
-            + " | So luong: " + soLuongNhap
-            + " | Gia ban: " + SanPham.dinhDangTien(giaNhap)
-            + " | Tong tien: " + SanPham.dinhDangTien(Tongtien())
-            + " | Thuế nhập: " + thueSuatNhap + "%"
-            + " | " + han;
+        String hsdStr = (this.hanSuDung != null) ? this.hanSuDung.format(DINH_DANG_NGAY) : "N/A";
+        return String.format("%-8s | %-20s | SL: %-4d | Đơn giá: %-12s | Thuế: %-4.1f%% | HSD: %-10s | Thành tiền: %s",
+                maSP, tenSP, soLuong, Ktradulieu.dinhDangTien(donGia),
+                thueSuatNhap, hsdStr, Ktradulieu.dinhDangTien(tinhThanhTien()));
     }
 }

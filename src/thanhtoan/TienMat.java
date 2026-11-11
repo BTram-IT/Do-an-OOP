@@ -1,6 +1,7 @@
 package thanhtoan;
 
 import java.util.Scanner;
+import person.NhanVien;
 import util.Ktradulieu;
 
 public class TienMat extends ThanhToan {
@@ -9,13 +10,16 @@ public class TienMat extends ThanhToan {
     private double tienThoi;
 
     public TienMat() {
-        this("");
+        super();
+        this.loaiThanhToan = "TienMat";
+        this.tienKhachDua = 0.0;
+        this.tienThoi = 0.0;
     }
 
-    public TienMat(String maGD) {
-        super(maGD, "Tiền mặt");
-        this.tienKhachDua = 0;
-        this.tienThoi = 0;
+    public TienMat(String maHD, double soTien, NhanVien nvDangDangNhap) {
+        super(maHD, "TienMat", soTien, nvDangDangNhap);
+        this.tienKhachDua = 0.0;
+        this.tienThoi = 0.0;
     }
 
     @Override
@@ -27,50 +31,81 @@ public class TienMat extends ThanhToan {
     @Override
     public void nhap(Scanner sc) {
         if (sc == null) sc = new Scanner(System.in);
-        this.tienKhachDua = Ktradulieu.nhapSoThucKhongAm(sc, "Nhập số tiền khách đưa: ");
-    }
 
-    @Override
-    public boolean qTrinhThanhToan() {
-        boolean duTien = tienKhachDua >= soTien;
-        tienThoi = duTien ? (tienKhachDua - soTien) : 0;
-        return ketThuc(duTien);
-    }
-
-    // Phương thức thanh toán tương thích với Hoadonban
-    public boolean thanhToan(Scanner sc, long tongTien) {
-        this.soTien = (double) tongTien;
-        System.out.println("Tổng tiền cần trả: " + Ktradulieu.dinhDangTien(tongTien));
+        System.out.println("\n========== THANH TOÁN TIỀN MẶT ==========");
+        System.out.println("• Mã giao dịch       : [" + this.maGD + "]");
+        System.out.println("• Thu ngân phụ trách : [" + this.maNV + "]");
+        System.out.println("• Tổng tiền cần thu  : " + Ktradulieu.dinhDangTien(this.soTien));
 
         while (true) {
-            nhap(sc);
-            if (qTrinhThanhToan()) {
-                return true;
-            }
-            System.out.printf("Khách đưa thiếu %,.0f VND! Vui lòng đưa thêm tiền hoặc nhập lại!%n", (soTien - tienKhachDua));
-            System.out.print("Bạn có muốn nhập lại số tiền khách đưa? (y/n): ");
-            String retry = sc.nextLine().trim().toLowerCase();
-            if (!retry.equals("y") && !retry.equals("yes") && !retry.equals("c")) {
-                return false;
+            try {
+                double tienDua = Ktradulieu.nhapSoThucKhongAm(sc, "Nhập số tiền khách đưa: ");
+                setTienKhachDua(tienDua);
+
+                if (this.tienKhachDua < this.soTien) {
+                    double thieu = this.soTien - this.tienKhachDua;
+                    System.out.println("Khách đưa thiếu: " + Ktradulieu.dinhDangTien(thieu) + "! Vui lòng nhận thêm tiền hoặc nhập lại.");
+                    continue;
+                }
+
+                this.tienThoi = this.tienKhachDua - this.soTien;
+                System.out.println("Tiền thừa thối lại khách: " + Ktradulieu.dinhDangTien(this.tienThoi));
+
+                qTrinhThanhToan();
+                break;
+            } catch (IllegalArgumentException e) {
+                System.out.println( e.getMessage());
             }
         }
     }
+    @Override
+    public boolean qTrinhThanhToan() {
+        if (this.tienKhachDua >= this.soTien && this.soTien > 0) {
+            ketThuc(true);
+            System.out.println("ĐÃ HOÀN TẤT THANH TOÁN TIỀN MẶT THÀNH CÔNG.");
+            return true;
+        } else {
+            ketThuc(false);
+            return false;
+        }
+    }
 
-    public boolean thanhToan(long tongTien) {
+    public boolean thanhToan(Scanner sc, double tongTien) {
+        this.soTien = tongTien;
+        nhap(sc);
+        return isThanhCong();
+    }
+
+    public boolean thanhToan(double tongTien) {
         return thanhToan(new Scanner(System.in), tongTien);
     }
 
-    public long tienThua(long tongTien) {
-        return (long) Math.max(0, tienKhachDua - tongTien);
+    public double getTienKhachDua() {
+        return tienKhachDua;
     }
 
-    public double getTienKhachDua() { return tienKhachDua; }
-    public void setTienKhachDua(double tienKhachDua) { this.tienKhachDua = tienKhachDua; }
+    public void setTienKhachDua(double tienKhachDua) {
+        if (tienKhachDua < 0) {
+            throw new IllegalArgumentException("[Lỗi] Số tiền khách đưa không được âm! Nhận: " + tienKhachDua);
+        }
+        this.tienKhachDua = tienKhachDua;
+    }
 
-    public double getTienThoi() { return tienThoi; }
+    public double getTienThoi() {
+        return tienThoi;
+    }
+
+    public void setTienThoi(double tienThoi) {
+        if (tienThoi < 0) {
+            throw new IllegalArgumentException("[Lỗi] Tiền thối không được âm!");
+        }
+        this.tienThoi = tienThoi;
+    }
 
     @Override
     public String toString() {
-        return super.toString() + String.format(" | Khách đưa: %,.0f VND | Tiền thối: %,.0f VND", tienKhachDua, tienThoi);
+        return super.toString()
+                + " | Khách đưa: " + Ktradulieu.dinhDangTien(tienKhachDua)
+                + " | Tiền thối: " + Ktradulieu.dinhDangTien(tienThoi);
     }
 }

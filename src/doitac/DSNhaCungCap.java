@@ -2,182 +2,202 @@ package doitac;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Scanner;
+
+import person.Nguoidung;
+import person.QuanLyCuaHang;
+import person.Giamdoc;
 import util.Ktradulieu;
 
 public class DSNhaCungCap {
-    private ArrayList<NhaCungCap> danhSachNhaCungCap = new ArrayList<>();
+    private List<NhaCungCap> danhSach;
 
-    public ArrayList<NhaCungCap> getDanhSachNhaCungCap() {
-        return new ArrayList<>(danhSachNhaCungCap);
+    public DSNhaCungCap() {
+        this.danhSach = new ArrayList<>();
+    }
+
+    public List<NhaCungCap> getDanhSach() {
+        return danhSach;
+    }
+
+    public int getSoLuong() {
+        return danhSach.size();
+    }
+
+    public NhaCungCap get(int index) {
+        if (index < 0 || index >= danhSach.size()) return null;
+        return danhSach.get(index);
+    }
+
+    public String sinhMaTuDong(String tienTo) {
+        int maxSo = 0;
+        for (NhaCungCap ncc : danhSach) {
+            int so = Ktradulieu.laySoTuMa(ncc.getMaNCC(), tienTo);
+            if (so > maxSo) {
+                maxSo = so;
+            }
+        }
+        return Ktradulieu.taoMa(tienTo + "%03d", maxSo + 1);
     }
 
     // Thêm nhà cung cấp
-    public void them(NhaCungCap ncc) {
-        if (ncc == null)
-            throw new IllegalArgumentException("Nhà cung cấp không hợp lệ!");
-
-        String ma = Ktradulieu.chuanHoaMa(ncc.getMaDT());
-
-        if (ma.isEmpty())
-            throw new IllegalArgumentException("Mã không được rỗng!");
-
-        if (tonTai(ma))
-            throw new IllegalArgumentException("Mã nhà cung cấp đã tồn tại!");
-
-        danhSachNhaCungCap.add(ncc);
+    public boolean them(NhaCungCap ncc) {
+        if (ncc == null) return false;
+        if (timKiem(ncc.getMaNCC()) != null) {
+            System.out.println("Mã nhà cung cấp đã tồn tại!");
+            return false;
+        }
+        danhSach.add(ncc);
+        return true;
     }
 
-    // Tìm theo mã
-    public NhaCungCap timTheoMa(String ma) {
-        String maChuan = Ktradulieu.chuanHoaMa(ma);
-
-        if (maChuan.isEmpty()) return null;
-
-        for (NhaCungCap ncc : danhSachNhaCungCap) {
-            if (maChuan.equals(Ktradulieu.chuanHoaMa(ncc.getMaDT())))
+    public boolean themNCC(NhaCungCap ncc) {
+        return them(ncc);
+    }
+    //Phát sinh lỗi
+    public NhaCungCap timKiem(String maHoacTen) {
+        if (maHoacTen == null || maHoacTen.trim().isEmpty()) return null;
+        String key = maHoacTen.trim();
+        for (NhaCungCap ncc : danhSach) {
+            if (ncc.getMaNCC().equalsIgnoreCase(key) || ncc.getTenNCC().toLowerCase().contains(key.toLowerCase())) {
                 return ncc;
+            }
         }
-
         return null;
     }
 
-    // Tìm theo tên
-    public ArrayList<NhaCungCap> timTheoTen(String ten) {
-        ArrayList<NhaCungCap> kq = new ArrayList<>();
-
-        if (ten == null || ten.trim().isEmpty()) return kq;
-
-        String tuKhoa = ten.trim().toLowerCase();
-
-        for (NhaCungCap ncc : danhSachNhaCungCap) {
-            if (ncc.getTenDT().toLowerCase().contains(tuKhoa))
-                kq.add(ncc);
+    // 4. Xóa nhà cung cấp (Chỉ Quản lý hoặc Giám đốc, dùng Soft Delete để giữ lịch sử phiếu nhập)
+    public boolean xoa(Nguoidung nguoiThucHien, String maNCC) {
+        if (!(nguoiThucHien instanceof QuanLyCuaHang || nguoiThucHien instanceof Giamdoc)) {
+            System.out.println("[TỪ CHỐI TRUY CẬP] Chỉ Quản Lý hoặc Giám Đốc mới có quyền xóa nhà cung cấp!");
+            return false;
         }
 
-        return kq;
-    }
+        NhaCungCap ncc = timKiem(maNCC);
+        if (ncc == null) {
+            System.out.println("Không tìm thấy nhà cung cấp: " + maNCC);
+            return false;
+        }
 
-    // Kiểm tra tồn tại
-    public boolean tonTai(String ma) {
-        return timTheoMa(ma) != null;
-    }
-
-    // Sửa nhà cung cấp
-    public boolean sua(String ma, NhaCungCap moi) {
-        if (moi == null || ma == null) return false;
-
-        NhaCungCap cu = timTheoMa(ma);
-
-        if (cu == null) return false;
-
-        String maMoi = Ktradulieu.chuanHoaMa(moi.getMaDT());
-        String maCu = Ktradulieu.chuanHoaMa(cu.getMaDT());
-
-        if (!maCu.equals(maMoi))
-            throw new IllegalArgumentException("Không được thay đổi mã nhà cung cấp!");
-
-        danhSachNhaCungCap.set(danhSachNhaCungCap.indexOf(cu), moi);
+        ncc.setDaXoa(true);
+        System.out.println("Đã chuyển nhà cung cấp [" + maNCC + "] sang trạng thái [NGỪNG HỢP TÁC]. Dữ liệu phiếu nhập cũ vẫn được bảo lưu.");
         return true;
     }
 
-    // Xóa nhà cung cấp
-    public boolean xoa(String ma) {
-        NhaCungCap ncc = timTheoMa(ma);
-
-        if (ncc == null) return false;
-
-        danhSachNhaCungCap.remove(ncc);
-        return true;
+    public boolean xoaNCC(String maNCC, Nguoidung nguoiThucHien) {
+        return xoa(nguoiThucHien, maNCC);
     }
 
-    // Xuất danh sách
-    public void xuat() {
-        if (danhSachNhaCungCap.isEmpty()) {
-            System.out.println("(Danh sách nhà cung cấp trống)");
-            return;
+    // sửa
+    public boolean sua(Scanner sc, Nguoidung nguoiThucHien, String maNCC) {
+        if (!(nguoiThucHien instanceof QuanLyCuaHang || nguoiThucHien instanceof Giamdoc)) {
+            System.out.println("[TỪ CHỐI TRUY CẬP] Chỉ Quản Lý hoặc Giám Đốc mới có quyền sửa nhà cung cấp!");
+            return false;
         }
 
-        System.out.println("===== DANH SÁCH NHÀ CUNG CẤP =====");
+        NhaCungCap ncc = timKiem(maNCC);
+        if (ncc == null) {
+            System.out.println("Không tìm thấy nhà cung cấp: " + maNCC);
+            return false;
+        }
 
-        for (NhaCungCap ncc : danhSachNhaCungCap)
-            System.out.println(ncc);
+        while (true) {
+            System.out.println("\n--- SỬA THÔNG TIN NHÀ CUNG CẤP: " + ncc.getTenNCC() + " [" + ncc.getMaNCC() + "] ---");
+            System.out.println("1. Sửa Tên nhà cung cấp");
+            System.out.println("2. Sửa Số điện thoại");
+            System.out.println("3. Sửa Địa chỉ");
+            System.out.println("4. Sửa Email");
+            System.out.println("0. Hoàn tất chỉnh sửa (Thoát)");
+
+            int chon = Ktradulieu.luaChon(sc, "Chọn trường cần sửa (0-4): ", 0, 4);
+            try {
+                switch (chon) {
+                    case 1:
+                        String tenMoi = Ktradulieu.nhapChuoiKhongRong(sc, "Nhập tên mới: ");
+                        ncc.setTenNCC(tenMoi);
+                        System.out.println(">> Đã cập nhật tên nhà cung cấp!");
+                        break;
+                    case 2:
+                        System.out.print("Nhập số điện thoại mới: ");
+                        String sdtMoi = sc.nextLine().trim();
+                        ncc.setSdt(sdtMoi);
+                        System.out.println(">> Đã cập nhật số điện thoại!");
+                        break;
+                    case 3:
+                        String diaChiMoi = Ktradulieu.nhapChuoiKhongRong(sc, "Nhập địa chỉ mới: ");
+                        ncc.setDiaChi(diaChiMoi);
+                        System.out.println(">>Đã cập nhật địa chỉ!");
+                        break;
+                    case 4:
+                        String emailMoi = Ktradulieu.nhapChuoi(sc, "Nhập email mới: ", Ktradulieu.emailRegex, "Email không hợp lệ!");
+                        ncc.setEmail(emailMoi);
+                        System.out.println(">> Đã cập nhật email!");
+                        break;
+                    case 0:
+                        return true;
+                }
+            } catch (IllegalArgumentException e) {
+                System.out.println("Lỗi dữ liệu: " + e.getMessage());
+            }
+        }
     }
 
-    // Ghi file
-    public void ghiFile(String filePath) {
-        try (BufferedWriter bw = new BufferedWriter(
-                new OutputStreamWriter(
-                        new FileOutputStream(filePath), StandardCharsets.UTF_8))) {
+    public boolean suaNCC(Scanner sc, String maNCC, Nguoidung nguoiThucHien) {
+        return sua(sc, nguoiThucHien, maNCC);
+    }
 
-            for (NhaCungCap ncc : danhSachNhaCungCap) {
-                bw.write(ncc.toDongFile());
+    public void xuatDanhSach() {
+        System.out.println("\n================ DANH SÁCH NHÀ CUNG CẤP ================");
+        for (NhaCungCap ncc : danhSach) {
+            System.out.println(ncc.toString());
+        }
+        System.out.println("Tổng số nhà cung cấp: " + danhSach.size());
+    }
+
+    // ghi
+    public void ghiFile(String duongDan) {
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(duongDan))) {
+            for (NhaCungCap ncc : danhSach) {
+                bw.write(ncc.toFileString());
                 bw.newLine();
             }
-
-            System.out.println("Lưu danh sách nhà cung cấp thành công!");
-
+            System.out.println("Đã lưu danh sách nhà cung cấp vào file: " + duongDan);
         } catch (IOException e) {
-            System.out.println("Lỗi ghi file: " + e.getMessage());
+            System.out.println(" Lỗi ghi file nhà cung cấp: " + e.getMessage());
         }
     }
 
-    // Đọc file
-    public void docFile(String filePath) {
-        ArrayList<NhaCungCap> dsTam = new ArrayList<>();
-        int thanhCong = 0;
-        int soDong = 0;
-
-        try (BufferedReader br = new BufferedReader(
-                new InputStreamReader(
-                        new FileInputStream(filePath), StandardCharsets.UTF_8))) {
-
+    public void docFile(String duongDan) {
+        File file = new File(duongDan);
+        if (!file.exists()) return;
+        danhSach.clear();
+        try (BufferedReader br = new BufferedReader(new FileReader(file))) {
             String dong;
-
             while ((dong = br.readLine()) != null) {
-                soDong++;
+                dong = dong.trim();
+                if (dong.isEmpty() || dong.startsWith("#")) continue;
+                String[] p = dong.split(";");
+                if (p.length >= 6) {
+                    String ma = p[0].trim();
+                    String ten = p[1].trim();
+                    String sdt = p[2].trim();
+                    String diaChi = p[3].trim();
+                    String email = p[4].trim();
+                    boolean daXoa = Boolean.parseBoolean(p[5].trim());
 
-                if (dong.trim().isEmpty()) continue;
-
-                try {
-                    NhaCungCap ncc = NhaCungCap.tuDongFile(dong);
-
-                    boolean trung = false;
-
-                    for (NhaCungCap item : dsTam) {
-                        if (Ktradulieu.chuanHoaMa(item.getMaDT())
-                                .equals(Ktradulieu.chuanHoaMa(ncc.getMaDT()))) {
-                            trung = true;
-                            break;
-                        }
-                    }
-
-                    if (trung) {
-                        System.out.println("Bỏ qua dòng " + soDong + ": Mã bị trùng!");
-                        continue;
-                    }
-
-                    dsTam.add(ncc);
-                    thanhCong++;
-
-                } catch (RuntimeException e) {
-                    System.out.println("Lỗi dòng " + soDong + ": " + e.getMessage());
+                    NhaCungCap ncc = new NhaCungCap(ma, ten, sdt, diaChi, email, daXoa);
+                    danhSach.add(ncc);
                 }
             }
-
-            danhSachNhaCungCap = dsTam;
-
-            System.out.println("Đọc file hoàn tất. Đã thêm: "
-                    + thanhCong + " nhà cung cấp.");
-
-        } catch (IOException e) {
-            System.out.println("Lỗi đọc file: " + e.getMessage());
+            System.out.println("Đã đọc thành công " + danhSach.size() + " nhà cung cấp từ file: " + duongDan);
+        } catch (Exception e) {
+            System.out.println("Lỗi đọc file nhà cung cấp: " + e.getMessage());
         }
     }
 }
