@@ -1,90 +1,109 @@
 package sanpham;
 
-import java.util.Locale;
+import util.Ktradulieu;
+
+import java.util.Scanner;
 
 public class ThucAn extends SanPham {
+    private String thanhPhan;
+    private String baoQuan;
+    private String xuatXu;
+    private boolean laDoChay;
+    Scanner sc = new Scanner(System.in);
 
-    public static final String TIEN_TO_MA = "TA";
-    private static int boDem = 0;
-
-    private String nhaSanXuat;
-
-    // Constructor
-    public ThucAn(String maSP, String tenSP, long giaNhap, long giaBan,
-                  String donViTinh, double thueSuat, String nhaSanXuat) {
-
-        super(maSP, tenSP, giaNhap, giaBan, donViTinh, thueSuat);
-
-        this.nhaSanXuat = kiemTraVanBan(nhaSanXuat, "Nhà sản xuất");
-
-        // Cập nhật bộ đếm theo mã sản phẩm đã tạo hoặc đọc từ file
-        boDem = Math.max(
-                boDem,
-                laySoTuMa(chuanHoaMa(maSP), TIEN_TO_MA)
-        );
+    // Constructor đầy đủ
+    public ThucAn(String maSP, String tenSP, double donGiaNhap, double donGiaBan, int soLuongTon,
+                  String donViTinh, String nsx, String hsd, double phanTramThue,
+                  String thanhPhan, String baoQuan, String xuatXu, boolean laDoChay,
+                  String trangThaiDuyet, boolean daXoa) {
+        super(maSP, tenSP, donGiaNhap, donGiaBan, soLuongTon, donViTinh, nsx, hsd, phanTramThue, trangThaiDuyet, daXoa);
+        this.thanhPhan = thanhPhan;
+        this.baoQuan = baoQuan;
+        this.xuatXu = xuatXu;
+        this.laDoChay = laDoChay;
     }
 
-    // Sinh mã sản phẩm tiếp theo
-    public static synchronized String maKeTiep() {
-        boDem++;
-
-        return String.format(
-                Locale.ROOT,
-                "%s%03d",
-                TIEN_TO_MA,
-                boDem
-        );
+    public ThucAn(){
+        super();
+        this.thanhPhan = "";
+        this.baoQuan = "";
+        this.xuatXu = "";
+        this.laDoChay = false;
+    }
+    public String getThanhPhan() {
+        return thanhPhan;
     }
 
-    // Getter
-    public String getNhaSanXuat() {
-        return nhaSanXuat;
-    }
-
-    // Setter
-    public void setNhaSanXuat(String nhaSanXuat) {
-        this.nhaSanXuat = kiemTraVanBan(nhaSanXuat, "Nhà sản xuất");
-    }
-
-    // Xác định loại sản phẩm
-    @Override
-    public String getLoai() {
-        return "Thức ăn";
-    }
-
-    // Thức ăn bắt buộc phải có hạn sử dụng
-    @Override
-    public boolean batBuocCoHanSuDung() {
-        return true;
-    }
-
-    // Chuyển thông tin sản phẩm thành một dòng để lưu file
-    @Override
-    public String toDongFile() {
-        return "THUCAN|" + phanChungDeGhi() + "|" + nhaSanXuat;
-    }
-
-    // Cập nhật thông tin riêng của thức ăn
-    @Override
-    protected void capNhatThongTinRieng(SanPham nguon) {
-
-        if (!(nguon instanceof ThucAn)) {
-            throw new IllegalArgumentException(
-                    "Chỉ được cập nhật thông tin từ sản phẩm thức ăn."
-            );
+    public void setThanhPhan(String thanhPhan) {
+        if (thanhPhan == null || thanhPhan.trim().isEmpty()) {
+            throw new IllegalArgumentException("[Lỗi Thức Ăn] Thành phần không được để trống!");
         }
-
-        ThucAn moi = (ThucAn) nguon;
-
-        this.nhaSanXuat = kiemTraVanBan(
-                moi.nhaSanXuat,
-                "Nhà sản xuất"
-        );
+        this.thanhPhan = thanhPhan.trim();
     }
 
-    // Hiển thị thông tin sản phẩm
+    public String getBaoQuan() {
+        return baoQuan;
+    }
+
+    public void setBaoQuan(String baoQuan) {
+        if (baoQuan == null || baoQuan.trim().isEmpty()) {
+            throw new IllegalArgumentException("[Lỗi Thức Ăn] Hướng dẫn bảo quản không được để trống!");
+        }
+        this.baoQuan = baoQuan.trim();
+    }
+
+    public String getXuatXu() {
+        return xuatXu;
+    }
+
+    public void setXuatXu(String xuatXu) {
+        if (xuatXu == null || xuatXu.trim().isEmpty()) {
+            throw new IllegalArgumentException("[Lỗi Thức Ăn] Xuất xứ không được để trống!");
+        }
+        this.xuatXu = Ktradulieu.chuanHoaChuoi(xuatXu);
+    }
+
+    public boolean isLaDoChay() {
+        return laDoChay;
+    }
+
+    public void setLaDoChay(boolean laDoChay) {
+        this.laDoChay = laDoChay;
+    }
+
+    @Override
+    public double tinhGiaBan() {
+        return this.donGiaBan;
+    }
+
+    @Override
+    public String getLoaiSanPham() {
+        return "ThucAn";
+    }
+
+    public void nhapThongTin(Scanner sc, DSSanPham ds) {
+        super.nhapThongTin(sc, ds);
+        this.setXuatXu(Ktradulieu.nhapChuoiKhongRong(sc, "Nhập xuất xứ: "));
+        this.setBaoQuan(Ktradulieu.nhapChuoiKhongRong(sc, "Nhập hướng dẫn bảo quản: "));
+        this.setThanhPhan(Ktradulieu.nhapChuoiKhongRong(sc, "Nhập thành phần: "));
+        this.laDoChay = Ktradulieu.nhapXacNhan(sc, "Có phải đồ chay không?");
+        System.out.println("Đã thêm xong thức ăn: [" + this.maSP + "] " + this.tenSP);
+    }
+
+    public String toFileString() {
+        return String.format("THUCAN;%s;%s;%.0f;%.0f;%d;%s;%s;%s;%.1f;%s;%s;%s;%b;%s;%b",
+                this.maSP, this.tenSP, this.donGiaNhap, this.donGiaBan,
+                this.soLuongTon, this.donViTinh, this.nsx, this.hsd,
+                this.phanTramThue, this.thanhPhan, this.baoQuan,
+                this.xuatXu, this.laDoChay, this.trangThaiDuyet, this.daXoa);
+    }
+
     @Override
     public String toString() {
-        return thongTinChung() + " | NSX: " + nhaSanXuat;
+        return super.toString() +
+                "\n   ↳ [Chi tiết]: Xuất xứ: " + xuatXu +
+                " | Bảo quản: " + baoQuan +
+                " | Đồ chay: " + (laDoChay ? "Có" : "Không") +
+                " | Thành phần: " + thanhPhan;
     }
 }

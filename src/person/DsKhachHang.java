@@ -1,184 +1,189 @@
 package person;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
-import java.nio.charset.StandardCharsets;
-import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Locale;
+import java.util.List;
+import java.util.Scanner;
 import util.Ktradulieu;
 
-public class DsKhachHang implements IQuanLy<Khachhang> {
-    private ArrayList<Khachhang> dsKhachHang;
-    private Khachhang[] dsKhachHangVip;
-    private int soLuongVip;
-    private static final int MAX_VIP = 50;
+public class DsKhachHang {
+    private List<Khachhang> danhSach;
 
     public DsKhachHang() {
-        dsKhachHang = new ArrayList<>();
-        dsKhachHangVip = new Khachhang[MAX_VIP];
-        soLuongVip = 0;
+        this.danhSach = new ArrayList<>();
     }
 
-    public ArrayList<Khachhang> getDsKhachHang() {
-        return new ArrayList<>(dsKhachHang);
+    public List<Khachhang> getDanhSach() {
+        return danhSach;
     }
 
-    @Override
-    public void them(Khachhang kh) {
-        if (kh == null) throw new IllegalArgumentException("Khách hàng không hợp lệ!");
-        if (timKiemTheoMa(kh.getMaKH()) != null)
-            throw new IllegalArgumentException("Mã khách hàng đã tồn tại!");
-        dsKhachHang.add(kh);
-        capNhatDanhSachVip();
+    public int getSoLuong() {
+        return danhSach.size();
     }
 
-    @Override
-    public boolean sua(String maKH, Khachhang itemMoi) {
-        Khachhang cu = timKiemTheoMa(maKH);
-        if (cu == null || itemMoi == null) return false;
-        if (!cu.getMaKH().equalsIgnoreCase(itemMoi.getMaKH()))
-            throw new IllegalArgumentException("Không được đổi mã khách hàng!");
-        dsKhachHang.set(dsKhachHang.indexOf(cu), itemMoi);
-        capNhatDanhSachVip();
-        return true;
+    public Khachhang get(int index) {
+        if (index < 0 || index >= danhSach.size()) return null;
+        return danhSach.get(index);
     }
 
-    @Override
-    public boolean xoa(String maKH) {
-        Khachhang kh = timKiemTheoMa(maKH);
+    public String sinhMaTuDong(String tienTo) {
+        int maxSo = 0;
+        for (Khachhang kh : danhSach) {
+            int so = Ktradulieu.laySoTuMa(kh.getMaKH(), tienTo);
+            if (so > maxSo) {
+                maxSo = so;
+            }
+        }
+        return Ktradulieu.taoMa(tienTo + "%03d", maxSo + 1);
+    }
+
+    public void themTuBanPhim(Scanner sc) {
+        Khachhang kh = new Khachhang();
+        kh.nhapThongTin(sc, this); // Tự hiện dòng "Nhấn / để tự tạo mã"
+        this.them(kh);
+    }
+
+    public boolean them(Khachhang kh) {
         if (kh == null) return false;
-        dsKhachHang.remove(kh);
-        capNhatDanhSachVip();
+        if (timKiem(kh.getMaKH()) != null) {
+            System.out.println("Mã khách hàng đã tồn tại!");
+            return false;
+        }
+        danhSach.add(kh);
         return true;
     }
 
-    @Override
-    public Khachhang timKiemTheoMa(String maKH) {
-        if (maKH == null || maKH.trim().isEmpty()) return null;
-        maKH = Ktradulieu.chuanHoaMa(maKH);
-        for (Khachhang kh : dsKhachHang)
-            if (kh.getMaKH().equalsIgnoreCase(maKH)) return kh;
+
+    public Khachhang timKiem(String maHoacSdt) {
+        if (maHoacSdt == null || maHoacSdt.trim().isEmpty()) return null;
+        String key = maHoacSdt.trim();
+        for (Khachhang kh : danhSach) {
+            if (kh.getMaKH().equalsIgnoreCase(key) || kh.getSdt().equalsIgnoreCase(key)) {
+                return kh;
+            }
+        }
         return null;
     }
 
-    public ArrayList<Khachhang> timKiemTheoTen(String ten) {
-        ArrayList<Khachhang> kq = new ArrayList<>();
-        if (ten == null || ten.trim().isEmpty()) return kq;
-        for (Khachhang kh : dsKhachHang)
-            if (kh.getTen().toLowerCase(Locale.ROOT).contains(ten.trim().toLowerCase(Locale.ROOT)))
-                kq.add(kh);
-        return kq;
+    // xóa
+    public boolean xoa(String maKH) {
+        Khachhang kh = timKiem(maKH);
+        if (kh == null) {
+            System.out.println(" Không tìm thấy khách hàng: " + maKH);
+            return false;
+        }
+        kh.setDaXoa(true);
+        System.out.println(" Đã xóa khách hàng: " + maKH);
+        return true;
     }
 
-    public void capNhatDanhSachVip() {
-        soLuongVip = 0;
-        for (int i = 0; i < MAX_VIP; i++) dsKhachHangVip[i] = null;
-        for (Khachhang kh : dsKhachHang) {
-            String hang = kh.getThuHang();
-            if (hang.equalsIgnoreCase("Vang") || hang.equalsIgnoreCase("Kim Cuong")) {
-                if (soLuongVip < MAX_VIP) dsKhachHangVip[soLuongVip++] = kh;
+    // sửa
+    public boolean sua(Scanner sc, Nguoidung nguoiThucHien, String maKH) {
+        if (nguoiThucHien == null || nguoiThucHien.isDaXoa()) {
+            System.out.println("[TỪ CHỐI TRUY CẬP] Tài khoản không hợp lệ hoặc đã bị vô hiệu hóa!");
+            return false;
+        }
+
+        Khachhang kh = timKiem(maKH);
+        if (kh == null) {
+            System.out.println("Không tìm thấy khách hàng có mã: " + maKH);
+            return false;
+        }
+
+        while (true) {
+            System.out.println("\n--- SỬA THÔNG TIN KHÁCH HÀNG: " + kh.getTenKH() + " [" + kh.getMaKH() + "] ---");
+            System.out.println("1. Sửa Họ và Tên");
+            System.out.println("2. Sửa Số điện thoại");
+            System.out.println("3. Sửa Địa chỉ");
+            System.out.println("4. Sửa Điểm tích lũy");
+            System.out.println("0. Hoàn tất chỉnh sửa (Thoát)");
+
+            int chon = Ktradulieu.luaChon(sc, " Chọn trường cần sửa (0-4): ", 0, 4);
+
+            try {
+                switch (chon) {
+                    case 1:
+                        String tenMoi = Ktradulieu.nhapChuoiKhongRong(sc, "Nhập họ tên mới: ");
+                        kh.setTenKH(tenMoi);
+                        System.out.println(">> Đã cập nhật họ tên thành công!");
+                        break;
+                    case 2:
+                        String sdtMoi = Ktradulieu.nhapChuoi(sc, "Nhập số điện thoại mới: ",
+                                Ktradulieu.phoneRegex, "Số điện thoại không hợp lệ (03/05/07/08/09)!");
+                        kh.setSdt(sdtMoi);
+                        System.out.println(">> Đã cập nhật số điện thoại thành công!");
+                        break;
+                    case 3:
+                        String diaChiMoi = Ktradulieu.nhapChuoiKhongRong(sc, "Nhập địa chỉ mới: ");
+                        kh.setDiaChi(diaChiMoi);
+                        System.out.println(">> Đã cập nhật địa chỉ thành công!");
+                        break;
+                    case 4:
+                        int diemMoi = Ktradulieu.nhapSoNguyen(sc, "Nhập điểm tích lũy mới (>= 0): ");
+                        kh.setDiemTichLuy(diemMoi);
+                        System.out.println(">> Đã cập nhật điểm tích lũy thành công!");
+                        break;
+                    case 0:
+                        System.out.println("Đã hoàn tất chỉnh sửa khách hàng [" + kh.getMaKH() + "].");
+                        return true;
+                }
+            } catch (IllegalArgumentException e) {
+                System.out.println("Lỗi dữ liệu: " + e.getMessage());
             }
         }
     }
-
-    public void xuatDanhSachVip() {
-        System.out.println("=== DANH SACH KHACH HANG VIP ===");
-        if (soLuongVip == 0) {
-            System.out.println("Chua co khach hang VIP.");
-            return;
-        }
-        for (int i = 0; i < soLuongVip; i++) System.out.println(dsKhachHangVip[i]);
-    }
-
-    @Override
+    // xuất
     public void xuatDanhSach() {
-        System.out.println("=========================================================================================");
-        System.out.printf("%-8s | %-20s | %-12s | %-12s | %-15s%n",
-                "Ma KH", "Ho Ten", "SDT", "Thu Hang", "Tong Chi");
-        System.out.println("-----------------------------------------------------------------------------------------");
-        for (Khachhang kh : dsKhachHang)
-            System.out.printf("%-8s | %-20s | %-12s | %-12s | %,13.0f VND%n",
-                    kh.getMaKH(), kh.getTen(), kh.getSdt(), kh.getThuHang(), kh.getTongTienMua());
-        System.out.println("=========================================================================================");
-    }
-
-    private String csv(String s) {
-        if (s == null) s = "";
-        return "\"" + s.replace("\"", "\"\"") + "\"";
-    }
-
-    private ArrayList<String> tachCSV(String line) {
-        ArrayList<String> kq = new ArrayList<>();
-        StringBuilder sb = new StringBuilder();
-        boolean trongNgoac = false;
-        for (int i = 0; i < line.length(); i++) {
-            char c = line.charAt(i);
-            if (c == '"') {
-                if (trongNgoac && i + 1 < line.length() && line.charAt(i + 1) == '"') {
-                    sb.append('"');
-                    i++;
-                } else trongNgoac = !trongNgoac;
-            } else if (c == ',' && !trongNgoac) {
-                kq.add(sb.toString());
-                sb.setLength(0);
-            } else sb.append(c);
+        System.out.println("\n================ DANH SÁCH KHÁCH HÀNG ================");
+        for (Khachhang kh : danhSach) {
+            System.out.println(kh.toString());
         }
-        if (trongNgoac) throw new IllegalArgumentException("Lỗi định dạng CSV!");
-        kq.add(sb.toString());
-        return kq;
     }
 
-    public void ghiFile(String filePath) {
-        if (filePath == null || filePath.trim().isEmpty()) return;
-        try (PrintWriter pw = new PrintWriter(new OutputStreamWriter(
-                new FileOutputStream(filePath), StandardCharsets.UTF_8))) {
-            for (Khachhang kh : dsKhachHang)
-                pw.println(csv(kh.getMaKH()) + "," + csv(kh.getTen()) + "," + csv(kh.getSdt())
-                        + "," + csv(kh.getDiaChi()) + "," + csv(kh.getEmail())
-                        + "," + csv(kh.getNgaySinh().toString()) + "," + csv(kh.getNgayDangKy().toString())
-                        + "," + csv(String.format(Locale.ROOT, "%.0f", kh.getTongTienMua())));
-            if (pw.checkError()) throw new IOException("Không thể ghi file!");
-            System.out.println("Luu file thanh cong!");
+    // ghi
+    public void ghiFile(String duongDan) {
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(duongDan))) {
+            for (Khachhang kh : danhSach) {
+                bw.write(kh.toFileString());
+                bw.newLine();
+            }
+            System.out.println("Đã lưu danh sách khách hàng vào file: " + duongDan);
         } catch (IOException e) {
-            System.out.println("Loi ghi file: " + e.getMessage());
+            System.out.println("Lỗi ghi file khách hàng: " + e.getMessage());
         }
     }
 
-    public void docFile(String filePath) {
-        if (filePath == null || filePath.trim().isEmpty()) return;
-        File file = new File(filePath);
+    // đọc
+    public void docFile(String duongDan) {
+        File file = new File(duongDan);
         if (!file.exists()) return;
+        danhSach.clear();
+        try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+            String dong;
+            while ((dong = br.readLine()) != null) {
+                dong = dong.trim();
+                if (dong.isEmpty() || dong.startsWith("#")) continue;
+                String[] p = dong.split(";");
+                if (p.length >= 6) {
+                    String ma = p[0].trim();
+                    String ten = p[1].trim();
+                    String sdt = p[2].trim();
+                    String diaChi = p[3].trim();
+                    int diem = Integer.parseInt(p[4].trim());
+                    boolean daXoa = Boolean.parseBoolean(p[5].trim());
 
-        int dong = 0, thanhCong = 0;
-        try (BufferedReader br = new BufferedReader(new InputStreamReader(
-                new FileInputStream(file), StandardCharsets.UTF_8))) {
-            String line;
-            while ((line = br.readLine()) != null) {
-                dong++;
-                if (line.trim().isEmpty()) continue;
-                try {
-                    ArrayList<String> p = tachCSV(line);
-                    if (p.size() != 8) throw new IllegalArgumentException("Sai số cột!");
-                    Khachhang kh = new Khachhang(p.get(1), p.get(2), p.get(3), p.get(4),
-                            LocalDate.parse(p.get(5)), p.get(0), LocalDate.parse(p.get(6)),
-                            Double.parseDouble(p.get(7)));
-                    if (timKiemTheoMa(kh.getMaKH()) != null) continue;
-                    them(kh);
-                    thanhCong++;
-                } catch (RuntimeException e) {
-                    System.out.println("Loi dong " + dong + ": " + e.getMessage());
+                    Khachhang kh = new Khachhang(ma, ten, sdt, diaChi, diem, daXoa);
+                    danhSach.add(kh);
                 }
             }
-            System.out.println("Doc file hoan tat. Da them: " + thanhCong);
-        } catch (IOException e) {
-            System.out.println("Loi doc file: " + e.getMessage());
+            System.out.println("Đã đọc thành công " + danhSach.size() + " khách hàng từ file: " + duongDan);
+        } catch (Exception e) {
+            System.out.println("Lỗi đọc file khách hàng: " + e.getMessage());
         }
     }
 }

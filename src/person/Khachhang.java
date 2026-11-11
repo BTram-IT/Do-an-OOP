@@ -1,152 +1,168 @@
-package person;
+package person; // hoặc package khachhang tùy dự án của bạn
 
-import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.Scanner;
 import util.Ktradulieu;
 
-public class Khachhang extends Nguoidung {
-    private static int boDem = 0;
-    private static final String TIEN_TO_MA = "KH";
-
+public class Khachhang {
     private String maKH;
-    private String thuHang;
-    private LocalDate ngayDangKy;
-    private double tongTienMua;
-    private ArrayList<String> lichSuMuaHang;
+    private String tenKH;
+    private String sdt;
+    private String diaChi;
+    private int diemTichLuy;
+    private boolean daXoa;
 
+    // Constructor rỗng
     public Khachhang() {
-        super();
-        this.maKH = maKeTiep();
-        this.thuHang = "Dong";
-        this.ngayDangKy = LocalDate.now();
-        this.tongTienMua = 0;
-        this.lichSuMuaHang = new ArrayList<>();
+        this.maKH = "";
+        this.tenKH = "";
+        this.sdt = "";
+        this.diaChi = "";
+        this.diemTichLuy = 0;
+        this.daXoa = false;
     }
 
-    public Khachhang(String ten, String sdt, String diaChi, String email,
-                     LocalDate ngaySinh, String maKH, LocalDate ngayDangKy,
-                     double tongTienMua) {
-        super(ten, sdt, diaChi, email, ngaySinh);
-        setMaKH(maKH);
-        setNgayDangKy(ngayDangKy);
-        setTongTienMua(tongTienMua);
-        this.lichSuMuaHang = new ArrayList<>();
-        capNhatThuHang();
+    // Constructor đầy đủ tham số
+    public Khachhang(String maKH, String tenKH, String sdt, String diaChi, int diemTichLuy, boolean daXoa) {
+        this.maKH = maKH;
+        this.tenKH = tenKH;
+        this.sdt = sdt;
+        this.diaChi = diaChi;
+        this.diemTichLuy = diemTichLuy;
+        this.daXoa = daXoa;
     }
 
-    public static synchronized String maKeTiep() {
-        boDem++;
-        return Ktradulieu.taoMa("KH%03d", boDem);
-    }
+    public void nhapThongTin(Scanner sc, DsKhachHang ds) {
+        System.out.println("\n--- NHẬP THÔNG TIN KHÁCH HÀNG ---");
+        String maGoiY = (ds != null) ? ds.sinhMaTuDong("KH") : "KH001";
+        while (true) {
+            System.out.print("Nhập mã khách hàng (Nhấn / để tự tạo mã): ");
+            String input = sc.nextLine().trim();
 
-    private static void capNhatBoDem(String maKH) {
-        if (maKH != null && maKH.matches("^KH\\d+$")) {
-            int so = Integer.parseInt(maKH.substring(2));
-            boDem = Math.max(boDem, so);
+            if (input.equals("/")) {
+                this.setMaKH(maGoiY);
+                System.out.println("-> Mã tự tạo: " + this.maKH);
+                break;
+            }
+            try {
+                String maChuan = Ktradulieu.chuanHoaMa(input);
+                if (!maChuan.startsWith("KH")) {
+                    System.out.println("Lỗi: Mã khách hàng phải bắt đầu bằng 'KH' (Ví dụ: KH001, KH002)! Hoặc nhấn / để tự tạo mã.");
+                    continue;
+                }
+                if (ds != null && ds.timKiem(maChuan) != null) {
+                    System.out.println("Lỗi: Mã '" + maChuan + "' đã tồn tại! Vui lòng nhập lại hoặc nhấn / để tự tạo mã.");
+                    continue;
+                }
+                this.setMaKH(maChuan);
+                break;
+            } catch (IllegalArgumentException e) {
+                System.out.println(e.getMessage());
+            }
         }
+
+        this.setTenKH(Ktradulieu.nhapChuoiKhongRong(sc, "Nhập họ và tên: "));
+        String sdtInput = Ktradulieu.nhapChuoi(sc, "Nhập số điện thoại: ",
+                Ktradulieu.phoneRegex, "Số điện thoại không đúng định dạng (03/05/07/08/09)!");
+        this.setSdt(sdtInput);
+        this.setDiaChi(Ktradulieu.nhapChuoiKhongRong(sc, "Nhập địa chỉ: "));
+        this.diemTichLuy = 0;
+        this.daXoa = false;
+        System.out.println("✅ Đã thêm xong khách hàng: [" + this.maKH + "] " + this.tenKH);
     }
 
-    public String getMaKH() { return maKH; }
+    public String getMaKH() {
+        return maKH;
+    }
 
     public void setMaKH(String maKH) {
-        maKH = Ktradulieu.chuanHoaMa(maKH);
-        if (!maKH.matches("^KH\\d{3,}$"))
-            throw new IllegalArgumentException("Mã khách hàng không hợp lệ!");
-        this.maKH = maKH;
-        capNhatBoDem(maKH);
-    }
-
-    public String getThuHang() { return thuHang; }
-    public LocalDate getNgayDangKy() { return ngayDangKy; }
-    public double getTongTienMua() { return tongTienMua; }
-
-    public ArrayList<String> getLichSuMuaHang() {
-        return new ArrayList<>(lichSuMuaHang);
-    }
-
-    public void setNgayDangKy(LocalDate ngayDangKy) {
-        if (ngayDangKy == null || ngayDangKy.isAfter(LocalDate.now()))
-            throw new IllegalArgumentException("Ngày đăng ký không hợp lệ!");
-        this.ngayDangKy = ngayDangKy;
-    }
-
-    public void setTongTienMua(double tongTienMua) {
-        if (!Double.isFinite(tongTienMua) || tongTienMua < 0)
-            throw new IllegalArgumentException("Tổng tiền mua không hợp lệ!");
-        this.tongTienMua = tongTienMua;
-        capNhatThuHang();
-    }
-
-    public void capNhatThuHang() {
-        if (tongTienMua >= 10000000) {
-            this.thuHang = "Kim Cuong";
-        } else if (tongTienMua >= 5000000) {
-            this.thuHang = "Vang";
-        } else if (tongTienMua >= 2000000) {
-            this.thuHang = "Bac";
-        } else {
-            this.thuHang = "Dong";
+        if (maKH == null || maKH.trim().isEmpty()) {
+            throw new IllegalArgumentException("[Lỗi] Mã khách hàng không được để trống!");
         }
-    }
-
-    public void themLichSu(String maHD, double tien) {
-        if (maHD == null || maHD.trim().isEmpty())
-            throw new IllegalArgumentException("Mã hóa đơn không được để trống!");
-
-        if (!Double.isFinite(tien) || tien < 0)
-            throw new IllegalArgumentException("Số tiền mua không hợp lệ!");
-
-        maHD = maHD.trim();
-
-        for (String item : lichSuMuaHang) {
-            if (item.startsWith(maHD + " (Tong: "))
-                throw new IllegalArgumentException("Hóa đơn này đã được ghi nhận!");
+        String maChuan = Ktradulieu.chuanHoaMa(maKH);
+        if (!maChuan.startsWith("KH")) {
+            throw new IllegalArgumentException("[Lỗi] Mã khách hàng phải bắt đầu bằng 'KH' (Nhận: " + maKH + ")!");
         }
-
-        double tongMoi = tongTienMua + tien;
-        if (!Double.isFinite(tongMoi))
-            throw new IllegalArgumentException("Tổng tiền mua vượt giới hạn!");
-
-        lichSuMuaHang.add(maHD + " (Tong: " + tien + " VND)");
-        this.tongTienMua = tongMoi;
-        capNhatThuHang();
+        this.maKH = maChuan;
     }
 
-    public void xemLichSuMuaHang() {
-        System.out.println("=== LICH SU MUA HANG CUA KH: " + maKH + " - " + ten + " ===");
+    public String getTenKH() {
+        return tenKH;
+    }
 
-        if (lichSuMuaHang.isEmpty()) {
-            System.out.println("Chua co giao dich nao.");
-            return;
+    public void setTenKH(String tenKH) {
+        if (tenKH == null || tenKH.trim().isEmpty()) {
+            throw new IllegalArgumentException("[Lỗi] Tên khách hàng không được để trống!");
         }
+        this.tenKH = Ktradulieu.chuanHoaChuoi(tenKH);
+    }
 
-        for (String item : lichSuMuaHang) {
-            System.out.println("- " + item);
+    public String getSdt() {
+        return sdt;
+    }
+
+    public void setSdt(String sdt) {
+        if (sdt == null || sdt.trim().isEmpty()) {
+            throw new IllegalArgumentException("[Lỗi] Số điện thoại không được để trống!");
         }
+        String sdtChuan = sdt.trim().replaceAll("\\s+", "");
+        if (!sdtChuan.matches(Ktradulieu.phoneRegex)) {
+            throw new IllegalArgumentException("[Lỗi] Số điện thoại '" + sdt + "' không đúng định dạng!");
+        }
+        this.sdt = sdtChuan;
     }
 
-    public void xemHanThanhVien() {
-        LocalDate han = ngayDangKy.plusYears(1);
-        System.out.println("Han the thanh vien: Den ngay " + han);
+    public String getDiaChi() {
+        return diaChi;
     }
 
-    @Override
-    public void nhap(Scanner sc) {
-        super.nhap(sc);
-        this.maKH = maKeTiep();
-        this.ngayDangKy = LocalDate.now();
-        this.tongTienMua = 0;
-        this.thuHang = "Dong";
-        this.lichSuMuaHang.clear();
+    public void setDiaChi(String diaChi) {
+        if (diaChi == null || diaChi.trim().isEmpty()) {
+            throw new IllegalArgumentException("[Lỗi] Địa chỉ không được để trống!");
+        }
+        this.diaChi = diaChi.trim();
+    }
+
+    public int getDiemTichLuy() {
+        return diemTichLuy;
+    }
+
+    public void setDiemTichLuy(int diemTichLuy) {
+        if (diemTichLuy < 0) {
+            throw new IllegalArgumentException("[Lỗi] Điểm tích lũy phải >= 0! Nhận: " + diemTichLuy);
+        }
+        this.diemTichLuy = diemTichLuy;
+    }
+
+    public boolean isDaXoa() {
+        return daXoa;
+    }
+
+    public void setDaXoa(boolean daXoa) {
+        this.daXoa = daXoa;
+    }
+
+    public void congDiem(int diem) {
+        if (diem > 0) this.diemTichLuy += diem;
+    }
+
+    public boolean truDiem(int diem) {
+        if (diem <= 0) return false;
+        if (this.diemTichLuy >= diem) {
+            this.diemTichLuy -= diem;
+            return true;
+        }
+        return false;
+    }
+
+    // Hàm xuất định dạng lưu file
+    public String toFileString() {
+        return String.format("%s;%s;%s;%s;%d;%b",
+                this.maKH, this.tenKH, this.sdt, this.diaChi, this.diemTichLuy, this.daXoa);
     }
 
     @Override
     public String toString() {
-        return super.toString()
-                + " | MaKH: " + maKH
-                + " | Hang: " + thuHang
-                + " | Ngay dang ky: " + ngayDangKy
-                + " | Tong chi: " + String.format("%,.0f", tongTienMua) + " VND";
+        return "[" + maKH + "] " + tenKH + " - SĐT: " + sdt + " - ĐC: " + diaChi + " - Điểm: " + diemTichLuy
+                + (daXoa ? " [ĐÃ XÓA]" : " [HOẠT ĐỘNG]");
     }
 }

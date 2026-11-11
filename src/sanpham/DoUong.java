@@ -1,103 +1,116 @@
 package sanpham;
 
-import java.util.Locale;
+import util.Ktradulieu;
+
+import java.util.Scanner;
 
 public class DoUong extends SanPham {
+    private double dungTich;
+    private String thuongHieu;
+    private String huongVi;
+    private String loaiDoUong;
+    Scanner sc = new Scanner(System.in);
 
-    public static final String TIEN_TO_MA = "DU";
-    public static final int DUNG_TICH_TOI_DA_ML = 100_000;
-
-    private static int boDem = 0;
-
-    private int dungTichMl;
-
-    // Constructor
-    public DoUong(String maSP, String tenSP, long giaNhap, long giaBan,
-                  String donViTinh, double thueSuat, int dungTichMl) {
-
-        super(maSP, tenSP, giaNhap, giaBan, donViTinh, thueSuat);
-
-        this.dungTichMl = kiemTraDungTich(dungTichMl);
-
-        // Cập nhật bộ đếm theo mã sản phẩm đã tạo hoặc đọc từ file
-        boDem = Math.max(
-                boDem,
-                laySoTuMa(chuanHoaMa(maSP), TIEN_TO_MA)
-        );
+    // Constructor đầy đủ
+    public DoUong(String maSP, String tenSP, double donGiaNhap, double donGiaBan, int soLuongTon,
+                  String donViTinh, String nsx, String hsd, double phanTramThue,
+                  double dungTich, String thuongHieu, String huongVi, String loaiDoUong,
+                  String trangThaiDuyet, boolean daXoa) {
+        super(maSP, tenSP, donGiaNhap, donGiaBan, soLuongTon, donViTinh, nsx, hsd, phanTramThue, trangThaiDuyet, daXoa);
+        this.dungTich = dungTich;
+        this.thuongHieu = thuongHieu;
+        this.huongVi = huongVi;
+        this.loaiDoUong = loaiDoUong;
+        this.trangThaiDuyet = trangThaiDuyet;
+        this.daXoa = daXoa;
     }
 
-    // Kiểm tra dung tích
-    private static int kiemTraDungTich(int dungTichMl) {
+    public DoUong() {
+        super();
+        this.dungTich = 0;
+        this.thuongHieu = "";
+        this.huongVi = "";
+        this.loaiDoUong = "";
+        this.trangThaiDuyet = "";
+        this.daXoa = false;
+    }
+    public double getDungTich() {
+        return dungTich;
+    }
 
-        if (dungTichMl <= 0 || dungTichMl > DUNG_TICH_TOI_DA_ML) {
-            throw new IllegalArgumentException(
-                    "Dung tích phải lớn hơn 0 và không vượt quá "
-                            + DUNG_TICH_TOI_DA_ML + " ml."
-            );
+    public void setDungTich(double dungTich) {
+        if (dungTich <= 0) {
+            throw new IllegalArgumentException("[Lỗi Đồ Uống] Dung tích phải lớn hơn 0 ml! Nhận: " + dungTich);
         }
-
-        return dungTichMl;
+        this.dungTich = dungTich;
     }
 
-    // Sinh mã sản phẩm tiếp theo
-    public static synchronized String maKeTiep() {
-
-        boDem++;
-
-        return String.format(
-                Locale.ROOT,
-                "%s%03d",
-                TIEN_TO_MA,
-                boDem
-        );
+    public String getThuongHieu() {
+        return thuongHieu;
     }
 
-    // Getter
-    public int getDungTichMl() {
-        return dungTichMl;
-    }
-
-    // Setter
-    public void setDungTichMl(int dungTichMl) {
-        this.dungTichMl = kiemTraDungTich(dungTichMl);
-    }
-
-    // Xác định loại sản phẩm
-    @Override
-    public String getLoai() {
-        return "Đồ uống";
-    }
-
-    // Đồ uống không bắt buộc phải có hạn sử dụng
-    @Override
-    public boolean batBuocCoHanSuDung() {
-        return false;
-    }
-
-    // Chuyển thông tin sản phẩm thành một dòng để lưu file
-    @Override
-    public String toDongFile() {
-        return "DOUONG|" + phanChungDeGhi() + "|" + dungTichMl;
-    }
-
-    // Cập nhật thông tin riêng của đồ uống
-    @Override
-    protected void capNhatThongTinRieng(SanPham nguon) {
-
-        if (!(nguon instanceof DoUong)) {
-            throw new IllegalArgumentException(
-                    "Chỉ được cập nhật thông tin từ sản phẩm đồ uống."
-            );
+    public void setThuongHieu(String thuongHieu) {
+        if (thuongHieu == null || thuongHieu.trim().isEmpty()) {
+            throw new IllegalArgumentException("[Lỗi Đồ Uống] Thương hiệu không được để trống!");
         }
-
-        DoUong moi = (DoUong) nguon;
-
-        this.dungTichMl = kiemTraDungTich(moi.dungTichMl);
+        this.thuongHieu = Ktradulieu.chuanHoaChuoi(thuongHieu);
     }
 
-    // Hiển thị thông tin sản phẩm
+    public String getHuongVi() {
+        return huongVi;
+    }
+
+    public void setHuongVi(String huongVi) {
+        if (huongVi == null || huongVi.trim().isEmpty()) {
+            throw new IllegalArgumentException("[Lỗi Đồ Uống] Hương vị không được để trống!");
+        }
+        this.huongVi = huongVi.trim();
+    }
+
+    public String getLoaiDoUong() {
+        return loaiDoUong;
+    }
+
+    public void setLoaiDoUong(String loaiDoUong) {
+        if (loaiDoUong == null || loaiDoUong.trim().isEmpty()) {
+            throw new IllegalArgumentException("[Lỗi Đồ Uống] Loại đồ uống không được để trống!");
+        }
+        this.loaiDoUong = Ktradulieu.chuanHoaChuoi(loaiDoUong);
+    }
+
+    @Override
+    public double tinhGiaBan() {
+        return this.donGiaBan;
+    }
+
+    @Override
+    public String getLoaiSanPham() {
+        return "DoUong";
+    }
+
+    public void nhapThongTin(Scanner sc, DSSanPham ds) {
+        super.nhapThongTin(sc, ds);
+
+        this.setThuongHieu(Ktradulieu.nhapChuoiKhongRong(sc, "Nhập thương hiệu: "));
+        this.setLoaiDoUong(Ktradulieu.nhapChuoiKhongRong(sc, "Nhập loại đồ uống: "));
+        this.setHuongVi(Ktradulieu.nhapChuoiKhongRong(sc, "Nhập hương vị: "));
+        this.setDungTich(Ktradulieu.nhapSoThuc(sc, "Nhập dung tích (ml): "));
+        System.out.println("Đã thêm xong đồ uống: [" + this.maSP + "] " + this.tenSP);
+    }
+
+    public String toFileString() {
+        return String.format("DOUONG;%s;%s;%.0f;%.0f;%d;%s;%s;%s;%.1f;%.1f;%s;%s;%s;%s;%b",
+                this.maSP, this.tenSP, this.donGiaNhap, this.donGiaBan,
+                this.soLuongTon, this.donViTinh, this.nsx, this.hsd,
+                this.phanTramThue, this.dungTich, this.thuongHieu,
+                this.huongVi, this.loaiDoUong, this.trangThaiDuyet, this.daXoa);
+    }
     @Override
     public String toString() {
-        return thongTinChung() + " | Dung tích: " + dungTichMl + " ml";
+        return super.toString() +
+                "\n   ↳ [Chi tiết]: Thương hiệu: " + thuongHieu +
+                " | Loại: " + loaiDoUong +
+                " | Hương vị: " + huongVi +
+                " | Dung tích: " + (int)dungTich + " ml";
     }
 }

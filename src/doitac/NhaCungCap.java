@@ -1,179 +1,170 @@
 package doitac;
 
-import java.util.ArrayList;
 import java.util.Scanner;
 import util.Ktradulieu;
 
-public class NhaCungCap extends DoiTac {
-    private String nganhHangCungCap;
-    private double hanMucNoCong, congNoHienTai;
-    private ArrayList<String> dsSP;
+public class NhaCungCap {
+    private String maNCC;
+    private String tenNCC;
+    private String sdt;
+    private String diaChi;
+    private String email;
+    private boolean daXoa;
+
 
     public NhaCungCap() {
-        super("Nhà cung cấp");
-        nganhHangCungCap = "";
-        hanMucNoCong = 100_000_000;
-        congNoHienTai = 0;
-        dsSP = new ArrayList<>();
+        this.maNCC = "";
+        this.tenNCC = "";
+        this.sdt = "";
+        this.diaChi = "";
+        this.email = "";
+        this.daXoa = false;
     }
 
-    public NhaCungCap(String maDT, String tenDT, String diaChi,
-                      String email, String maSoThue, String nganhHangCungCap,
-                      double hanMucNoCong, ArrayList<String> dsSP) {
-        super(maDT, tenDT, diaChi, email, maSoThue, "Nhà cung cấp");
 
-        setNganhHangCungCap(nganhHangCungCap);
-        setHanMucNoCong(hanMucNoCong);
-        congNoHienTai = 0;
-        this.dsSP = new ArrayList<>();
-
-        if (dsSP != null) {
-            for (String ma : dsSP) themSanPhamCungCap(ma);
-        }
+    public NhaCungCap(String maNCC, String tenNCC, String sdt, String diaChi, String email, boolean daXoa) {
+        this.maNCC = maNCC;
+        this.tenNCC = tenNCC;
+        this.sdt = sdt;
+        this.diaChi = diaChi;
+        this.email = email;
+        this.daXoa = daXoa;
     }
 
-    @Override
-    public void nhap(Scanner sc) {
-        super.nhap(sc);
+    public void nhapThongTin(Scanner sc, DSNhaCungCap ds) {
+        System.out.println("\n--- NHẬP THÔNG TIN NHÀ CUNG CẤP MỚI ---");
+        String maGoiY = (ds != null) ? ds.sinhMaTuDong("NCC") : "NCC001";
 
-        setNganhHangCungCap(Ktradulieu.nhapChuoiKhongRong(
-                sc, "Ngành hàng cung cấp: "));
+        while (true) {
+            System.out.print("Nhập mã nhà cung cấp (Nhấn / để tự tạo mã): ");
+            String input = sc.nextLine().trim();
 
-        setHanMucNoCong(Ktradulieu.nhapSoThucKhongAm(
-                sc, "Hạn mức nợ công: "));
-
-        dsSP.clear();
-        System.out.println("Nhập mã sản phẩm cung cấp (cách nhau dấu phẩy, Enter = bỏ qua): ");
-
-        String ds = sc.nextLine().trim();
-
-        if (!ds.isEmpty()) {
-            for (String ma : ds.split(",")) {
-                if (!themSanPhamCungCap(ma))
-                    System.out.println("Mã sản phẩm không hợp lệ hoặc bị trùng: " + ma);
+            if (input.equals("/")) {
+                this.setMaNCC(maGoiY);
+                System.out.println("-> Mã tự tạo: " + this.maNCC);
+                break;
             }
-        }
-    }
 
-    // Kiểm tra hạn mức công nợ
-    public boolean kiemTraHanMucNoCong(double soTienMoi) {
-        return Double.isFinite(soTienMoi) && soTienMoi >= 0
-                && congNoHienTai + soTienMoi <= hanMucNoCong;
-    }
-
-    // Ghi tăng công nợ
-    public void ghiNo(double soTien) {
-        if (!kiemTraHanMucNoCong(soTien))
-            throw new IllegalArgumentException("Số tiền vượt hạn mức nợ công!");
-
-        congNoHienTai += soTien;
-    }
-
-    // Thanh toán công nợ
-    public void traNo(double soTien) {
-        if (!Double.isFinite(soTien) || soTien < 0)
-            throw new IllegalArgumentException("Số tiền trả nợ không hợp lệ!");
-
-        congNoHienTai = Math.max(0, congNoHienTai - soTien);
-    }
-
-    // Kiểm tra sản phẩm có được cung cấp không
-    public boolean cungCap(String maSP) {
-        if (maSP == null) return false;
-
-        String ma = Ktradulieu.chuanHoaMa(maSP);
-        return dsSP.contains(ma);
-    }
-
-    public String getNganhHangCungCap() {
-        return nganhHangCungCap;
-    }
-
-    public void setNganhHangCungCap(String nganhHangCungCap) {
-        if (nganhHangCungCap == null || nganhHangCungCap.trim().isEmpty())
-            throw new IllegalArgumentException("Ngành hàng không được để trống!");
-
-        this.nganhHangCungCap = nganhHangCungCap.trim();
-    }
-
-    public double getHanMucNoCong() {
-        return hanMucNoCong;
-    }
-
-    public void setHanMucNoCong(double hanMucNoCong) {
-        if (!Double.isFinite(hanMucNoCong) || hanMucNoCong < 0)
-            throw new IllegalArgumentException("Hạn mức nợ không hợp lệ!");
-
-        this.hanMucNoCong = hanMucNoCong;
-    }
-
-    public double getCongNoHienTai() {
-        return congNoHienTai;
-    }
-
-    public ArrayList<String> getDsSP() {
-        return new ArrayList<>(dsSP);
-    }
-
-    // Thêm sản phẩm cung cấp
-    public boolean themSanPhamCungCap(String maSP) {
-        String ma = Ktradulieu.chuanHoaMa(maSP);
-
-        if (!ma.matches("[A-Z0-9]+") || cungCap(ma))
-            return false;
-
-        dsSP.add(ma);
-        return true;
-    }
-
-    // Xóa sản phẩm cung cấp
-    public boolean xoaSanPhamCungCap(String maSP) {
-        if (maSP == null) return false;
-        return dsSP.remove(Ktradulieu.chuanHoaMa(maSP));
-    }
-
-    @Override
-    public String toDongFile() {
-        return "NCC|" + maDT + "|" + tenDT + "|" + diaChi + "|"
-                + email + "|" + maSoThue + "|" + nganhHangCungCap + "|"
-                + hanMucNoCong + "|" + congNoHienTai + "|"
-                + String.join(",", dsSP);
-    }
-
-    public static NhaCungCap tuDongFile(String dong) {
-        String[] t = dong.split("\\|", -1);
-
-        if (t.length != 10 || !t[0].equals("NCC"))
-            throw new IllegalArgumentException("Dữ liệu nhà cung cấp không hợp lệ!");
-
-        ArrayList<String> ds = new ArrayList<>();
-
-        if (!t[9].isEmpty()) {
-            for (String ma : t[9].split(",")) {
-                ds.add(ma.trim());
+            try {
+                String maChuan = Ktradulieu.chuanHoaMa(input);
+                if (!maChuan.startsWith("NCC")) {
+                    System.out.println("Lỗi: Mã nhà cung cấp phải bắt đầu bằng 'NCC' (Ví dụ: NCC001, NCC012)! Hoặc nhấn / để tự tạo mã.");
+                    continue;
+                }
+                if (ds != null && ds.timKiem(maChuan) != null) {
+                    System.out.println("Lỗi: Mã '" + maChuan + "' đã tồn tại! Vui lòng nhập lại hoặc nhấn / để tự tạo mã.");
+                    continue;
+                }
+                this.setMaNCC(maChuan);
+                break;
+            } catch (IllegalArgumentException e) {
+                System.out.println(e.getMessage());
             }
         }
 
-        NhaCungCap ncc = new NhaCungCap(
-                t[1], t[2], t[3], t[4], t[5], t[6],
-                Double.parseDouble(t[7]), ds
-        );
+        this.setTenNCC(Ktradulieu.nhapChuoiKhongRong(sc, "Nhập tên nhà cung cấp: "));
+        while (true) {
+            try {
+                System.out.print("Nhập số điện thoại nhà cung cấp: ");
+                String sdtInput = sc.nextLine().trim();
+                this.setSdt(sdtInput);
+                break;
+            } catch (IllegalArgumentException e) {
+                System.out.println( e.getMessage());
+            }
+        }
 
-        double congNo = Double.parseDouble(t[8]);
+        this.setDiaChi(Ktradulieu.nhapChuoiKhongRong(sc, "Nhập địa chỉ nhà cung cấp: "));
+        String emailInput = Ktradulieu.nhapChuoi(sc, "Nhập email liên hệ: ",
+                Ktradulieu.emailRegex, "Email không đúng định dạng (VD: contact@vinamilk.com)!");
+        this.setEmail(emailInput);
+        this.daXoa = false;
+        System.out.println("Đã thêm xong nhà cung cấp: [" + this.maNCC + "] " + this.tenNCC);
+    }
 
-        if (!Double.isFinite(congNo) || congNo < 0)
-            throw new IllegalArgumentException("Công nợ không hợp lệ!");
+    public String getMaNCC() {
+        return maNCC;
+    }
 
-        ncc.congNoHienTai = congNo;
-        return ncc;
+    public void setMaNCC(String maNCC) {
+        if (maNCC == null || maNCC.trim().isEmpty()) {
+            throw new IllegalArgumentException("[Lỗi] Mã nhà cung cấp không được để trống!");
+        }
+        String maChuan = Ktradulieu.chuanHoaMa(maNCC);
+        if (!maChuan.startsWith("NCC")) {
+            throw new IllegalArgumentException("[Lỗi] Mã nhà cung cấp phải bắt đầu bằng 'NCC' (Nhận: " + maNCC + ")!");
+        }
+        this.maNCC = maChuan;
+    }
+
+    public String getTenNCC() {
+        return tenNCC;
+    }
+
+    public void setTenNCC(String tenNCC) {
+        if (tenNCC == null || tenNCC.trim().isEmpty()) {
+            throw new IllegalArgumentException("[Lỗi] Tên nhà cung cấp không được để trống!");
+        }
+        this.tenNCC = Ktradulieu.chuanHoaChuoi(tenNCC);
+    }
+
+    public String getSdt() {
+        return sdt;
+    }
+
+    public void setSdt(String sdt) {
+        if (sdt == null || sdt.trim().isEmpty()) {
+            throw new IllegalArgumentException("[Lỗi] Số điện thoại nhà cung cấp không được để trống!");
+        }
+        String sdtChuan = sdt.trim().replaceAll("\\s+", "");
+        if (!sdtChuan.matches(Ktradulieu.phoneRegex) && !sdtChuan.matches("^(03|05|07|08|09)\\d{8}$|^02\\d{8,9}$")) {
+            throw new IllegalArgumentException("[Lỗi] Số điện thoại '" + sdt + "' không đúng định dạng (VD: 02854155555 hoặc 0912345678)!");
+        }
+        this.sdt = sdtChuan;
+    }
+
+    public String getDiaChi() {
+        return diaChi;
+    }
+
+    public void setDiaChi(String diaChi) {
+        if (diaChi == null || diaChi.trim().isEmpty()) {
+            throw new IllegalArgumentException("[Lỗi] Địa chỉ nhà cung cấp không được để trống!");
+        }
+        this.diaChi = diaChi.trim();
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        if (email == null || email.trim().isEmpty()) {
+            throw new IllegalArgumentException("[Lỗi] Email nhà cung cấp không được để trống!");
+        }
+        // Dùng biến regex emailRegex có sẵn trong Ktradulieu của bạn
+        if (!email.trim().matches(Ktradulieu.emailRegex)) {
+            throw new IllegalArgumentException("[Lỗi] Email '" + email + "' không đúng định dạng!");
+        }
+        this.email = email.trim();
+    }
+
+    public boolean isDaXoa() {
+        return daXoa;
+    }
+
+    public void setDaXoa(boolean daXoa) {
+        this.daXoa = daXoa;
+    }
+
+    public String toFileString() {
+        return String.format("%s;%s;%s;%s;%s;%b",
+                this.maNCC, this.tenNCC, this.sdt, this.diaChi, this.email, this.daXoa);
     }
 
     @Override
     public String toString() {
-        return super.toString()
-                + String.format("%n       Ngành: %s | Hạn mức: %,.0f"
-                        + " | Đang nợ: %,.0f | SP: %s",
-                nganhHangCungCap, hanMucNoCong,
-                congNoHienTai, String.join(", ", dsSP));
+        return "[" + maNCC + "] " + tenNCC + " - SĐT: " + sdt + " - Email: " + email + " - ĐC: " + diaChi
+                + (daXoa ? " [NGỪNG HỢP TÁC]" : " [ĐANG GIAO DỊCH]");
     }
 }

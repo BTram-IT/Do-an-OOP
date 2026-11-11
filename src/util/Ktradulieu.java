@@ -7,13 +7,7 @@ import java.time.format.DateTimeParseException;
 import java.time.format.ResolverStyle;
 import java.util.Scanner;
 
-/**
- * Lớp Ktradulieu (Ktradulieu): Giữ nguyên 100% tất cả các biến regex và 9 phương thức gốc của bạn,
- * đồng thời tích hợp thêm các phương thức tiện ích (để xóa bỏ hoàn toàn lớp tiện ích rời rạc).
- */
 public class Ktradulieu {
-
-
 
     // =========================================================================
     // CÁC REGEX THÔNG DỤNG (GIỮ NGUYÊN 100% KHÔNG ĐỔI)
