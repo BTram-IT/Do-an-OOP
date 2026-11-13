@@ -49,11 +49,17 @@ public class DSNhaCungCap {
     // Thêm nhà cung cấp
     public boolean them(NhaCungCap ncc) {
         if (ncc == null) return false;
+
         if (timKiem(ncc.getMaNCC()) != null) {
             System.out.println("Mã nhà cung cấp đã tồn tại!");
             return false;
         }
+
         danhSach.add(ncc);
+
+        // Lưu danh sách vào file
+        ghiFile("data/nhacungcap.txt");
+
         return true;
     }
 
@@ -86,6 +92,8 @@ public class DSNhaCungCap {
         }
 
         ncc.setDaXoa(true);
+        ghiFile("data/nhacungcap.txt");
+
         System.out.println("Đã chuyển nhà cung cấp [" + maNCC + "] sang trạng thái [NGỪNG HỢP TÁC]. Dữ liệu phiếu nhập cũ vẫn được bảo lưu.");
         return true;
     }
@@ -140,6 +148,7 @@ public class DSNhaCungCap {
                         System.out.println(">> Đã cập nhật email!");
                         break;
                     case 0:
+                        ghiFile("data/nhacungcap.txt");
                         return true;
                 }
             } catch (IllegalArgumentException e) {

@@ -1,9 +1,9 @@
 package person;
 
+import java.time.DateTimeException;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.Scanner;
-
 import hoadon.DSHoadon;
 import hoadon.HoaDon;
 import hoadon.Hoadonban;
@@ -11,9 +11,14 @@ import hoadon.HoadonNhap;
 import sanpham.DSSanPham;
 import sanpham.SanPham;
 import util.Ktradulieu;
+import java.time.format.DateTimeFormatter;
+import hoadon.CTHDBan;
+import java.util.LinkedHashMap;
+import java.time.format.DateTimeParseException;
+import java.util.HashMap;
+import java.util.Map;
 
-public class QuanLyCuaHang extends Nguoidung {
-
+public class QuanLyCuaHang extends Nguoidung implements Thongke {
     private String khuVucQuanLy;
     private double heSoTrachNhiem;
 
@@ -24,45 +29,27 @@ public class QuanLyCuaHang extends Nguoidung {
         this.heSoTrachNhiem = 1.5;
     }
 
-    public QuanLyCuaHang(String maND, String tenND, String taiKhoan, String matKhau, String soDienThoai,
-                         String vaiTro, boolean daXoa,
-                         String khuVucQuanLy, double heSoTrachNhiem) {
+    public QuanLyCuaHang(String maND, String tenND, String taiKhoan, String matKhau, String soDienThoai, String vaiTro, boolean daXoa, String khuVucQuanLy, double heSoTrachNhiem) {
         super(maND, tenND, taiKhoan, matKhau, soDienThoai, vaiTro, daXoa);
-        this.heSoTrachNhiem=heSoTrachNhiem;
-        this.khuVucQuanLy = khuVucQuanLy;
+        setHeSoTrachNhiem(heSoTrachNhiem);
+        setKhuVucQuanLy(khuVucQuanLy);
     }
 
-    public String getKhuVucQuanLy() {
-        return khuVucQuanLy;
-    }
-
+    public String getKhuVucQuanLy() { return khuVucQuanLy; }
     public void setKhuVucQuanLy(String khuVucQuanLy) {
-        if (khuVucQuanLy == null || khuVucQuanLy.trim().isEmpty()) {
-            throw new IllegalArgumentException("[Lỗi] Khu vực quản lý không được để trống!");
-        }
+        if (khuVucQuanLy == null || khuVucQuanLy.trim().isEmpty()) { throw new IllegalArgumentException("[Lỗi] Khu vực quản lý không được để trống!"); }
         this.khuVucQuanLy = khuVucQuanLy.trim();
     }
 
-    public double getHeSoTrachNhiem() {
-        return heSoTrachNhiem;
-    }
-
+    public double getHeSoTrachNhiem() { return heSoTrachNhiem; }
     public void setHeSoTrachNhiem(double heSoTrachNhiem) {
-        if (heSoTrachNhiem <= 0) {
-            throw new IllegalArgumentException("[Lỗi] Hệ số trách nhiệm quản lý phải lớn hơn 0!");
-        }
+        if (heSoTrachNhiem <= 0) { throw new IllegalArgumentException("[Lỗi] Hệ số trách nhiệm quản lý phải lớn hơn 0!"); }
         this.heSoTrachNhiem = heSoTrachNhiem;
     }
 
     @Override
     public String[] getQuyenHan() {
-        return new String[] {
-                "QUAN_LY_KHO",
-                "DUYET_HOA_DON",
-                "DUYET_SAN_PHAM",
-                "TINH_LUONG_NHAN_VIEN",
-                "XEM_THONG_KE_DOANH_THU"
-        };
+        return new String[] { "QUAN_LY_KHO", "DUYET_HOA_DON", "DUYET_SAN_PHAM", "TINH_LUONG_NHAN_VIEN", "XEM_THONG_KE_DOANH_THU" };
     }
 
     @Override
@@ -73,118 +60,382 @@ public class QuanLyCuaHang extends Nguoidung {
     @Override
     public void nhapThongTin(Scanner sc, DSNhanVien ds) {
         super.nhapThongTin(sc, ds);
-
         System.out.println("--- Nhập thông tin bổ sung cho Quản lý ---");
-        this.khuVucQuanLy = Ktradulieu.nhapChuoi(sc, "Nhập khu vực quản lý (VD: Tầng 1, Quầy thực phẩm, Toàn cửa hàng): ",
-                ".+", "Khu vực không được để trống!");
+        this.khuVucQuanLy = Ktradulieu.nhapChuoi(sc, "Nhập khu vực quản lý (VD: Tầng 1, Quầy thực phẩm, Toàn cửa hàng): ", ".+", "Khu vực không được để trống!");
         this.heSoTrachNhiem = Ktradulieu.nhapSoThucKhongAm(sc, "Nhập hệ số trách nhiệm (Mặc định 1.5): ");
-        if (this.heSoTrachNhiem <= 0) {
-            this.heSoTrachNhiem = 1.5;
-        }
+        if (this.heSoTrachNhiem <= 0) { this.heSoTrachNhiem = 1.5; }
     }
 
-
     public double tinhLuongNhanVien(NhanVien nv) {
-        if (nv == null) {
-            throw new IllegalArgumentException("[Lỗi] Nhân viên không được để trống khi tính lương!");
-        }
-        double luongCoBan = 4000000.0;
-        long soThangLamViec = 0;
-        if (nv.getNgayVaoLam() != null) {
-            soThangLamViec = ChronoUnit.MONTHS.between(nv.getNgayVaoLam(), LocalDate.now());
-        }
-        if (soThangLamViec < 0) {
-            soThangLamViec = 0;
-        }
-
+        if (nv == null) { throw new IllegalArgumentException("[Lỗi] Nhân viên không được để trống khi tính lương!"); }
+        double luongCoBan = nv.getLuongCoBan();
+        long soThangLamViec = (nv.getNgayVaoLam() != null) ? ChronoUnit.MONTHS.between(nv.getNgayVaoLam(), LocalDate.now()) : 0;
+        if (soThangLamViec < 0) { soThangLamViec = 0; }
         long soLanTangLuong = soThangLamViec / 6;
         double tienThuongThamNien = soLanTangLuong * 500000.0;
         double tongLuong = luongCoBan + tienThuongThamNien;
-
         System.out.println("\n--------------------------------------------------");
         System.out.println("[BẢNG TÍNH LƯƠNG NHÂN VIÊN] " + nv.getTenND() + " [" + nv.getMaND() + "]");
         System.out.println("- Ngày vào làm: " + nv.getNgayVaoLam() + " (" + soThangLamViec + " tháng cống hiến)");
-        System.out.println("- Lương khởi điểm: 4,000,000 VND");
+        System.out.printf("- Lương cơ bản: %,.0f VND\n", luongCoBan);
         System.out.println("- Số lần tăng thâm niên (mỗi 6 tháng): " + soLanTangLuong + " lần (+ " + String.format("%,.0f", tienThuongThamNien) + " VND)");
         System.out.println("[Tổng lĩnh] " + String.format("%,.0f VND", tongLuong));
         System.out.println("--------------------------------------------------");
-
         return tongLuong;
     }
 
-    // sa thải nhân viên
     public boolean saThaiNhanVien(DSNhanVien dsNV, String maNV) {
         System.out.println("[Lỗi] BẠN KHÔNG CÓ QUYỀN! Quản lý không có quyền sa thải nhân viên. Quyền hạn thuộc về GIÁM ĐỐC.");
         return false;
     }
 
-    // phê duyệt sp mới
     public void duyetSanPhamMoi(DSSanPham dsSP, SanPham spMoi) {
-        if (dsSP == null || spMoi == null) {
-            throw new IllegalArgumentException("[Lỗi] Dữ liệu sản phẩm duyệt không được null!");
-        }
+        if (this.isDaXoa()) { throw new IllegalStateException("[TỪ CHỐI TRUY CẬP] Tài khoản quản lý đã bị vô hiệu hóa!"); }
+        if (dsSP == null || spMoi == null) { throw new IllegalArgumentException("[Lỗi] Dữ liệu sản phẩm duyệt không được null!"); }
         spMoi.setTrangThaiDuyet("Đã duyệt");
         dsSP.themSP(spMoi);
         System.out.println("[Thành công] Quản lý [" + this.tenND + "] đã xem xét và duyệt thêm sản phẩm mới vào danh mục: " + spMoi.getTenSP() + " [" + spMoi.getMaSP() + "].");
     }
 
     public boolean duyetHoaDon(Scanner sc, DSHoadon dsHD, DSSanPham dsSP) {
-        if (dsHD == null) {
-            System.out.println("[Lỗi] Danh sách hóa đơn không hợp lệ!");
-            return false;
-        }
+        if (this.isDaXoa()) { System.out.println("[TỪ CHỐI TRUY CẬP] Tài khoản quản lý đã bị vô hiệu hóa!"); return false; }
+        if (dsHD == null) { System.out.println("[Lỗi] Danh sách hóa đơn không hợp lệ!"); return false; }
         return dsHD.duyetHoaDon(sc, this, dsSP);
     }
 
-   // doanh thu và tồn kho
-    public void thongKeDoanhThuLoiNhuan(DSHoadon dsHD) {
-        double tongDoanhThuBan = 0;
-        double tongChiPhiNhap = 0;
-        int donBanThanhCong = 0;
-        int donNhapThanhCong = 0;
+    public void thongKeDoanhThuLoiNhuan(DSHoadon dsHD, LocalDate tuNgay, LocalDate denNgay) {
+        if (dsHD == null || tuNgay == null || denNgay == null) { System.out.println("[Lỗi] Dữ liệu thống kê không hợp lệ!"); return; }
+        if (tuNgay.isAfter(denNgay)) { System.out.println("[Lỗi] Ngày bắt đầu không được sau ngày kết thúc!"); return; }
+        tinhToanBaoCao(dsHD, tuNgay, denNgay);
+    }
+
+    @Override
+    public void thongKeThue(DSHoadon dsHD, LocalDate tuNgay, LocalDate denNgay) {
+        if (dsHD == null || tuNgay == null || denNgay == null
+                || tuNgay.isAfter(denNgay)) {
+            System.out.println("[Lỗi] Dữ liệu thống kê không hợp lệ!");
+            return;
+        }
+
+        double tongThueBan = 0;
+        double tongThueNhap = 0;
+        int soHDBan = 0;
+        int soHDNhap = 0;
+
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
         for (int i = 0; i < dsHD.getSoLuong(); i++) {
             HoaDon hd = dsHD.get(i);
-            if (hd != null && hd.isDaXuLyThanhCong()) {
-                if (hd instanceof Hoadonban) {
-                    tongDoanhThuBan += ((Hoadonban) hd).tinhTongTien();
-                    donBanThanhCong++;
-                } else if (hd instanceof HoadonNhap) {
-                    tongChiPhiNhap += hd.tinhTongTien();
-                    donNhapThanhCong++;
-                }
+
+            if (hd == null || !hd.isDaXuLyThanhCong()
+                    || hd.getNgayLap() == null) {
+                continue;
+            }
+
+            LocalDate ngayLap;
+            try {
+                ngayLap = LocalDate.parse(hd.getNgayLap(), dtf);
+            } catch (DateTimeParseException e) {
+                continue;
+            }
+
+            if (ngayLap.isBefore(tuNgay) || ngayLap.isAfter(denNgay)) {
+                continue;
+            }
+
+            if (hd instanceof Hoadonban) {
+                tongThueBan += ((Hoadonban) hd).tinhTienThue();
+                soHDBan++;
+            } else if (hd instanceof HoadonNhap) {
+                tongThueNhap += ((HoadonNhap) hd).tinhTienThue();
+                soHDNhap++;
             }
         }
 
-        double loiNhuanGop = tongDoanhThuBan - tongChiPhiNhap;
+        System.out.println("\n========== BÁO CÁO THỐNG KÊ THUẾ VAT ==========");
+        System.out.println("Thời gian: " + tuNgay.format(dtf)
+                + " - " + denNgay.format(dtf));
+        System.out.printf("- Thuế VAT bán hàng (%d hóa đơn): %,.0f VND%n",
+                soHDBan, tongThueBan);
+        System.out.printf("- Thuế VAT nhập hàng (%d hóa đơn): %,.0f VND%n",
+                soHDNhap, tongThueNhap);
+        System.out.printf("- Tổng thuế VAT: %,.0f VND%n",
+                tongThueBan + tongThueNhap);
+        System.out.println("================================================");
+    }
 
-        System.out.println("\n---------------- BÁO CÁO DOANH THU & CHI PHÍ CỬA HÀNG ----------------");
-        System.out.printf("- Tổng doanh thu bán lẻ (%d đơn thành công): %,.0f VND\n", donBanThanhCong, tongDoanhThuBan);
-        System.out.printf("- Tổng chi phí nhập hàng (%d đơn thành công): %,.0f VND\n", donNhapThanhCong, tongChiPhiNhap);
-        System.out.println("----------------------------------------------------------------------");
-        if (loiNhuanGop >= 0) {
-            System.out.printf("[Kết quả] LỢI NHUẬN GỘP: + %,.0f VND (Kinh doanh có lãi)\n", loiNhuanGop);
-        } else {
-            System.out.printf("[Cảnh báo] LỢI NHUẬN GỘP: - %,.0f VND (Đang bù lỗ)\n", Math.abs(loiNhuanGop));
+    @Override
+    public void thongKeSanPhamBanDuoc(DSHoadon dsHD,DSSanPham dsSP, LocalDate tuNgay, LocalDate denNgay) {
+        if (dsHD == null) { System.out.println("[Lỗi] Danh sách hóa đơn không hợp lệ!"); return; }
+        Map<String, Integer> soLuongBan = new LinkedHashMap<>();
+        Map<String, Integer> soLuongTang = new LinkedHashMap<>();
+        Map<String, String> tenSanPham = new LinkedHashMap<>();
+        double tongTienHang = 0;
+        int tongSoHoaDon = 0;
+
+        for (int i = 0; i < dsHD.getSoLuong(); i++) {
+            HoaDon hd = dsHD.get(i);
+            if (!(hd instanceof Hoadonban) || !hd.isDaXuLyThanhCong()) { continue; }
+            CTHDBan[] dsCT = ((Hoadonban) hd).getDsChiTiet();
+            if (dsCT == null) { continue; }
+            tongSoHoaDon++;
+            for (CTHDBan ct : dsCT) {
+                if (ct == null) { continue; }
+                String maSP = ct.getMaSP();
+                if (maSP == null || maSP.trim().isEmpty()) { continue; }
+                maSP = maSP.trim();
+                soLuongBan.put(maSP, soLuongBan.getOrDefault(maSP, 0) + ct.getSoLuongBan());
+                soLuongTang.put(maSP, soLuongTang.getOrDefault(maSP, 0) + ct.getSoLuongTang());
+                tenSanPham.put(maSP, ct.getTenSP());
+                tongTienHang += ct.tinhTienHang();
+            }
         }
-        System.out.println("----------------------------------------------------------------------");
+
+        System.out.println("\n========== BÁO CÁO SẢN PHẨM BÁN ĐƯỢC ==========");
+        if (soLuongBan.isEmpty()) { System.out.println("[Thông báo] Chưa có sản phẩm nào được bán thành công."); return; }
+        System.out.printf("%-5s | %-12s | %-25s | %-12s | %-12s%n", "STT", "MÃ SP", "TÊN SẢN PHẨM", "SL BÁN", "SL TẶNG");
+        System.out.println("--------------------------------------------------------------------------");
+
+        int stt = 1, tongSoLuongBan = 0, tongSoLuongTang = 0;
+        for (String maSP : soLuongBan.keySet()) {
+            int slBan = soLuongBan.get(maSP);
+            int slTang = soLuongTang.getOrDefault(maSP, 0);
+            tongSoLuongBan += slBan;
+            tongSoLuongTang += slTang;
+            System.out.printf("%-5d | %-12s | %-25s | %-12d | %-12d%n", stt++, maSP, tenSanPham.get(maSP), slBan, slTang);
+        }
+        System.out.println("--------------------------------------------------------------------------");
+        System.out.println("- Số hóa đơn bán thành công: " + tongSoHoaDon);
+        System.out.println("- Tổng số lượng sản phẩm bán: " + tongSoLuongBan);
+        System.out.println("- Tổng số lượng sản phẩm tặng: " + tongSoLuongTang);
+        System.out.printf("- Tổng tiền hàng trước giảm giá và thuế: %,.0f VND%n", tongTienHang);
+        System.out.println("================================================");
+    }
+
+    public void thongKeKhachHang(DSHoadon dsHD, DsKhachHang dsKH, LocalDate tuNgay, LocalDate denNgay) {
+        if (dsHD == null || dsKH == null || tuNgay == null || denNgay == null || tuNgay.isAfter(denNgay)) {
+            System.out.println("[Lỗi] Dữ liệu thống kê không hợp lệ!"); return;
+        }
+        DateTimeFormatter dinhDangNgay = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        Map<String, Integer> soLanMua = new HashMap<>();
+        Map<String, Double> chiTieu = new HashMap<>();
+        Map<String, LocalDate> lanMuaDauTien = new HashMap<>();
+        int tongKhachHang = 0;
+
+        for (int i = 0; i < dsKH.getSoLuong(); i++) {
+            Khachhang kh = dsKH.get(i);
+            if (kh != null && !kh.isDaXoa()) { tongKhachHang++; }
+        }
+
+        for (int i = 0; i < dsHD.getSoLuong(); i++) {
+            HoaDon hoaDon = dsHD.get(i);
+            if (!(hoaDon instanceof Hoadonban)) { continue; }
+            Hoadonban hd = (Hoadonban) hoaDon;
+            if (!hd.isDaXuLyThanhCong()) { continue; }
+            String maKH = hd.getMaKH();
+            if (maKH == null || maKH.trim().isEmpty() || maKH.equalsIgnoreCase("KHACH_LE")) { continue; }
+            Khachhang kh = dsKH.timKiem(maKH);
+            if (kh == null || kh.isDaXoa()) { continue; }
+
+            LocalDate ngayLap;
+            try { ngayLap = LocalDate.parse(hd.getNgayLap(), dinhDangNgay); } catch (DateTimeParseException e) { continue; }
+            String maChuan = kh.getMaKH();
+            if (!lanMuaDauTien.containsKey(maChuan) || ngayLap.isBefore(lanMuaDauTien.get(maChuan))) {
+                lanMuaDauTien.put(maChuan, ngayLap);
+            }
+            if (ngayLap.isBefore(tuNgay) || ngayLap.isAfter(denNgay)) { continue; }
+            soLanMua.put(maChuan, soLanMua.getOrDefault(maChuan, 0) + 1);
+            chiTieu.put(maChuan, chiTieu.getOrDefault(maChuan, 0.0) + hd.tinhThanhTien());
+        }
+
+        int soKhachHangMoi = 0;
+        for (LocalDate ngayMua : lanMuaDauTien.values()) {
+            if (!ngayMua.isBefore(tuNgay) && !ngayMua.isAfter(denNgay)) { soKhachHangMoi++; }
+        }
+
+        String maMuaNhieuNhat = null;
+        int soLanMuaNhieuNhat = 0;
+        for (Map.Entry<String, Integer> entry : soLanMua.entrySet()) {
+            if (entry.getValue() > soLanMuaNhieuNhat) { soLanMuaNhieuNhat = entry.getValue(); maMuaNhieuNhat = entry.getKey(); }
+        }
+
+        String maChiTieuCaoNhat = null;
+        double mucChiTieuCaoNhat = 0, tongDoanhThuKhachHang = 0;
+        for (Map.Entry<String, Double> entry : chiTieu.entrySet()) {
+            double tien = entry.getValue();
+            tongDoanhThuKhachHang += tien;
+            if (maChiTieuCaoNhat == null || tien > mucChiTieuCaoNhat) { mucChiTieuCaoNhat = tien; maChiTieuCaoNhat = entry.getKey(); }
+        }
+
+        System.out.println("\n========== BÁO CÁO KHÁCH HÀNG ==========");
+        System.out.println("Thời gian: " + tuNgay.format(dinhDangNgay) + " - " + denNgay.format(dinhDangNgay));
+        System.out.println("----------------------------------------");
+        System.out.println("Tổng số khách hàng: " + tongKhachHang);
+        System.out.println("Số khách hàng đã mua hàng: " + soLanMua.size());
+        System.out.println("Số khách hàng mới trong kỳ: " + soKhachHangMoi);
+        System.out.println("----------------------------------------");
+
+        if (maMuaNhieuNhat != null) {
+            Khachhang kh = dsKH.timKiem(maMuaNhieuNhat);
+            System.out.println("Khách hàng mua nhiều lần nhất: " + kh.getTenKH() + " [" + maMuaNhieuNhat + "] - " + soLanMuaNhieuNhat + " hóa đơn");
+        } else { System.out.println("Khách hàng mua nhiều lần nhất: Chưa có"); }
+
+        if (maChiTieuCaoNhat != null) {
+            Khachhang kh = dsKH.timKiem(maChiTieuCaoNhat);
+            System.out.println("Khách hàng có tổng chi tiêu cao nhất: " + kh.getTenKH() + " [" + maChiTieuCaoNhat + "] - " + Ktradulieu.dinhDangTien(mucChiTieuCaoNhat));
+        } else { System.out.println("Khách hàng có tổng chi tiêu cao nhất: Chưa có"); }
+
+        System.out.println("----------------------------------------");
+        System.out.println("Tổng doanh thu từ khách hàng: " + Ktradulieu.dinhDangTien(tongDoanhThuKhachHang));
+        System.out.println("========================================");
+    }
+
+    @Override
+    public void thongKeNhanVien(DSNhanVien dsNV) {
+        if (dsNV == null) {
+            System.out.println("[Lỗi] Danh sách nhân viên không hợp lệ!");
+            return;
+        }
+
+        int tongNhanVien = 0;
+
+        System.out.println("\n========== BÁO CÁO NHÂN VIÊN ==========");
+
+        for (int i = 0; i < dsNV.getSoLuong(); i++) {
+
+            Object obj = dsNV.get(i);
+
+            if (!(obj instanceof NhanVien)) {
+                continue;
+            }
+
+            NhanVien nv = (NhanVien) obj;
+
+            if (nv == null) continue;
+
+            tongNhanVien++;
+
+            System.out.println("--------------------------------------");
+            System.out.println("Mã nhân viên: " + nv.getMaND());
+            System.out.println("Họ tên: " + nv.getTenND());
+            System.out.println("Ngày vào làm: " + nv.getNgayVaoLam());
+            System.out.printf("Lương cơ bản: %,.0f VND%n", nv.getLuongCoBan());
+        }
+
+        System.out.println("--------------------------------------");
+        System.out.println("Tổng số nhân viên: " + tongNhanVien);
+        System.out.println("======================================");
+    }
+    @Override
+    public void thongKeBangLuong(DSNhanVien dsNV) {
+        if (dsNV == null) {
+            System.out.println("[Lỗi] Danh sách nhân viên không hợp lệ!");
+            return;
+        }
+
+        double tongQuyLuong = 0;
+        int soNhanVien = 0;
+
+        System.out.println("\n========== BÁO CÁO BẢNG LƯƠNG ==========");
+
+        for (int i = 0; i < dsNV.getSoLuong(); i++) {
+
+            Object obj = dsNV.get(i);
+
+            if (!(obj instanceof NhanVien)) {
+                continue;
+            }
+
+            NhanVien nv = (NhanVien) obj;
+
+            if (nv == null) continue;
+
+            soNhanVien++;
+            tongQuyLuong += tinhLuongNhanVien(nv);
+        }
+
+        System.out.println("\n========== TỔNG KẾT BẢNG LƯƠNG ==========");
+        System.out.println("Số nhân viên tính lương: " + soNhanVien);
+        System.out.printf("Tổng quỹ lương: %,.0f VND%n", tongQuyLuong);
+        System.out.println("=========================================");
+    }
+
+    @Override
+    public void thongKeNhanVienVaBangLuong(DSNhanVien dsNV) {
+        thongKeNhanVien(dsNV);
+        thongKeBangLuong(dsNV);
+    }
+
+    private void tinhToanBaoCao(DSHoadon dsHD, LocalDate tuNgay, LocalDate denNgay) {
+        double tongDoanhThuBan = 0, tongChiPhiNhap = 0;
+        int donBanThanhCong = 0, donNhapThanhCong = 0;
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
+        for (int i = 0; i < dsHD.getSoLuong(); i++) {
+            HoaDon hd = dsHD.get(i);
+            if (hd == null || !hd.isDaXuLyThanhCong()) { continue; }
+            if (hd.getNgayLap() == null || hd.getNgayLap().trim().isEmpty()) { continue; }
+            LocalDate ngayLap;
+            try { ngayLap = LocalDate.parse(hd.getNgayLap(), dtf); } catch (DateTimeParseException e) { continue; }
+            if (ngayLap.isBefore(tuNgay) || ngayLap.isAfter(denNgay)) { continue; }
+            if (hd instanceof Hoadonban) { tongDoanhThuBan += hd.tinhTongTien(); donBanThanhCong++; }
+            else if (hd instanceof HoadonNhap) { tongChiPhiNhap += hd.tinhTongTien(); donNhapThanhCong++; }
+        }
+
+        System.out.println("\n========== BÁO CÁO DOANH THU & CHI PHÍ ==========");
+        System.out.println("Thời gian: " + tuNgay.format(dtf)
+                + " - " + denNgay.format(dtf));
+
+        System.out.printf("- Tổng doanh thu bán hàng (%d đơn thành công): %,.0f VND%n",
+                donBanThanhCong, tongDoanhThuBan);
+
+        System.out.printf("- Tổng chi phí nhập hàng (%d đơn thành công): %,.0f VND%n",
+                donNhapThanhCong, tongChiPhiNhap);
+
+        System.out.println("======================================================");
+    }
+
+    public void thongKeTongQuanHoaDon(DSHoadon dsHD, LocalDate tuNgay, LocalDate denNgay) {
+        if (dsHD == null || tuNgay == null || denNgay == null) { System.out.println("[Lỗi] Dữ liệu báo cáo không hợp lệ!"); return; }
+        if (tuNgay.isAfter(denNgay)) { System.out.println("[Lỗi] Ngày bắt đầu không được sau ngày kết thúc!"); return; }
+        int tongHDBan = 0, tongHDNhap = 0, tongHDHuy = 0, tongHD = 0;
+        DateTimeFormatter dinhDangNgay = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
+        for (HoaDon hd : dsHD.getDanhSach()) {
+            if (hd == null || hd.getNgayLap() == null) { continue; }
+            LocalDate ngayLap;
+            try { ngayLap = LocalDate.parse(hd.getNgayLap(), dinhDangNgay); } catch (DateTimeParseException e) { continue; }
+            if (ngayLap.isBefore(tuNgay) || ngayLap.isAfter(denNgay)) { continue; }
+            tongHD++;
+            if (hd.isDaHuy()) { tongHDHuy++; continue; }
+            if (hd.isDaXuLyThanhCong()) {
+                if (hd instanceof Hoadonban) { tongHDBan++; }
+                else if (hd instanceof HoadonNhap) { tongHDNhap++; }
+            }
+        }
+
+        System.out.println("\n========== BÁO CÁO TỔNG QUAN HÓA ĐƠN ==========");
+        System.out.println("Từ ngày: " + tuNgay.format(dinhDangNgay));
+        System.out.println("Đến ngày: " + denNgay.format(dinhDangNgay));
+        System.out.println("------------------------------------------------");
+        System.out.println("Số hóa đơn bán thành công: " + tongHDBan);
+        System.out.println("Số hóa đơn nhập thành công: " + tongHDNhap);
+        System.out.println("Số hóa đơn bị hủy: " + tongHDHuy);
+        System.out.println("Tổng số hóa đơn: " + tongHD);
+        System.out.println("================================================");
     }
 
     public void thongKeTonKho(DSSanPham dsSP) {
+        if (dsSP == null) { System.out.println("[Lỗi] Danh sách sản phẩm không hợp lệ!"); return; }
         System.out.println("\n---------------- BÁO CÁO TỒN KHO & CẢNH BÁO HÀNG HÓA ----------------");
-        int sapHet = 0;
-        int anToan = 0;
-
+        int sapHet = 0, anToan = 0;
         for (int i = 0; i < dsSP.getSoLuong(); i++) {
             SanPham sp = dsSP.get(i);
             if (sp != null) {
                 if (sp.getSoLuongTon() <= 10) {
-                    System.out.printf("[Cảnh báo sắp hết] %-8s | %-25s | Tồn kho: %d %s\n",
-                            sp.getMaSP(), sp.getTenSP(), sp.getSoLuongTon(), sp.getDonViTinh());
+                    System.out.printf("[Cảnh báo sắp hết] %-8s | %-25s | Tồn kho: %d %s\n", sp.getMaSP(), sp.getTenSP(), sp.getSoLuongTon(), sp.getDonViTinh());
                     sapHet++;
-                } else {
-                    anToan++;
-                }
+                } else { anToan++; }
             }
         }
         System.out.println("---------------------------------------------------------------------");
@@ -193,15 +444,53 @@ public class QuanLyCuaHang extends Nguoidung {
         System.out.println("- Số mặt hàng cần nhập bổ sung ngay (<= 10): " + sapHet);
     }
 
+    @Override
+    public void baoCaoTheoThang(DSHoadon dsHD, int thang, int nam) {
+        if (dsHD == null) { System.out.println("[Lỗi] Danh sách hóa đơn không hợp lệ!"); return; }
+        if (nam <= 0 || thang < 1 || thang > 12) { System.out.println("[Lỗi] Tháng hoặc năm không hợp lệ!"); return; }
+        try {
+            LocalDate tuNgay = LocalDate.of(nam, thang, 1);
+            LocalDate denNgay = tuNgay.withDayOfMonth(tuNgay.lengthOfMonth());
+            System.out.println("\n========== BÁO CÁO THEO THÁNG ==========\nTháng " + thang + "/" + nam);
+            tinhToanBaoCao(dsHD, tuNgay, denNgay);
+            thongKeTongQuanHoaDon(dsHD, tuNgay, denNgay);
+        } catch (DateTimeException e) { System.out.println("[Lỗi] Không thể tạo kỳ báo cáo: " + e.getMessage()); }
+    }
+
+    @Override
+    public void baoCaoTheoQuy(DSHoadon dsHD, int quy, int nam) {
+        if (dsHD == null) { System.out.println("[Lỗi] Danh sách hóa đơn không hợp lệ!"); return; }
+        if (nam <= 0 || quy < 1 || quy > 4) { System.out.println("[Lỗi] Quý hoặc năm không hợp lệ!"); return; }
+        try {
+            int thangBatDau = (quy - 1) * 3 + 1;
+            LocalDate tuNgay = LocalDate.of(nam, thangBatDau, 1);
+            LocalDate denNgay = tuNgay.plusMonths(2).withDayOfMonth(tuNgay.plusMonths(2).lengthOfMonth());
+            System.out.println("\n========== BÁO CÁO THEO QUÝ ==========\nQuý " + quy + " năm " + nam);
+            tinhToanBaoCao(dsHD, tuNgay, denNgay);
+            thongKeTongQuanHoaDon(dsHD, tuNgay, denNgay);
+        } catch (DateTimeException e) { System.out.println("[Lỗi] Không thể tạo kỳ báo cáo: " + e.getMessage()); }
+    }
+
+    @Override
+    public void baoCaoTheoNam(DSHoadon dsHD, int nam) {
+        if (dsHD == null) { System.out.println("[Lỗi] Danh sách hóa đơn không hợp lệ!"); return; }
+        if (nam <= 0) { System.out.println("[Lỗi] Năm báo cáo không hợp lệ!"); return; }
+        try {
+            LocalDate tuNgay = LocalDate.of(nam, 1, 1);
+            LocalDate denNgay = LocalDate.of(nam, 12, 31);
+            System.out.println("\n========== BÁO CÁO THEO NĂM ==========\nNăm " + nam);
+            tinhToanBaoCao(dsHD, tuNgay, denNgay);
+            thongKeTongQuanHoaDon(dsHD, tuNgay, denNgay);
+        } catch (DateTimeException e) { System.out.println("[Lỗi] Không thể tạo kỳ báo cáo: " + e.getMessage()); }
+    }
+
     public void xuatThongTin() {
         System.out.printf("%-10s | %-22s | %-12s | %-15s | Khu vực: %s | Hệ số: %.2f | Trạng thái: %s\n",
-                getMaND(), getTenND(), getSoDienThoai(), getVaiTro(), khuVucQuanLy, heSoTrachNhiem,
-                (daXoa ? "ĐÃ NGHỈ VIỆC" : "HOẠT ĐỘNG"));
+                getMaND(), getTenND(), getSoDienThoai(), getVaiTro(), khuVucQuanLy, heSoTrachNhiem, (daXoa ? "ĐÃ NGHỈ VIỆC" : "HOẠT ĐỘNG"));
     }
 
     public String toFileString() {
-        return String.format("%s;%s;%s;%s;%s;%s;%b;%s;%.2f",
-                getMaND(), getTenND(), getTaiKhoan(), getMatKhau(), getSoDienThoai(), getVaiTro(), isDaXoa(),
-                khuVucQuanLy, heSoTrachNhiem);
+        return String.format("QUANLY;%s;%s;%s;%s;%s;%s;%b;%s;%.2f",
+                getMaND(), getTenND(), getTaiKhoan(), getMatKhau(), getSoDienThoai(), getVaiTro(), isDaXoa(), khuVucQuanLy, heSoTrachNhiem);
     }
 }

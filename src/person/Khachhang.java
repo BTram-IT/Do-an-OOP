@@ -1,4 +1,4 @@
-package person; // hoặc package khachhang tùy dự án của bạn
+package person;
 
 import java.util.Scanner;
 import util.Ktradulieu;
@@ -21,14 +21,14 @@ public class Khachhang {
         this.daXoa = false;
     }
 
-    // Constructor đầy đủ tham số
+    // Constructor đầy đủ tham số (Đã sửa: gọi qua setter để kiểm tra dữ liệu hợp lệ)
     public Khachhang(String maKH, String tenKH, String sdt, String diaChi, int diemTichLuy, boolean daXoa) {
-        this.maKH = maKH;
-        this.tenKH = tenKH;
-        this.sdt = sdt;
-        this.diaChi = diaChi;
-        this.diemTichLuy = diemTichLuy;
-        this.daXoa = daXoa;
+        setMaKH(maKH);
+        setTenKH(tenKH);
+        setSdt(sdt);
+        setDiaChi(diaChi);
+        setDiemTichLuy(diemTichLuy);
+        setDaXoa(daXoa);
     }
 
     public void nhapThongTin(Scanner sc, DsKhachHang ds) {
@@ -67,7 +67,7 @@ public class Khachhang {
         this.setDiaChi(Ktradulieu.nhapChuoiKhongRong(sc, "Nhập địa chỉ: "));
         this.diemTichLuy = 0;
         this.daXoa = false;
-        System.out.println("✅ Đã thêm xong khách hàng: [" + this.maKH + "] " + this.tenKH);
+        System.out.println(" Đã thêm xong khách hàng: [" + this.maKH + "] " + this.tenKH);
     }
 
     public String getMaKH() {

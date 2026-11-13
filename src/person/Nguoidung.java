@@ -182,6 +182,7 @@ public abstract class Nguoidung {
     public void setDaXoa(boolean daXoa) {
         this.daXoa = daXoa;
     }
+    public abstract String toFileString();
 
     public abstract String[] getQuyenHan();
     public abstract String thucHienCongViec();

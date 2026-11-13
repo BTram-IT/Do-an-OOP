@@ -44,8 +44,11 @@ public class DsKhachHang {
 
     public void themTuBanPhim(Scanner sc) {
         Khachhang kh = new Khachhang();
-        kh.nhapThongTin(sc, this); // Tự hiện dòng "Nhấn / để tự tạo mã"
-        this.them(kh);
+        kh.nhapThongTin(sc, this);
+
+        if (this.them(kh)) {
+            this.ghiFile("data/khachhang.txt");
+        }
     }
 
     public boolean them(Khachhang kh) {
@@ -73,12 +76,18 @@ public class DsKhachHang {
     // xóa
     public boolean xoa(String maKH) {
         Khachhang kh = timKiem(maKH);
+
         if (kh == null) {
-            System.out.println(" Không tìm thấy khách hàng: " + maKH);
+            System.out.println("Không tìm thấy khách hàng: " + maKH);
             return false;
         }
+
         kh.setDaXoa(true);
-        System.out.println(" Đã xóa khách hàng: " + maKH);
+
+        // Cập nhật file sau khi xóa
+        ghiFile("data/khachhang.txt");
+
+        System.out.println("Đã xóa khách hàng: " + maKH);
         return true;
     }
 
@@ -129,7 +138,10 @@ public class DsKhachHang {
                         System.out.println(">> Đã cập nhật điểm tích lũy thành công!");
                         break;
                     case 0:
-                        System.out.println("Đã hoàn tất chỉnh sửa khách hàng [" + kh.getMaKH() + "].");
+                        ghiFile("data/khachhang.txt");
+
+                        System.out.println("Đã hoàn tất chỉnh sửa khách hàng ["
+                                + kh.getMaKH() + "].");
                         return true;
                 }
             } catch (IllegalArgumentException e) {

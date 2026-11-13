@@ -24,6 +24,8 @@ public class DSSanPham {
     public DSSanPham() {
         this.danhSach = new SanPham[SUC_CHUA_MAC_DINH];
         this.soLuong = 0;
+
+
     }
 
     public DSSanPham(int sucChuaBanDau) {
@@ -86,6 +88,8 @@ public class DSSanPham {
             moRongBoNho();
         }
         this.danhSach[this.soLuong++] = sp;
+        ghiFile("data/sanpham.txt");
+
         System.out.println("Đã lưu sản phẩm: [" + sp.getMaSP() + "] " + sp.getTenSP() + " vào kho.");
         return true;
     }
@@ -117,30 +121,47 @@ public class DSSanPham {
         return null;
     }
 
-    // 3. XÓA SẢN PHẨM (Dồn mảng tĩnh, chỉ Quản lý hoặc Giám đốc mới xóa được)
     public boolean xoaSP(String maSP, Nguoidung nguoiThucHien) {
-        if (!nguoiThucHien.getVaiTro().equalsIgnoreCase("QuanLy") && !nguoiThucHien.getVaiTro().equalsIgnoreCase("GiamDoc")) {
-            System.out.println("[Lỗi] BẠN KHÔNG CÓ QUYỀN! Chỉ Quản lý hoặc Giám đốc mới được thực hiện thao tác này.");
+
+        // Kiểm tra quyền
+        if (!(nguoiThucHien instanceof QuanLyCuaHang)
+                && !(nguoiThucHien instanceof Giamdoc)) {
+
+            System.out.println(
+                    "[Lỗi] BẠN KHÔNG CÓ QUYỀN! Chỉ Quản lý hoặc Giám đốc mới được thực hiện thao tác này."
+            );
+            return false;
+        }
+
+        // Kiểm tra mã sản phẩm
+        if (maSP == null || maSP.trim().isEmpty()) {
+            System.out.println("Mã sản phẩm không được để trống!");
             return false;
         }
 
         int viTri = -1;
+
         for (int i = 0; i < this.soLuong; i++) {
             if (this.danhSach[i].getMaSP().equalsIgnoreCase(maSP.trim())) {
                 viTri = i;
                 break;
             }
         }
+
         if (viTri == -1) {
-            System.out.println(" Không tìm thấy mã SP: " + maSP);
+            System.out.println("Không tìm thấy mã SP: " + maSP);
             return false;
         }
 
+        // Dồn mảng sau khi xóa
         for (int i = viTri; i < this.soLuong - 1; i++) {
             this.danhSach[i] = this.danhSach[i + 1];
         }
         this.danhSach[--this.soLuong] = null;
-        System.out.println(" Đã xóa thành công sản phẩm: " + maSP);
+        ghiFile("data/sanpham.txt");
+
+        System.out.println("Đã xóa thành công sản phẩm: " + maSP);
+
         return true;
     }
 
@@ -200,6 +221,7 @@ public class DSSanPham {
                     System.out.println("Đã hủy thao tác sửa.");
                     return false;
             }
+            ghiFile("data/sanpham.txt");
             System.out.println("Đã cập nhật thông tin sản phẩm thành công!");
             return true;
         } catch (IllegalArgumentException e) {
@@ -215,30 +237,48 @@ public class DSSanPham {
         int tonMoi = sp.getSoLuongTon() + soLuongThayDoi;
         if (tonMoi < 0) return false;
         sp.setSoLuongTon(tonMoi);
+        ghiFile("data/sanpham.txt");
+
         return true;
     }
 
     public void kiemTraVaCapNhatHanSuDung() {
         int hetHan = 0;
+
         for (int i = 0; i < this.soLuong; i++) {
-            // Hàm kiemTraHanSuDung của SanPham tự so sánh với LocalDate.now()
             if (!this.danhSach[i].kiemTraHanSuDung()) {
                 hetHan++;
             }
         }
+
         if (hetHan == 0) {
             System.out.println("Tất cả sản phẩm trong kho đều còn hạn sử dụng.");
         } else {
+            // Lưu lại số lượng tồn kho sau khi cập nhật
+            ghiFile("data/sanpham.txt");
+
             System.out.println("Có " + hetHan + " sản phẩm hết hạn đã được cập nhật đưa về tồn kho = 0!");
         }
     }
 
     public void xuatDanhSach() {
-        System.out.println("\n================ DANH SÁCH SẢN PHẨM TRONG KHO (" + this.soLuong + " sản phẩm) ================");
-        for (int i = 0; i < this.soLuong; i++) {
-            System.out.println((i + 1) + ". " + this.danhSach[i].toString());
+        System.out.println("\n                          DANH SÁCH SẢN PHẨM TRONG KHO");
+        System.out.println("                       Tổng số: " + this.soLuong + " sản phẩm");
+
+        if (this.soLuong == 0) {
+            System.out.println("\n                 Kho hiện chưa có sản phẩm.");
+            return;
         }
-        System.out.println("==================================================================================");
+
+        for (int i = 0; i < this.soLuong; i++) {
+            System.out.printf("\n  %02d. %s%n", i + 1, this.danhSach[i]);
+
+            if (i < this.soLuong - 1) {
+                System.out.println("  " + "─".repeat(60));
+            }
+        }
+
+        System.out.println("\n                             KẾT THÚC DANH SÁCH SẢN PHẨM");
     }
 
     // đọc file
@@ -298,17 +338,30 @@ public class DSSanPham {
 
     // ghi file
     public void ghiFile(String duongDan) {
-        try (BufferedWriter bw = new BufferedWriter(new FileWriter(duongDan))) {
+        File file = new File(duongDan);
+
+        // Tự tạo thư mục chứa file nếu chưa tồn tại
+        File thuMucCha = file.getAbsoluteFile().getParentFile();
+
+        if (thuMucCha != null && !thuMucCha.exists()) {
+            thuMucCha.mkdirs();
+        }
+
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(file))) {
             for (int i = 0; i < this.soLuong; i++) {
                 SanPham sp = this.danhSach[i];
+
                 if (sp instanceof ThucAn) {
                     bw.write(((ThucAn) sp).toFileString());
                 } else if (sp instanceof DoUong) {
                     bw.write(((DoUong) sp).toFileString());
                 }
+
                 bw.newLine();
             }
+
             System.out.println("Đã lưu danh sách " + this.soLuong + " sản phẩm vào file: " + duongDan);
+
         } catch (IOException e) {
             System.out.println("Lỗi ghi file SP: " + e.getMessage());
         }

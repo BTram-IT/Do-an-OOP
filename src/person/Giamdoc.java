@@ -1,6 +1,7 @@
 package person;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Scanner;
 
 import hoadon.DSHoadon;
@@ -27,8 +28,8 @@ public class Giamdoc extends Nguoidung {
                    String vaiTro, boolean daXoa,
                    double phuCapChucVu, double tyLeCoPhan) {
         super(maND, tenND, taiKhoan, matKhau, soDienThoai, vaiTro, daXoa);
-       this.phuCapChucVu = phuCapChucVu;
-       this.tyLeCoPhan = tyLeCoPhan;
+        setPhuCapChucVu(phuCapChucVu);
+        setTyLeCoPhan(tyLeCoPhan);
     }
 
     public double getPhuCapChucVu() {
@@ -52,7 +53,6 @@ public class Giamdoc extends Nguoidung {
         }
         this.tyLeCoPhan = tyLeCoPhan;
     }
-
 
     @Override
     public String[] getQuyenHan() {
@@ -91,24 +91,85 @@ public class Giamdoc extends Nguoidung {
         }
     }
 
-    public boolean saThaiNhanVien(DSNhanVien dsNV, String maNV) {
-        if (dsNV == null || maNV == null || maNV.trim().isEmpty()) {
-            System.out.println("[Lỗi] Danh sách hoặc mã nhân viên không hợp lệ!");
-            return false;
+    public void duyetYeuCauSaThai(Scanner sc, DSNhanVien dsNV) {
+        if (this.isDaXoa()) {
+            System.out.println("[Lỗi] Tài khoản giám đốc đã bị vô hiệu hóa!");
+            return;
         }
-        Scanner sc = new Scanner(System.in);
-        boolean thanhCong = dsNV.xoa(sc, this, maNV.trim());
 
-        if (thanhCong) {
-            System.out.println("[Thành công] Giám đốc [" + this.tenND + "] đã phê duyệt quyết định sa thải nhân viên [" + maNV + "].");
-        } else {
-            System.out.println("[Lỗi] Không thể hoàn tất sa thải nhân viên mã " + maNV + ".");
+        if (sc == null || dsNV == null) {
+            System.out.println("[Lỗi] Dữ liệu không hợp lệ!");
+            return;
         }
-        return thanhCong;
+
+        // Lấy danh sách nhân viên đang có yêu cầu sa thải
+        List<NhanVien> danhSach = dsNV.getDanhSachYeuCauSaThai();
+
+        System.out.println("\n========== DANH SÁCH YÊU CẦU SA THẢI ==========");
+
+        if (danhSach.isEmpty()) {
+            System.out.println("[Thông báo] Hiện không có yêu cầu sa thải nào.");
+            return;
+        }
+
+        for (int i = 0; i < danhSach.size(); i++) {
+            NhanVien nv = danhSach.get(i);
+
+            System.out.println("--------------------------------------------");
+            System.out.println("STT: " + (i + 1));
+            System.out.println("Mã nhân viên: " + nv.getMaND());
+            System.out.println("Họ tên: " + nv.getTenND());
+            System.out.println("Số điện thoại: " + nv.getSoDienThoai());
+            System.out.println("Lý do đề xuất: " + nv.getYeuCauSaThai());
+        }
+
+        System.out.println("--------------------------------------------");
+
+        // Chọn nhân viên cần xử lý
+        String maNV = Ktradulieu.nhapChuoiKhongRong(
+                sc, "Nhập mã nhân viên cần xử lý yêu cầu: ");
+
+        NhanVien nv = dsNV.timNhanVienTheoMa(maNV);
+
+        if (nv == null || nv.getYeuCauSaThai() == null
+                || nv.getYeuCauSaThai().trim().isEmpty()) {
+            System.out.println("[Lỗi] Nhân viên không tồn tại hoặc không có yêu cầu sa thải!");
+            return;
+        }
+
+        System.out.println("\n========== XỬ LÝ YÊU CẦU SA THẢI ==========");
+        System.out.println("Mã nhân viên: " + nv.getMaND());
+        System.out.println("Họ tên: " + nv.getTenND());
+        System.out.println("Lý do: " + nv.getYeuCauSaThai());
+
+        System.out.println("1. Chấp nhận sa thải");
+        System.out.println("2. Từ chối sa thải");
+        System.out.println("0. Quay lại");
+
+        int chon = Ktradulieu.luaChon(sc, "Chọn quyết định (0-2): ", 0, 2);
+
+        switch (chon) {
+            case 1:
+                // DSNhanVien.xoa() sẽ kiểm tra quyền giám đốc,
+                // đánh dấu nhân viên đã nghỉ và xóa yêu cầu.
+                dsNV.xoa(sc, this, maNV);
+                break;
+
+            case 2:
+                // Từ chối yêu cầu, nhân viên vẫn hoạt động.
+                nv.setYeuCauSaThai(null);
+                System.out.println("[Thành công] Đã từ chối yêu cầu sa thải!");
+                break;
+
+            case 0:
+                System.out.println("[Thông báo] Đã hủy thao tác.");
+                return;
+        }
     }
-
-
     public void duyetSanPhamMoi(DSSanPham dsSP, SanPham spMoi) {
+        if (this.isDaXoa()) {
+            throw new IllegalStateException("[TỪ CHỐI TRUY CẬP] Tài khoản giám đốc đã bị vô hiệu hóa!");
+        }
         if (dsSP == null || spMoi == null) {
             throw new IllegalArgumentException("[Lỗi] Dữ liệu sản phẩm duyệt không được để trống!");
         }
@@ -117,8 +178,12 @@ public class Giamdoc extends Nguoidung {
         System.out.println("[Thành công] Giám đốc [" + this.tenND + "] đã chính thức phê duyệt sản phẩm mới: " + spMoi.getTenSP() + " [" + spMoi.getMaSP() + "].");
     }
 
-    //  Phê duyệt hóa đơn
+    // Phê duyệt hóa đơn
     public boolean duyetHoaDon(Scanner sc, DSHoadon dsHD, DSSanPham dsSP) {
+        if (this.isDaXoa()) {
+            System.out.println("[TỪ CHỐI TRUY CẬP] Tài khoản giám đốc đã bị vô hiệu hóa!");
+            return false;
+        }
         if (dsHD == null) {
             System.out.println("[Lỗi] Danh sách hóa đơn không hợp lệ!");
             return false;
@@ -126,13 +191,30 @@ public class Giamdoc extends Nguoidung {
         return dsHD.duyetHoaDon(sc, this, dsSP);
     }
 
-
+    // Đã sửa: duyệt danh sách hóa đơn để tính toán doanh thu và chi phí thực tế
     public void thongKeDoanhThuLoiNhuan(DSHoadon dsHD) {
+        if (dsHD == null) {
+            System.out.println("[Lỗi] Danh sách hóa đơn không hợp lệ!");
+            return;
+        }
+
         double tongDoanhThu = 0;
         double tongChiPhiNhap = 0;
         int donBanThanhCong = 0;
         int donNhapThanhCong = 0;
 
+        for (int i = 0; i < dsHD.getSoLuong(); i++) {
+            HoaDon hd = dsHD.get(i);
+            if (hd != null && hd.isDaXuLyThanhCong()) {
+                if (hd instanceof Hoadonban) {
+                    tongDoanhThu += ((Hoadonban) hd).tinhTongTien();
+                    donBanThanhCong++;
+                } else if (hd instanceof HoadonNhap) {
+                    tongChiPhiNhap += hd.tinhTongTien();
+                    donNhapThanhCong++;
+                }
+            }
+        }
 
         double loiNhuan = tongDoanhThu - tongChiPhiNhap;
 
@@ -148,7 +230,87 @@ public class Giamdoc extends Nguoidung {
         System.out.println("--------------------------------------------------------------------------");
     }
 
+    // 1. Báo cáo tổng quan hóa đơn
+    public void thongKeTongQuanHoaDon(
+            QuanLyCuaHang baoCao, DSHoadon dsHD,
+            LocalDate tuNgay, LocalDate denNgay) {
+
+        if (this.isDaXoa() || baoCao == null) {
+            System.out.println("[Lỗi] Không thể thực hiện báo cáo!");
+            return;
+        }
+
+        baoCao.thongKeTongQuanHoaDon(dsHD, tuNgay, denNgay);
+    }
+
+    // 2. Báo cáo doanh thu và chi phí nhập hàng
+    public void thongKeDoanhThuLoiNhuan(
+            QuanLyCuaHang baoCao, DSHoadon dsHD,
+            LocalDate tuNgay, LocalDate denNgay) {
+
+        if (this.isDaXoa() || baoCao == null) {
+            System.out.println("[Lỗi] Không thể thực hiện báo cáo!");
+            return;
+        }
+
+        baoCao.thongKeDoanhThuLoiNhuan(dsHD, tuNgay, denNgay);
+    }
+
+    // 3. Báo cáo thuế
+    public void thongKeThue(
+            QuanLyCuaHang baoCao, DSHoadon dsHD,
+            LocalDate tuNgay, LocalDate denNgay) {
+
+        if (this.isDaXoa() || baoCao == null) {
+            System.out.println("[Lỗi] Không thể thực hiện báo cáo!");
+            return;
+        }
+
+        baoCao.thongKeThue(dsHD, tuNgay, denNgay);
+    }
+
+    // 4. Báo cáo sản phẩm bán được và không bán được
+    public void thongKeSanPhamBanDuoc(
+            QuanLyCuaHang baoCao, DSHoadon dsHD, DSSanPham dsSP,
+            LocalDate tuNgay, LocalDate denNgay) {
+
+        if (this.isDaXoa() || baoCao == null) {
+            System.out.println("[Lỗi] Không thể thực hiện báo cáo!");
+            return;
+        }
+
+        baoCao.thongKeSanPhamBanDuoc(dsHD, dsSP, tuNgay, denNgay);
+    }
+
+    // 5. Báo cáo nhân viên và bảng lương
+    public void thongKeNhanVienVaBangLuong(
+            QuanLyCuaHang baoCao, DSNhanVien dsNV) {
+
+        if (this.isDaXoa() || baoCao == null) {
+            System.out.println("[Lỗi] Không thể thực hiện báo cáo!");
+            return;
+        }
+
+        baoCao.thongKeNhanVienVaBangLuong(dsNV);
+    }
+
+    // 6. Báo cáo tồn kho
+    public void thongKeTonKho(
+            QuanLyCuaHang baoCao, DSSanPham dsSP) {
+
+        if (this.isDaXoa() || baoCao == null) {
+            System.out.println("[Lỗi] Không thể thực hiện báo cáo!");
+            return;
+        }
+
+        baoCao.thongKeTonKho(dsSP);
+    }
+
     public void thongKeThue(DSHoadon dsHD) {
+        if (dsHD == null) {
+            System.out.println("[Lỗi] Danh sách hóa đơn không hợp lệ!");
+            return;
+        }
         double thueDauRa = 0;
         double thueDauVao = 0;
 
@@ -184,7 +346,7 @@ public class Giamdoc extends Nguoidung {
     }
 
     public String toFileString() {
-        return String.format("%s;%s;%s;%s;%s;%s;%b;%.0f;%.2f",
+        return String.format("GIAMDOC;%s;%s;%s;%s;%s;%s;%b;%.0f;%.2f",
                 getMaND(), getTenND(), getTaiKhoan(), getMatKhau(), getSoDienThoai(), getVaiTro(), isDaXoa(),
                 phuCapChucVu, tyLeCoPhan);
     }
