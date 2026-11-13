@@ -199,8 +199,17 @@ public class HoadonNhap extends HoaDon implements IHoaDon {
             String inputNCC = sc.nextLine().trim();
 
             if (inputNCC.equals("/")) {
-                if (dsNCC != null && dsNCC.getSoLuong() > 0) {
-                    this.setMaNCC(dsNCC.getDanhSach().get(0).getMaNCC());
+                String maNCCDauTien = null;
+                if (dsNCC != null) {
+                    for (doitac.NhaCungCap n : dsNCC.getDanhSach()) {
+                        if (!n.isDaXoa()) {
+                            maNCCDauTien = n.getMaNCC();
+                            break;
+                        }
+                    }
+                }
+                if (maNCCDauTien != null) {
+                    this.setMaNCC(maNCCDauTien);
                     System.out.println("-> Đã chọn NCC: " + this.maNCC);
                     break;
                 } else {
@@ -215,9 +224,16 @@ public class HoadonNhap extends HoaDon implements IHoaDon {
                     System.out.println("[Lỗi] Mã nhà cung cấp phải bắt đầu bằng NCC!");
                     continue;
                 }
-                if (dsNCC != null && dsNCC.timKiem(maChuan) == null) {
-                    System.out.println("[Lỗi] Nhà cung cấp không tồn tại!");
-                    continue;
+                if (dsNCC != null) {
+                    doitac.NhaCungCap nccChon = dsNCC.timKiem(maChuan);
+                    if (nccChon == null) {
+                        System.out.println("[Lỗi] Nhà cung cấp không tồn tại!");
+                        continue;
+                    }
+                    if (nccChon.isDaXoa()) {
+                        System.out.println("[Lỗi] Nhà cung cấp này đã ngừng hợp tác, không thể lập hóa đơn nhập!");
+                        continue;
+                    }
                 }
                 this.setMaNCC(maChuan);
                 break;
@@ -606,6 +622,23 @@ public class HoadonNhap extends HoaDon implements IHoaDon {
             throw new IllegalArgumentException("[Lỗi] Mã nhà cung cấp không được để trống!");
         }
         this.maNCC = Ktradulieu.chuanHoaMa(maNCC);
+    }
+
+    /**
+     * Dùng khi nạp hóa đơn từ file: khôi phục hình thức thanh toán đã lưu.
+     * File chỉ lưu loại thanh toán nên chi tiết chuyển khoản không được khôi phục.
+     */
+    public void khoiPhucThanhToanTuFile(double soTienThanhToan, String loaiThanhToan) {
+        ThanhToan tt = null;
+        if ("TienMat".equalsIgnoreCase(loaiThanhToan)) {
+            tt = new TienMat(this.maHD, soTienThanhToan, this.nguoiLap);
+        } else if ("ChuyenKhoan".equalsIgnoreCase(loaiThanhToan)) {
+            tt = new ChuyenKhoan(this.maHD, soTienThanhToan, this.nguoiLap);
+        }
+        if (tt != null) {
+            tt.setTrangThai(ThanhToan.THANH_CONG);
+        }
+        this.phuongThucThanhToan = tt;
     }
 
     public ThanhToan getPhuongThucThanhToan() { return phuongThucThanhToan; }

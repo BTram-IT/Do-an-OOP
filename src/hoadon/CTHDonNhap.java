@@ -223,7 +223,7 @@ public class CTHDonNhap extends CTHoaDon {
         System.out.println("\n========== TẠO HỒ SƠ SẢN PHẨM MỚI ==========");
         try {
             System.out.print("Nhập tên sản phẩm: ");
-            String tenSP = sc.nextLine().trim();
+            String tenSP = sc.nextLine().trim().replace(';', ',');
             if (tenSP.isEmpty()) {
                 throw new IllegalArgumentException("Tên sản phẩm không được để trống!");
             }
@@ -232,7 +232,7 @@ public class CTHDonNhap extends CTHoaDon {
             double giaBan = Ktradulieu.nhapSoThuc(sc, "Nhập giá bán: ");
 
             System.out.print("Nhập đơn vị tính: ");
-            String donVi = sc.nextLine().trim();
+            String donVi = sc.nextLine().trim().replace(';', ',');
             if (donVi.isEmpty()) {
                 throw new IllegalArgumentException("Đơn vị tính không được để trống!");
             }

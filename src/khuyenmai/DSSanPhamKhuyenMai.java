@@ -172,7 +172,7 @@ public class DSSanPhamKhuyenMai {
         item.nhap(sc);
 
         if (them(item)) {
-            ghiFile("data/sanpham_khuyenmai.txt");
+            ghiFile("data/sanphamkhuyenmai.txt");
             return true;
         }
 
@@ -186,7 +186,7 @@ public class DSSanPhamKhuyenMai {
         item.nhap(sc);
 
         if (them(item, dsSP, dsKM)) {
-            ghiFile("data/sanpham_khuyenmai.txt");
+            ghiFile("data/sanphamkhuyenmai.txt");
             return true;
         }
 
@@ -275,7 +275,7 @@ public class DSSanPhamKhuyenMai {
             }
 
             this.danhSach[viTri].setLienKet(lienKetTam.getMaSP(), lienKetTam.getMaKM());
-            ghiFile("data/sanpham_khuyenmai.txt");
+            ghiFile("data/sanphamkhuyenmai.txt");
 
             System.out.println("[Thành công] Sửa liên kết thành công!");
             return true;
@@ -301,7 +301,7 @@ public class DSSanPhamKhuyenMai {
 
         this.danhSach[this.soLuong - 1] = null;
         this.soLuong--;
-        ghiFile("data/sanpham_khuyenmai.txt");
+        ghiFile("data/sanphamkhuyenmai.txt");
 
         return true;
     }
@@ -331,7 +331,7 @@ public class DSSanPhamKhuyenMai {
             }
         }
         if (soLienKetDaXoa > 0) {
-            ghiFile("data/sanpham_khuyenmai.txt");
+            ghiFile("data/sanphamkhuyenmai.txt");
         }
 
         return soLienKetDaXoa;
@@ -430,18 +430,11 @@ public class DSSanPhamKhuyenMai {
             return;
         }
 
-        File file = new File(filePath);
-        File parentDir = file.getParentFile();
-
+        String dich = Ktradulieu.duongDanGhi(filePath);
+        File tam = Ktradulieu.chuanBiFileTam(dich);
         try {
-            if (parentDir != null && !parentDir.exists()) {
-                if (!parentDir.mkdirs() && !parentDir.exists()) {
-                    throw new IOException("Không thể tạo thư mục lưu file!");
-                }
-            }
-
             try (BufferedWriter bw = new BufferedWriter(
-                    new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8))) {
+                    new OutputStreamWriter(new FileOutputStream(tam), StandardCharsets.UTF_8))) {
                 for (int i = 0; i < this.soLuong; i++) {
                     if (this.danhSach[i] == null) {
                         throw new IllegalStateException("Danh sách chứa liên kết rỗng tại vị trí " + i);
@@ -450,10 +443,10 @@ public class DSSanPhamKhuyenMai {
                     bw.newLine();
                 }
             }
-
-            System.out.println("[Thành công] Lưu file sản phẩm khuyến mãi tại: " + filePath);
-
+            Ktradulieu.hoanTatGhi(tam, dich);
+            System.out.println("[Thành công] Lưu file sản phẩm khuyến mãi tại: " + dich);
         } catch (IOException | RuntimeException e) {
+            Ktradulieu.huyFileTam(tam);
             System.out.println("[Lỗi] Ghi file sản phẩm khuyến mãi: " + e.getMessage());
         }
     }
@@ -527,8 +520,7 @@ public class DSSanPhamKhuyenMai {
             System.out.println("[Thành công] Đọc file sản phẩm khuyến mãi! Tổng số: " + soLuongTam);
 
         } catch (IOException | RuntimeException e) {
-            System.out.println("[Lỗi] Đọc file sản phẩm khuyến mãi: " + e.getMessage());
-            System.out.println("[Thông báo] Danh sách cũ được giữ nguyên.");
+            Ktradulieu.danhDauFileLoi(filePath, e.getMessage());
         }
     }
 }

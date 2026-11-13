@@ -3,8 +3,11 @@ package person;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
+import java.io.FileInputStream;
+import java.io.InputStreamReader;
+import java.io.FileOutputStream;
+import java.io.OutputStreamWriter;
+import java.nio.charset.StandardCharsets;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -53,9 +56,11 @@ public class DsKhachHang {
 
     public boolean them(Khachhang kh) {
         if (kh == null) return false;
-        if (timKiem(kh.getMaKH()) != null) {
-            System.out.println("Mã khách hàng đã tồn tại!");
-            return false;
+        for (Khachhang da : danhSach) { // kiểm tra cả khách đã xóa mềm để không trùng mã trong file
+            if (da.getMaKH().equalsIgnoreCase(kh.getMaKH())) {
+                System.out.println("Mã khách hàng đã tồn tại!");
+                return false;
+            }
         }
         danhSach.add(kh);
         return true;
@@ -66,6 +71,7 @@ public class DsKhachHang {
         if (maHoacSdt == null || maHoacSdt.trim().isEmpty()) return null;
         String key = maHoacSdt.trim();
         for (Khachhang kh : danhSach) {
+            if (kh.isDaXoa()) continue; // khách đã xóa không còn được tra cứu/sử dụng
             if (kh.getMaKH().equalsIgnoreCase(key) || kh.getSdt().equalsIgnoreCase(key)) {
                 return kh;
             }
@@ -152,21 +158,34 @@ public class DsKhachHang {
     // xuất
     public void xuatDanhSach() {
         System.out.println("\n================ DANH SÁCH KHÁCH HÀNG ================");
+        int dem = 0;
         for (Khachhang kh : danhSach) {
+            if (kh.isDaXoa()) continue;
             System.out.println(kh.toString());
+            dem++;
+        }
+        if (dem == 0) {
+            System.out.println("[Thông báo] Chưa có khách hàng nào.");
         }
     }
 
     // ghi
     public void ghiFile(String duongDan) {
-        try (BufferedWriter bw = new BufferedWriter(new FileWriter(duongDan))) {
-            for (Khachhang kh : danhSach) {
-                bw.write(kh.toFileString());
-                bw.newLine();
+        String dich = Ktradulieu.duongDanGhi(duongDan);
+        File tam = Ktradulieu.chuanBiFileTam(dich);
+        try {
+            try (BufferedWriter bw = new BufferedWriter(
+                    new OutputStreamWriter(new FileOutputStream(tam), StandardCharsets.UTF_8))) {
+                for (Khachhang kh : danhSach) {
+                    bw.write(kh.toFileString());
+                    bw.newLine();
+                }
             }
-            System.out.println("Đã lưu danh sách khách hàng vào file: " + duongDan);
-        } catch (IOException e) {
-            System.out.println("Lỗi ghi file khách hàng: " + e.getMessage());
+            Ktradulieu.hoanTatGhi(tam, dich);
+            System.out.println("Đã lưu danh sách khách hàng vào file: " + dich);
+        } catch (IOException | RuntimeException e) {
+            Ktradulieu.huyFileTam(tam);
+            System.out.println("[Lỗi] Ghi file khách hàng: " + e.getMessage());
         }
     }
 
@@ -174,28 +193,38 @@ public class DsKhachHang {
     public void docFile(String duongDan) {
         File file = new File(duongDan);
         if (!file.exists()) return;
-        danhSach.clear();
-        try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+
+        List<Khachhang> tam = new ArrayList<>();
+        int soDong = 0;
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8))) {
             String dong;
             while ((dong = br.readLine()) != null) {
+                soDong++;
                 dong = dong.trim();
                 if (dong.isEmpty() || dong.startsWith("#")) continue;
-                String[] p = dong.split(";");
-                if (p.length >= 6) {
-                    String ma = p[0].trim();
-                    String ten = p[1].trim();
-                    String sdt = p[2].trim();
-                    String diaChi = p[3].trim();
-                    int diem = Integer.parseInt(p[4].trim());
-                    boolean daXoa = Boolean.parseBoolean(p[5].trim());
-
-                    Khachhang kh = new Khachhang(ma, ten, sdt, diaChi, diem, daXoa);
-                    danhSach.add(kh);
+                String[] p = dong.split(";", -1);
+                if (p.length < 6) {
+                    throw new IllegalArgumentException("Không đủ trường dữ liệu (cần 6, có " + p.length + ")");
                 }
+                String ma = p[0].trim();
+                if (ma.isEmpty()) {
+                    throw new IllegalArgumentException("Mã khách hàng bị trống");
+                }
+                for (Khachhang da : tam) {
+                    if (da.getMaKH().equalsIgnoreCase(ma)) {
+                        throw new IllegalArgumentException("Mã khách hàng bị trùng: " + ma);
+                    }
+                }
+                int diem = Integer.parseInt(p[4].trim());
+                boolean daXoa = Boolean.parseBoolean(p[5].trim());
+                tam.add(new Khachhang(ma, p[1].trim(), p[2].trim(), p[3].trim(), diem, daXoa));
             }
-            System.out.println("Đã đọc thành công " + danhSach.size() + " khách hàng từ file: " + duongDan);
         } catch (Exception e) {
-            System.out.println("Lỗi đọc file khách hàng: " + e.getMessage());
+            Ktradulieu.danhDauFileLoi(duongDan, "Dòng " + soDong + ": " + e.getMessage());
+            return;
         }
+        danhSach.clear();
+        danhSach.addAll(tam);
+        System.out.println("Đã đọc thành công " + danhSach.size() + " khách hàng từ file: " + duongDan);
     }
 }

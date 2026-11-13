@@ -412,7 +412,7 @@ public class DSKhuyenMai {
         xoaTaiViTri(viTri);
 
         ghiFile("data/khuyenmai.txt");
-        dsSPKM.ghiFile("data/sanpham_khuyenmai.txt");
+        dsSPKM.ghiFile("data/sanphamkhuyenmai.txt");
 
         return true;
     }
@@ -453,24 +453,23 @@ public class DSKhuyenMai {
     // 12. GHI FILE
     // =========================================================
     public void ghiFile(String filePath) {
-        File file = new File(filePath);
-        File parentDir = file.getParentFile();
-
-        if (parentDir != null && !parentDir.exists()) {
-            parentDir.mkdirs();
-        }
-
-        try (BufferedWriter bw = new BufferedWriter(
-                new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8))) {
-            for (int i = 0; i < this.soLuong; i++) {
-                if (this.danhSach[i] != null) {
-                    bw.write(this.danhSach[i].toDongFile());
-                    bw.newLine();
+        String dich = Ktradulieu.duongDanGhi(filePath);
+        File tam = Ktradulieu.chuanBiFileTam(dich);
+        try {
+            try (BufferedWriter bw = new BufferedWriter(
+                    new OutputStreamWriter(new FileOutputStream(tam), StandardCharsets.UTF_8))) {
+                for (int i = 0; i < this.soLuong; i++) {
+                    if (this.danhSach[i] != null) {
+                        bw.write(this.danhSach[i].toDongFile());
+                        bw.newLine();
+                    }
                 }
             }
-            System.out.println("Đã lưu thành công " + this.soLuong + " chương trình khuyến mãi vào file: " + filePath);
+            Ktradulieu.hoanTatGhi(tam, dich);
+            System.out.println("Đã lưu thành công " + this.soLuong + " chương trình khuyến mãi vào file: " + dich);
         } catch (IOException | RuntimeException e) {
-            System.out.println("Lỗi ghi file khuyến mãi: " + e.getMessage());
+            Ktradulieu.huyFileTam(tam);
+            System.out.println("[Lỗi] Ghi file khuyến mãi: " + e.getMessage());
         }
     }
 
@@ -642,8 +641,7 @@ public class DSKhuyenMai {
                     + " chương trình khuyến mãi từ file: " + filePath);
 
         } catch (IOException | RuntimeException e) {
-            System.out.println("Lỗi khi đọc file khuyến mãi: " + e.getMessage());
-            System.out.println("Danh sách khuyến mãi hiện tại được giữ nguyên.");
+            Ktradulieu.danhDauFileLoi(filePath, "Dòng " + soDong + ": " + e.getMessage());
         }
     }
 }

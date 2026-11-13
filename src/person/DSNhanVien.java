@@ -289,12 +289,9 @@ public class DSNhanVien {
     // GHI FILE (UTF-8, ghi ra file tạm rồi mới thay file thật để không bị cụt dữ liệu khi lỗi)
     // =========================================================
     public boolean ghiFile(String duongDan) {
-        File file = new File(duongDan);
-        File thuMuc = file.getAbsoluteFile().getParentFile();
-        if (thuMuc != null && !thuMuc.exists()) {
-            thuMuc.mkdirs();
-        }
-        File tam = new File(duongDan + ".tmp");
+        String dichGhi = Ktradulieu.duongDanGhi(duongDan);
+        File file = new File(dichGhi);
+        File tam = Ktradulieu.chuanBiFileTam(dichGhi);
 
         try {
             try (BufferedWriter bw = new BufferedWriter(
@@ -305,7 +302,7 @@ public class DSNhanVien {
                 }
             }
             Files.move(tam.toPath(), file.toPath(), StandardCopyOption.REPLACE_EXISTING);
-            System.out.println("Đã lưu danh sách tài khoản vào file: " + duongDan);
+            System.out.println("Đã lưu danh sách tài khoản vào file: " + dichGhi);
             return true;
         } catch (IOException | RuntimeException e) {
             System.out.println("Lỗi ghi file tài khoản: " + e.getMessage());
@@ -350,7 +347,7 @@ public class DSNhanVien {
         } catch (Exception e) {
             System.out.println("Lỗi đọc file tài khoản tại dòng " + soDong + ": " + e.getMessage());
             System.out.println("Danh sách hiện tại được giữ nguyên, không có dữ liệu nào bị thay thế.");
-            saoLuuFileLoi(file);
+            Ktradulieu.danhDauFileLoi(duongDan, "Dòng " + soDong + ": " + e.getMessage());
             return false;
         }
 

@@ -232,28 +232,28 @@ public abstract class SanPham {
                 return false;
             }
         } catch (Exception e) {}
-            return true;
-        }
+        return true;
+    }
 
-        public void congTonKho ( int sl){
-            if (sl <= 0) {
-                throw new IllegalArgumentException("[Lỗi Kho] Số lượng cộng kho phải > 0! Nhận: " + sl);
-            }
-            this.soLuongTon += sl;
+    public void congTonKho ( int sl){
+        if (sl <= 0) {
+            throw new IllegalArgumentException("[Lỗi Kho] Số lượng cộng kho phải > 0! Nhận: " + sl);
         }
+        this.soLuongTon += sl;
+    }
 
-        public void truTonKho ( int sl){
-            if (sl <= 0) {
-                throw new IllegalArgumentException("[Lỗi Kho] Số lượng trừ kho phải > 0! Nhận: " + sl);
-            }
-            if (sl > this.soLuongTon) {
-                throw new IllegalStateException("[Lỗi Kho] Kho không đủ hàng! Hiện có: " + this.soLuongTon + ", yêu cầu xuất: " + sl);
-            }
-            this.soLuongTon -= sl;
+    public void truTonKho ( int sl){
+        if (sl <= 0) {
+            throw new IllegalArgumentException("[Lỗi Kho] Số lượng trừ kho phải > 0! Nhận: " + sl);
         }
+        if (sl > this.soLuongTon) {
+            throw new IllegalStateException("[Lỗi Kho] Kho không đủ hàng! Hiện có: " + this.soLuongTon + ", yêu cầu xuất: " + sl);
+        }
+        this.soLuongTon -= sl;
+    }
 
-        public abstract double tinhGiaBan ();
-        public abstract String getLoaiSanPham ();
+    public abstract double tinhGiaBan ();
+    public abstract String getLoaiSanPham ();
 
 
     public void nhapThongTin(Scanner sc, DSSanPham ds) {
@@ -319,11 +319,11 @@ public abstract class SanPham {
         this.daXoa = false;
     }
 
-        @Override
-        public String toString () {
-            return "[" + getLoaiSanPham() + "] " + maSP + " - " + tenSP +
-                    " | Tồn: " + soLuongTon + " " + donViTinh +
-                    " | Bán: " + Ktradulieu.dinhDangTien(tinhGiaBan()) +
-                    " | Thuế: " + phanTramThue + "% (" + Ktradulieu.dinhDangTien(tinhTienThueDonVi()) + "/đv)";
-        }
+    @Override
+    public String toString () {
+        return "[" + getLoaiSanPham() + "] " + maSP + " - " + tenSP +
+                " | Tồn: " + soLuongTon + " " + donViTinh +
+                " | Bán: " + Ktradulieu.dinhDangTien(tinhGiaBan()) +
+                " | Thuế: " + phanTramThue + "% (" + Ktradulieu.dinhDangTien(tinhTienThueDonVi()) + "/đv)";
     }
+}

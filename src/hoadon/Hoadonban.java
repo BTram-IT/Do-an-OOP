@@ -672,6 +672,41 @@ public class Hoadonban extends HoaDon implements IHoaDon {
         this.maKH = (maKH == null || maKH.trim().isEmpty()) ? "KHACH_LE" : Ktradulieu.chuanHoaMa(maKH);
     }
 
+    /**
+     * Dùng khi nạp hóa đơn từ file: thêm chi tiết đã lưu, không tính lại khuyến mãi
+     * và không trừ tồn kho (tồn kho đã được trừ và lưu từ lúc bán).
+     */
+    public boolean themCTHDTuFile(CTHDBan ct) {
+        if (ct == null) {
+            return false;
+        }
+        if (this.soLuongCT >= this.dsChiTiet.length) {
+            moRongBoNho();
+        }
+        this.dsChiTiet[this.soLuongCT++] = new CTHDBan(ct);
+        return true;
+    }
+
+    /**
+     * Dùng khi nạp hóa đơn từ file: khôi phục điểm đã dùng và phương thức thanh toán.
+     * File không lưu số tiền khách đưa/thối lại nên các giá trị này không được khôi phục.
+     */
+    public void khoiPhucThanhToanTuFile(double tienDungDiem, double soTienThanhToan, String loaiThanhToan) {
+        this.tienDungDiem = Math.max(0, tienDungDiem);
+        this.diemDung = this.tienDungDiem / 1000;
+
+        ThanhToan tt = null;
+        if ("TienMat".equalsIgnoreCase(loaiThanhToan)) {
+            tt = new TienMat(this.maHD, soTienThanhToan, this.nguoiLap);
+        } else if ("ChuyenKhoan".equalsIgnoreCase(loaiThanhToan)) {
+            tt = new ChuyenKhoan(this.maHD, soTienThanhToan, this.nguoiLap);
+        }
+        if (tt != null && this.isDaXuLyThanhCong()) {
+            tt.setTrangThai(ThanhToan.THANH_CONG);
+        }
+        this.phuongThucThanhToan = tt;
+    }
+
     public double getDiemDung() { return diemDung; }
     public double getTienDungDiem() { return tienDungDiem; }
     public ThanhToan getPhuongThucThanhToan() { return phuongThucThanhToan; }
@@ -683,10 +718,44 @@ public class Hoadonban extends HoaDon implements IHoaDon {
     @Override
     public String toFileString() {
         String pt = (this.phuongThucThanhToan != null) ? this.phuongThucThanhToan.getLoaiThanhToan() : "CHUA_TT";
+        // Các trường mở rộng (thêm vào CUỐI dòng để file cũ 13 trường vẫn đọc được):
+        // tiền khách đưa; mã GD ngân hàng; tên người chuyển; số TK; tên ngân hàng
+        String moRong = ";0;;;;";
+        if (this.phuongThucThanhToan instanceof TienMat) {
+            moRong = String.format(";%.0f;;;;", ((TienMat) this.phuongThucThanhToan).getTienKhachDua());
+        } else if (this.phuongThucThanhToan instanceof ChuyenKhoan) {
+            ChuyenKhoan ck = (ChuyenKhoan) this.phuongThucThanhToan;
+            moRong = ";0;" + lamSachTruongFile(ck.getMaGDNganHang()) + ";" + lamSachTruongFile(ck.getTenNguoiChuyen())
+                    + ";" + lamSachTruongFile(ck.getSoTKChuyen()) + ";" + lamSachTruongFile(ck.getTenNganHang());
+        }
         return String.format("HDBAN;%s;%s;%s;%s;%s;%.0f;%.0f;%.0f;%.0f;%.0f;%s;%s",
                 this.maHD, this.ngayLap, this.getMaNV(), this.maKH, this.trangThai,
                 this.tinhTongTien(), this.tinhTienGiamKhuyenMai(), this.tinhTienThue(),
-                this.tienDungDiem, this.tinhThanhTien(), pt, (this.ghiChu != null ? this.ghiChu : ""));
+                this.tienDungDiem, this.tinhThanhTien(), pt, (this.ghiChu != null ? this.ghiChu : "")) + moRong;
+    }
+
+    private static String lamSachTruongFile(String giaTri) {
+        return giaTri == null ? "" : giaTri.replace(';', ',').trim();
+    }
+
+    /** Dùng khi nạp từ file: khôi phục tiền khách đưa / thông tin chuyển khoản (nếu file có). */
+    public void khoiPhucChiTietThanhToanTuFile(double tienKhachDua, String maGD, String tenNguoi,
+                                               String soTK, String tenNH) {
+        try {
+            if (this.phuongThucThanhToan instanceof TienMat) {
+                TienMat tm = (TienMat) this.phuongThucThanhToan;
+                tm.setTienKhachDua(tienKhachDua);
+                tm.setTienThoi(Math.max(0, tienKhachDua - tm.getSoTien()));
+            } else if (this.phuongThucThanhToan instanceof ChuyenKhoan) {
+                ChuyenKhoan ck = (ChuyenKhoan) this.phuongThucThanhToan;
+                if (!maGD.isEmpty()) ck.setMaGDNganHang(maGD);
+                if (!tenNguoi.isEmpty()) ck.setTenNguoiChuyen(tenNguoi);
+                if (!soTK.isEmpty()) ck.setSoTKChuyen(soTK);
+                if (!tenNH.isEmpty()) ck.setTenNganHang(tenNH);
+            }
+        } catch (IllegalArgumentException e) {
+            // Giá trị không hợp lệ trong phần mở rộng: bỏ qua, phần chính của hóa đơn vẫn nguyên vẹn
+        }
     }
 
     @Override

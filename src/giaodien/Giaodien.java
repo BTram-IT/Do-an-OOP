@@ -1,11 +1,13 @@
 package giaodien;
 
 import java.io.File;
+import java.time.DateTimeException;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Scanner;
 
 import doitac.DSNhaCungCap;
@@ -117,11 +119,8 @@ public class Giaodien {
             System.out.println("5. Theo khoảng thời gian");
             System.out.println("0. Quay lại");
             System.out.println("====================================");
-            System.out.print("Chọn: ");
-
             try {
-                int chon = sc.nextInt();
-                sc.nextLine();
+                int chon = Ktradulieu.luaChon(sc, "Chọn (0-5): ", 0, 5);
 
                 LocalDate tuNgay;
                 LocalDate denNgay;
@@ -133,35 +132,22 @@ public class Giaodien {
                         denNgay = tuNgay;
                         break;
                     case 2:
-                        System.out.print("Nhập tháng (1-12): ");
-                        int thang = sc.nextInt();
-                        System.out.print("Nhập năm: ");
-                        int namThang = sc.nextInt();
-                        sc.nextLine();
+                        int thang = Ktradulieu.luaChon(sc, "Nhập tháng (1-12): ", 1, 12);
+                        int namThang = Ktradulieu.luaChon(sc, "Nhập năm (1900-9999): ", 1900, 9999);
                         YearMonth ym = YearMonth.of(namThang, thang);
                         tuNgay = ym.atDay(1);
                         denNgay = ym.atEndOfMonth();
                         break;
                     case 3:
-                        System.out.print("Nhập quý (1-4): ");
-                        int quy = sc.nextInt();
-                        System.out.print("Nhập năm: ");
-                        int namQuy = sc.nextInt();
-                        sc.nextLine();
-                        if (quy < 1 || quy > 4) {
-                            System.out.println(
-                                    "[Lỗi] Quý phải từ 1 đến 4!");
-                            continue;
-                        }
+                        int quy = Ktradulieu.luaChon(sc, "Nhập quý (1-4): ", 1, 4);
+                        int namQuy = Ktradulieu.luaChon(sc, "Nhập năm (1900-9999): ", 1900, 9999);
                         int thangDau = (quy - 1) * 3 + 1;
                         tuNgay = LocalDate.of(namQuy, thangDau, 1);
                         denNgay = tuNgay.plusMonths(2).withDayOfMonth(tuNgay.plusMonths(2).lengthOfMonth());
                         break;
 
                     case 4:
-                        System.out.print("Nhập năm: ");
-                        int nam = sc.nextInt();
-                        sc.nextLine();
+                        int nam = Ktradulieu.luaChon(sc, "Nhập năm (1900-9999): ", 1900, 9999);
 
                         tuNgay = LocalDate.of(nam, 1, 1);
                         denNgay = LocalDate.of(nam, 12, 31);
@@ -192,65 +178,80 @@ public class Giaodien {
 
                 return new LocalDate[]{tuNgay, denNgay};
 
-            } catch (Exception e) {
+            } catch (DateTimeException e) {
                 System.out.println(
                         "[Lỗi] Dữ liệu nhập không hợp lệ!");
-                sc.nextLine();
             }
         }
     }
 
     public void batDau() {
         while (true) {
-            hienThiManHinhDangNhap();
-            if (this.nguoiDangNhap == null) {
-                System.out.println("\nCảm ơn bạn đã sử dụng chương trình. Tạm biệt!");
-                break;
-            }
+            try {
+                hienThiManHinhDangNhap();
+                if (this.nguoiDangNhap == null) {
+                    System.out.println("\nCảm ơn bạn đã sử dụng chương trình. Tạm biệt!");
+                    break;
+                }
 
-            if (this.nguoiDangNhap instanceof Giamdoc) {
-                menuGiamDoc();
-            } else if (this.nguoiDangNhap instanceof QuanLyCuaHang) {
-                menuQuanLyCuaHang();
-            } else if (this.nguoiDangNhap instanceof NhanVien) {
-                menuNhanVien();
+                if (this.nguoiDangNhap instanceof Giamdoc) {
+                    menuGiamDoc();
+                } else if (this.nguoiDangNhap instanceof QuanLyCuaHang) {
+                    menuQuanLyCuaHang();
+                } else if (this.nguoiDangNhap instanceof NhanVien) {
+                    menuNhanVien();
+                }
+            } catch (NoSuchElementException e) {
+                // Luồng nhập bị đóng (Ctrl+D / Ctrl+Z): lưu dữ liệu rồi thoát êm
+                System.out.println("\n[Thông báo] Luồng nhập dữ liệu đã đóng. Đang lưu dữ liệu và thoát...");
+                ghiDuLieu();
+                break;
+            } catch (RuntimeException e) {
+                System.out.println("\n[Lỗi] Đã xảy ra lỗi không mong muốn: " + e);
+                System.out.println("[Thông báo] Quay lại màn hình đăng nhập. Các thay đổi đã lưu trước đó không bị ảnh hưởng.");
+                this.nguoiDangNhap = null;
             }
         }
     }
 
     public void hienThiManHinhDangNhap() {
-        System.out.println("\n=======================================================");
-        System.out.println("  HỆ THỐNG QUẢN LÝ CỬA HÀNG THỨC ĂN VÀ NƯỚC UỐNG");
-        System.out.println("                   ĐĂNG NHẬP");
-        System.out.println("=======================================================");
-        System.out.println("Gợi ý 3 tài khoản demo hệ thống:");
-        System.out.println("1. Nhân viên : nhanvien  | Mật khẩu: 123456");
-        System.out.println("2. Quản lý   : quanly    | Mật khẩu: 123456");
-        System.out.println("3. Giám đốc  : giamdoc   | Mật khẩu: 123456");
-        System.out.println("Nhập '0' tại tên đăng nhập để thoát chương trình.");
-        System.out.println("-------------------------------------------------------");
+        String vien = "+-----------------------------------------------------+";
+        System.out.println("\n" + vien);
+        System.out.println("|   HỆ THỐNG QUẢN LÝ CỬA HÀNG THỨC ĂN VÀ NƯỚC UỐNG    |");
+        System.out.println("|                     ĐĂNG NHẬP                       |");
+        System.out.println(vien);
+        System.out.println("|  Tài khoản demo (mật khẩu: 123456)                  |");
+        System.out.println("|    - Nhân viên : nhanvien                           |");
+        System.out.println("|    - Quản lý   : quanly                             |");
+        System.out.println("|    - Giám đốc  : giamdoc                            |");
+        System.out.println(vien);
+        System.out.println("  Nhấn Enter sau mỗi mục để tiếp tục.");
+        System.out.println("  Nhập 0 tại 'Tên đăng nhập' để thoát chương trình.");
+        System.out.println();
 
+        int soLanSai = 0;
         while (true) {
-            String tk = Ktradulieu.nhapChuoiKhongRong(sc, "Tên đăng nhập: ");
+            String tk = Ktradulieu.nhapChuoiKhongRong(sc, "Tên đăng nhập : ");
             if (tk.equals("0")) {
                 this.nguoiDangNhap = null;
                 ghiDuLieu();
                 return;
             }
-            String mk = Ktradulieu.nhapChuoiKhongRong(sc, "Mật khẩu: ");
+            String mk = Ktradulieu.nhapChuoiKhongRong(sc, "Mật khẩu      : ");
 
             Nguoidung nd = dsNhanVien.timKiemTheoTaiKhoan(tk);
             if (nd != null && nd.getMatKhau().equals(mk)) {
                 if (nd.isDaXoa()) {
-                    System.out.println("[TỪ CHỐI TRUY CẬP] Tài khoản đã nghỉ việc hoặc bị khóa!");
+                    System.out.println("[Từ chối] Tài khoản đã nghỉ việc hoặc bị khóa!\n");
                     continue;
                 }
                 this.nguoiDangNhap = nd;
                 System.out.println("\n>> Đăng nhập thành công! Xin chào " + nd.getVaiTro() + ": " + nd.getTenND() + " <<");
                 return;
-            } else {
-                System.out.println("Sai tên đăng nhập hoặc mật khẩu! Vui lòng thử lại.");
             }
+            soLanSai++;
+            System.out.println("[Lỗi] Sai tên đăng nhập hoặc mật khẩu! (lần sai: " + soLanSai
+                    + "). Vui lòng thử lại hoặc nhập 0 để thoát.\n");
         }
     }
 
@@ -391,14 +392,38 @@ public class Giaodien {
             System.out.println("2. Xem danh sách khách hàng");
             System.out.println("3. Thêm khách hàng mới");
             System.out.println("4. Xem lịch sử mua hàng của khách");
+            System.out.println("5. Sửa thông tin khách hàng");
+            System.out.println("6. Xóa khách hàng (chỉ Quản lý/Giám đốc)");
             System.out.println("0. Quay lại");
 
-            int chon = Ktradulieu.luaChon(sc, "Chọn (0-4): ", 0, 4);
+            int chon = Ktradulieu.luaChon(sc, "Chọn (0-6): ", 0, 6);
             switch (chon) {
                 case 1: timKiemKhachHang(); break;
                 case 2: dsKhachHang.xuatDanhSach(); break;
                 case 3: dsKhachHang.themTuBanPhim(sc); break;
                 case 4: xemLichSuMuaHangKhach(); break;
+                case 5: {
+                    String ma = Ktradulieu.nhapChuoiKhongRong(sc, "Nhập mã hoặc SĐT khách hàng cần sửa: ");
+                    dsKhachHang.sua(sc, nguoiDangNhap, ma);
+                    break;
+                }
+                case 6: {
+                    if (!(nguoiDangNhap instanceof QuanLyCuaHang) && !(nguoiDangNhap instanceof Giamdoc)) {
+                        System.out.println("[Từ chối] Chỉ Quản lý hoặc Giám đốc mới được xóa khách hàng.");
+                        break;
+                    }
+                    String ma = Ktradulieu.nhapChuoiKhongRong(sc, "Nhập mã hoặc SĐT khách hàng cần xóa: ");
+                    Khachhang khXoa = dsKhachHang.timKiem(ma);
+                    if (khXoa == null) {
+                        System.out.println("[Lỗi] Không tìm thấy khách hàng: " + ma);
+                    } else if (Ktradulieu.nhapXacNhan(sc, "Xác nhận xóa khách hàng [" + khXoa.getMaKH()
+                            + "] " + khXoa.getTenKH() + "?")) {
+                        dsKhachHang.xoa(khXoa.getMaKH());
+                    } else {
+                        System.out.println("[Thông báo] Đã hủy thao tác xóa, dữ liệu không thay đổi.");
+                    }
+                    break;
+                }
                 case 0: return;
             }
         }
@@ -453,10 +478,11 @@ public class Giaodien {
             System.out.println("4. Quản lý nhà cung cấp");
             System.out.println("5. Quản lý nhân viên");
             System.out.println("6. Báo cáo ");
+            System.out.println("7. Quản lý khách hàng");
             System.out.println("0. Đăng xuất");
             System.out.println("===========================================");
 
-            int chon = Ktradulieu.luaChon(sc, "Chọn phân hệ quản lý (0-6): ", 0, 6);
+            int chon = Ktradulieu.luaChon(sc, "Chọn phân hệ quản lý (0-7): ", 0, 7);
             switch (chon) {
                 case 1: menuQuanLySanPham(); break;
                 case 2: menuQuanLyKhuyenMai(); break;
@@ -464,6 +490,7 @@ public class Giaodien {
                 case 4: menuQuanLyNhaCungCap(); break;
                 case 5: menuQuanLyNhanVien(); break;
                 case 6: menuThongKeBaoCao(); break;
+                case 7: menuTiepNhanKhachHang(); break;
                 case 0:
                     System.out.println("Đã đăng xuất.");
                     this.nguoiDangNhap = null;
@@ -495,7 +522,18 @@ public class Giaodien {
                 }
                 case 5: {
                     String ma = Ktradulieu.nhapChuoiKhongRong(sc, "Nhập mã sản phẩm cần xóa: ");
-                    dsSanPham.xoaSP(ma, nguoiDangNhap);
+                    SanPham spXoa = dsSanPham.timKiem(ma);
+                    if (spXoa == null) {
+                        System.out.println("[Lỗi] Không tìm thấy sản phẩm: " + ma);
+                    } else if (!Ktradulieu.nhapXacNhan(sc, "Xác nhận xóa sản phẩm [" + spXoa.getMaSP()
+                            + "] " + spXoa.getTenSP() + "?")) {
+                        System.out.println("[Thông báo] Đã hủy thao tác xóa, dữ liệu không thay đổi.");
+                    } else if (dsSanPham.xoaSP(ma, nguoiDangNhap)) {
+                        // Dọn các liên kết khuyến mãi của sản phẩm vừa xóa để không còn dữ liệu mồ côi
+                        if (dsSPKM.xoaLienKetMoCoi(dsSanPham, dsKhuyenMai) > 0) {
+                            dsSPKM.ghiFile("data/sanphamkhuyenmai.txt");
+                        }
+                    }
                     break;
                 }
                 case 6:
@@ -530,7 +568,14 @@ public class Giaodien {
                 case 4: dsKhuyenMai.suaKhuyenMai(sc); break;
                 case 5: {
                     String maKM = Ktradulieu.nhapChuoiKhongRong(sc, "Nhập mã khuyến mãi cần xóa: ");
-                    dsKhuyenMai.xoaKhuyenMai(maKM, dsSPKM);
+                    if (dsKhuyenMai.timKiem(maKM) == null) {
+                        System.out.println("[Lỗi] Không tìm thấy khuyến mãi: " + maKM);
+                    } else if (Ktradulieu.nhapXacNhan(sc, "Xác nhận xóa khuyến mãi [" + maKM
+                            + "] (các liên kết sản phẩm sẽ bị gỡ)?")) {
+                        dsKhuyenMai.xoaKhuyenMai(maKM, dsSPKM);
+                    } else {
+                        System.out.println("[Thông báo] Đã hủy thao tác xóa, dữ liệu không thay đổi.");
+                    }
                     break;
                 }
                 case 6: {
@@ -541,14 +586,24 @@ public class Giaodien {
                     } else if (dsKhuyenMai.timKiem(maKM) == null) {
                         System.out.println("[Lỗi] Không tìm thấy khuyến mãi: " + maKM);
                     } else {
-                        dsSPKM.them(new SPKhMai(maSP, maKM));
+                        try {
+                            if (dsSPKM.them(new SPKhMai(maSP, maKM), dsSanPham, dsKhuyenMai)) {
+                                dsSPKM.ghiFile("data/sanphamkhuyenmai.txt");
+                            }
+                        } catch (IllegalArgumentException e) {
+                            System.out.println("[Lỗi] " + e.getMessage());
+                        }
                     }
                     break;
                 }
                 case 7: {
                     String maSP = Ktradulieu.nhapChuoiKhongRong(sc, "Nhập mã sản phẩm: ");
                     String maKM = Ktradulieu.nhapChuoiKhongRong(sc, "Nhập mã khuyến mãi: ");
-                    dsSPKM.xoa(maSP, maKM);
+                    if (dsSPKM.xoa(maSP, maKM)) {
+                        System.out.println("[Thành công] Đã hủy áp dụng khuyến mãi cho sản phẩm.");
+                    } else {
+                        System.out.println("[Lỗi] Không tìm thấy liên kết sản phẩm - khuyến mãi này!");
+                    }
                     break;
                 }
                 case 8: dsSPKM.xuatDanhSach(); break;
@@ -625,7 +680,15 @@ public class Giaodien {
                 }
                 case 5: {
                     String ma = Ktradulieu.nhapChuoiKhongRong(sc, "Nhập mã NCC cần xóa: ");
-                    dsNhaCungCap.xoa(nguoiDangNhap, ma);
+                    NhaCungCap nccXoa = dsNhaCungCap.timKiem(ma);
+                    if (nccXoa == null) {
+                        System.out.println("[Lỗi] Không tìm thấy nhà cung cấp: " + ma);
+                    } else if (Ktradulieu.nhapXacNhan(sc, "Xác nhận ngừng hợp tác với nhà cung cấp ["
+                            + nccXoa.getMaNCC() + "] " + nccXoa.getTenNCC() + "?")) {
+                        dsNhaCungCap.xoa(nguoiDangNhap, nccXoa.getMaNCC());
+                    } else {
+                        System.out.println("[Thông báo] Đã hủy thao tác xóa, dữ liệu không thay đổi.");
+                    }
                     break;
                 }
                 case 0: return;
@@ -1054,6 +1117,7 @@ public class Giaodien {
 
                     if (thanhCong) {
                         if (dsHoaDon.themHD(hdb)) {
+                            dsHoaDon.ghiFile("data/hoadon.txt");
                             dsSanPham.ghiFile("data/sanpham.txt");
                             dsKhachHang.ghiFile("data/khachhang.txt");
 
@@ -1179,10 +1243,11 @@ public class Giaodien {
         NhanVien nvMoi = new NhanVien();
         nvMoi.nhapThongTin(sc, dsNhanVien);
 
-        dsNhanVien.them(nvMoi);
-        dsNhanVien.ghiFile("data/nhanvien.txt");
-
-        System.out.println("Đã thêm và lưu nhân viên thành công!");
+        if (dsNhanVien.them(nvMoi)) {
+            System.out.println("Đã thêm và lưu nhân viên thành công!");
+        } else {
+            System.out.println("[Lỗi] Không thể thêm nhân viên (dữ liệu bị trùng hoặc không hợp lệ). Dữ liệu không thay đổi.");
+        }
     }
 
     // Thêm quản lý cửa hàng - Chỉ Giám đốc được phép
@@ -1216,7 +1281,7 @@ public class Giaodien {
         dsNhaCungCap.docFile("data/nhacungcap.txt");
         dsSanPham.docFile("data/sanpham.txt");
         dsKhuyenMai.docFile("data/khuyenmai.txt");
-        dsSPKM.docFile("data/sanpham_khuyenmai.txt");
+        dsSPKM.docFile("data/sanphamkhuyenmai.txt");
         dsHoaDon.docFile("data/hoadon.txt", dsNhanVien);
     }
     private void ghiDuLieu() {
@@ -1225,7 +1290,7 @@ public class Giaodien {
         dsNhaCungCap.ghiFile("data/nhacungcap.txt");
         dsSanPham.ghiFile("data/sanpham.txt");
         dsKhuyenMai.ghiFile("data/khuyenmai.txt");
-        dsSPKM.ghiFile("data/sanpham_khuyenmai.txt");
+        dsSPKM.ghiFile("data/sanphamkhuyenmai.txt");
         dsHoaDon.ghiFile("data/hoadon.txt");
     }
 }

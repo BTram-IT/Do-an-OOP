@@ -1,17 +1,22 @@
 package util;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.AtomicMoveNotSupportedException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.text.DecimalFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.time.format.ResolverStyle;
+import java.util.HashSet;
 import java.util.Scanner;
+import java.util.Set;
 
 public class Ktradulieu {
 
-    // =========================================================================
-    // CÁC REGEX THÔNG DỤNG (GIỮ NGUYÊN 100% KHÔNG ĐỔI)
-    // =========================================================================
     public static final String soNguyenRegex = "^[+-]?\\d+$";
     public static final String soThucRegex = "^[+-]?\\d+(\\.\\d+)?$";
     public static final String phoneRegex = "^(03|05|07|08|09)\\d{8}$";
@@ -30,6 +35,10 @@ public class Ktradulieu {
         while (true) {
             System.out.print(thongBao);
             String input = sc.nextLine().trim();
+            if (input.indexOf(';') >= 0) {
+                System.out.println("[Lỗi] Không được nhập dấu chấm phẩy (;) vì đây là ký tự phân cách của file dữ liệu!");
+                continue;
+            }
             if (regex == null || regex.isEmpty() || input.matches(regex)) {
                 return input;
             }
@@ -45,6 +54,10 @@ public class Ktradulieu {
         while (true) {
             System.out.print(thongBao);
             String input = sc.nextLine().trim();
+            if (input.indexOf(';') >= 0) {
+                System.out.println("[Lỗi] Không được nhập dấu chấm phẩy (;) vì đây là ký tự phân cách của file dữ liệu!");
+                continue;
+            }
             if (input.isEmpty() || regex == null || input.matches(regex) || regex.isEmpty()) {
                 return input;
             }
@@ -261,6 +274,65 @@ public class Ktradulieu {
             return Integer.parseInt(phanSo);
         } catch (NumberFormatException e) {
             return 0;
+        }
+    }
+
+    // =========================================================================
+    // BẢO VỆ DỮ LIỆU KHI ĐỌC/GHI FILE (dùng chung cho mọi danh sách)
+    // - File đọc lỗi: sao lưu sang <file>.loi.bak, KHÔNG bị ghi đè trong phiên làm việc;
+    //   dữ liệu của phiên được ghi sang <file>.moi để không mất công việc vừa làm.
+    // - Ghi file: ghi ra file tạm rồi mới thay file thật, tránh file bị cụt khi lỗi giữa chừng.
+    // =========================================================================
+    private static final Set<String> FILE_BI_BAO_VE = new HashSet<>();
+
+    public static void danhDauFileLoi(String duongDan, String chiTiet) {
+        System.out.println("[Lỗi dữ liệu] File: " + duongDan);
+        System.out.println("              " + chiTiet);
+        try {
+            File file = new File(duongDan);
+            if (file.exists()) {
+                String bak = duongDan + ".loi.bak";
+                Files.copy(file.toPath(), Paths.get(bak), StandardCopyOption.REPLACE_EXISTING);
+                System.out.println("[Sao lưu] Đã sao lưu file gốc sang: " + bak);
+            }
+        } catch (IOException e) {
+            System.out.println("[Cảnh báo] Không thể sao lưu file lỗi: " + e.getMessage());
+        }
+        FILE_BI_BAO_VE.add(new File(duongDan).getAbsolutePath());
+        System.out.println("[Bảo vệ] File gốc sẽ KHÔNG bị ghi đè. Hãy sửa dòng lỗi rồi khởi động lại;");
+        System.out.println("         dữ liệu làm việc trong phiên này được lưu vào: " + duongDan + ".moi");
+    }
+
+    // Trả về đường dẫn thực sự được phép ghi cho file này
+    public static String duongDanGhi(String duongDan) {
+        if (FILE_BI_BAO_VE.contains(new File(duongDan).getAbsolutePath())) {
+            return duongDan + ".moi";
+        }
+        return duongDan;
+    }
+
+    // Tạo thư mục cha (nếu thiếu) và trả về file tạm để ghi
+    public static File chuanBiFileTam(String duongDanDich) {
+        File dich = new File(duongDanDich);
+        File thuMuc = dich.getAbsoluteFile().getParentFile();
+        if (thuMuc != null && !thuMuc.exists()) {
+            thuMuc.mkdirs();
+        }
+        return new File(duongDanDich + ".tmp");
+    }
+
+    public static void hoanTatGhi(File tam, String duongDanDich) throws IOException {
+        try {
+            Files.move(tam.toPath(), Paths.get(duongDanDich),
+                    StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+        } catch (AtomicMoveNotSupportedException e) {
+            Files.move(tam.toPath(), Paths.get(duongDanDich), StandardCopyOption.REPLACE_EXISTING);
+        }
+    }
+
+    public static void huyFileTam(File tam) {
+        if (tam != null && tam.exists()) {
+            tam.delete();
         }
     }
 }

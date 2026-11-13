@@ -119,11 +119,11 @@ public class CTHDBan extends CTHoaDon {
             }
         }
 
-        // BƯỚC 3 & 4: RESET VÀ TỰ ĐỘNG ÁP DỤNG KHUYẾN MÃI
+        // BƯỚC 3: RESET KHUYẾN MÃI. Việc áp dụng khuyến mãi do Hoadonban.themCTHD thực hiện
+        // (một lần duy nhất, tránh in thông báo trùng lặp).
         this.tienGiam = 0;
         this.soLuongTang = 0;
         this.maKM = "KHONG";
-        apDungKhuyenMai(dsKM, dsSPKM, spDuocChon);
 
         return true;
     }
