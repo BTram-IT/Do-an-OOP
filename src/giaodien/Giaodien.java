@@ -313,21 +313,73 @@ public class Giaodien {
 
     public void menuThuNganTiepNhanKhachHang() {
         while (true) {
-            System.out.println("\n========== THU NGÂN - TIẾP NHẬN KHÁCH HÀNG ==========");
+            System.out.println("\n========== THU NGÂN ==========");
             System.out.println("1. Tiếp nhận khách hàng");
-            System.out.println("2. Tạo hóa đơn bán");
-            System.out.println("3. Xem và tìm kiếm khuyến mãi");
-            System.out.println("4. Quản lý hóa đơn bán");
+            System.out.println("2. Lập hóa đơn bán");
+            System.out.println("3. Quản lý hóa đơn bán");
+            System.out.println("4. Tra cứu khuyến mãi");
             System.out.println("5. Quay lại menu nhân viên");
-            System.out.println("====================================================");
+            System.out.println("==============================");
 
             int chon = Ktradulieu.luaChon(sc, "Chọn chức năng (1-5): ", 1, 5);
+
             switch (chon) {
-                case 1: menuTiepNhanKhachHang(); break;
-                case 2: taoHoaDonBan(); break;
-                case 3: menuXemVaTimKiemKhuyenMai(); break;
-                case 4: menuQuanLyHoaDonBan(); break;
-                case 5: return;
+                case 1:
+                    menuTiepNhanKhachHang();
+                    break;
+
+                case 2:
+                    taoHoaDonBan();
+                    break;
+
+                case 3:
+                    menuQuanLyHoaDonBan();
+                    break;
+
+                case 4:
+                    menuXemVaTimKiemKhuyenMai();
+                    break;
+
+                case 5:
+                    return;
+            }
+        }
+    }
+
+    public void menuKiemTraHoaDonBan(Hoadonban hdb) {
+        while (true) {
+            System.out.println("\n========== KIỂM TRA HÓA ĐƠN ==========");
+            System.out.println("1. Thêm sản phẩm");
+            System.out.println("2. Sửa số lượng sản phẩm");
+            System.out.println("3. Xóa sản phẩm");
+            System.out.println("4. Xem lại tổng tiền");
+            System.out.println("0. Quay lại");
+            System.out.println("=====================================");
+
+            int chon = Ktradulieu.luaChon(
+                    sc, "Chọn chức năng (0-4): ", 0, 4);
+
+            switch (chon) {
+                case 1:
+                    hdb.themSanPham(
+                            sc, dsSanPham, dsKhuyenMai, dsSPKM);
+                    break;
+
+                case 2:
+                    hdb.suaSoLuongSanPham(
+                            sc, dsSanPham, dsKhuyenMai, dsSPKM);
+                    break;
+
+                case 3:
+                    hdb.xoaSanPham(sc);
+                    break;
+
+                case 4:
+                    hdb.kiemTraHoaDon();
+                    break;
+
+                case 0:
+                    return;
             }
         }
     }
@@ -949,20 +1001,74 @@ public class Giaodien {
 
         Hoadonban hdb = new Hoadonban();
 
+        // Khởi tạo thông tin hóa đơn
         hdb.nhapThongTin(sc, nvLap, dsHoaDon,
                 dsKhachHang, dsSanPham, dsKhuyenMai, dsSPKM);
 
-        if (dsHoaDon.themHD(hdb)) {
-            // Lưu hóa đơn
-            dsHoaDon.ghiFile("data/hoadon.txt");
+        while (true) {
+            System.out.println("\n========== LẬP HÓA ĐƠN BÁN ==========");
+            System.out.println("Mã hóa đơn: " + hdb.getMaHD());
+            System.out.println("Nhân viên: " + nvLap.getMaND()
+                    + " - " + nvLap.getTenND());
 
-            // Lưu sản phẩm sau khi cập nhật tồn kho
-            dsSanPham.ghiFile("data/sanpham.txt");
+            String tenKhachHang = "Khách lẻ";
 
-            // Lưu khách hàng sau khi cập nhật điểm tích lũy
-            dsKhachHang.ghiFile("data/khachhang.txt");
+            if (!"KHACH_LE".equalsIgnoreCase(hdb.getMaKH())) {
+                // Tìm thông tin khách hàng theo mã
+                for (Khachhang kh : dsKhachHang.getDanhSach()) {
+                    if (kh != null && kh.getMaKH() != null
+                            && kh.getMaKH().equalsIgnoreCase(hdb.getMaKH())) {
+                        tenKhachHang = kh.getTenKH();
+                        break;
+                    }
+                }
+            }
 
-            System.out.println("[Thành công] Đã lưu hóa đơn bán!");
+            System.out.println("Khách hàng: " + tenKhachHang);
+            System.out.println("Số sản phẩm: " + hdb.getSoLuongCT());
+            System.out.println("Tổng tiền: "
+                    + Ktradulieu.dinhDangTien(hdb.tinhThanhTien()));
+
+            System.out.println("------------------------------------");
+            System.out.println("1. Tiếp nhận khách hàng");
+            System.out.println("2. Kiểm tra và điều chỉnh hóa đơn");
+            System.out.println("3. Thanh toán và hoàn tất");
+            System.out.println("0. Hủy lập hóa đơn");
+            System.out.println("====================================");
+
+            int chon = Ktradulieu.luaChon(
+                    sc, "Chọn chức năng (0-3): ", 0, 3);
+
+            switch (chon) {
+                case 1:
+                    hdb.tiepNhanKhachHang(sc, dsKhachHang);
+                    break;
+
+                case 2:
+                    menuKiemTraHoaDonBan(hdb);
+                    break;
+
+                case 3:
+                    boolean thanhCong = hdb.thanhToanHoaDon(
+                            sc, nvLap, dsKhachHang, dsSanPham);
+
+                    if (thanhCong) {
+                        if (dsHoaDon.themHD(hdb)) {
+                            dsSanPham.ghiFile("data/sanpham.txt");
+                            dsKhachHang.ghiFile("data/khachhang.txt");
+
+                            System.out.println(
+                                    "[Thành công] Đã hoàn tất và lưu hóa đơn bán!");
+                        }
+                        return;
+                    }
+                    break;
+
+                case 0:
+                    System.out.println(
+                            "[Thông báo] Đã hủy lập hóa đơn: " + hdb.getMaHD());
+                    return;
+            }
         }
     }
 

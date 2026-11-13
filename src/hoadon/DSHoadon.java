@@ -80,7 +80,6 @@ public class DSHoadon {
         }
 
         this.danhSach.add(hd);
-        ghiFile("data/hoadon.txt");
 
         System.out.println("[Thành công] Đã lưu hóa đơn [" + hd.getMaHD() + "] (" + hd.getLoaiHD() + ") vào hệ thống.");
         return true;
