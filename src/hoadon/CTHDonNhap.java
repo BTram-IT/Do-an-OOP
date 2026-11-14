@@ -1,5 +1,7 @@
 package hoadon;
 
+
+import java.util.Locale;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -487,6 +489,7 @@ public class CTHDonNhap extends CTHoaDon {
                 : "";
 
         String dong = String.format(
+                Locale.ROOT,
                 "%s;%s;%s;%d;%.0f;%.2f;%s",
                 maHD, maSP, tenSP, getSoLuongNhap(),
                 getDonGiaNhap(), this.thueSuatNhap, hsd
@@ -526,8 +529,8 @@ public class CTHDonNhap extends CTHoaDon {
             }
 
             int soLuong = Integer.parseInt(p[3].trim());
-            double donGia = Double.parseDouble(p[4].trim());
-            double vat = Double.parseDouble(p[5].trim());
+            double donGia = Ktradulieu.docSoThuc(p[4]);
+            double vat = Ktradulieu.docSoThuc(p[5]);
 
             LocalDate hsd = null;
 
@@ -563,11 +566,11 @@ public class CTHDonNhap extends CTHoaDon {
 
                     ct.sanPhamMoi = new ThucAn(
                             sp[1], sp[2],
-                            Double.parseDouble(sp[3]),
-                            Double.parseDouble(sp[4]),
+                            Ktradulieu.docSoThuc(sp[3]),
+                            Ktradulieu.docSoThuc(sp[4]),
                             Integer.parseInt(sp[5]),
                             sp[6], sp[7], sp[8],
-                            Double.parseDouble(sp[9]),
+                            Ktradulieu.docSoThuc(sp[9]),
                             sp[10], sp[11], sp[12],
                             Boolean.parseBoolean(sp[13]),
                             sp[14],
@@ -582,12 +585,12 @@ public class CTHDonNhap extends CTHoaDon {
 
                     ct.sanPhamMoi = new DoUong(
                             sp[1], sp[2],
-                            Double.parseDouble(sp[3]),
-                            Double.parseDouble(sp[4]),
+                            Ktradulieu.docSoThuc(sp[3]),
+                            Ktradulieu.docSoThuc(sp[4]),
                             Integer.parseInt(sp[5]),
                             sp[6], sp[7], sp[8],
-                            Double.parseDouble(sp[9]),
-                            Double.parseDouble(sp[10]),
+                            Ktradulieu.docSoThuc(sp[9]),
+                            Ktradulieu.docSoThuc(sp[10]),
                             sp[11], sp[12], sp[13],
                             sp[14],
                             sp.length > 15 && Boolean.parseBoolean(sp[15])

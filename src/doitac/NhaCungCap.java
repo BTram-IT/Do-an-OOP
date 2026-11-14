@@ -1,5 +1,7 @@
 package doitac;
 
+
+import java.util.Locale;
 import java.util.Scanner;
 import util.Ktradulieu;
 
@@ -158,7 +160,7 @@ public class NhaCungCap {
     }
 
     public String toFileString() {
-        return String.format("%s;%s;%s;%s;%s;%b",
+        return String.format(Locale.ROOT, "%s;%s;%s;%s;%s;%b",
                 this.maNCC, this.tenNCC, this.sdt, this.diaChi, this.email, this.daXoa);
     }
 

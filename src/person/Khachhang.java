@@ -1,5 +1,7 @@
 package person;
 
+
+import java.util.Locale;
 import java.util.Scanner;
 import util.Ktradulieu;
 
@@ -156,7 +158,7 @@ public class Khachhang {
 
     // Hàm xuất định dạng lưu file
     public String toFileString() {
-        return String.format("%s;%s;%s;%s;%d;%b",
+        return String.format(Locale.ROOT, "%s;%s;%s;%s;%d;%b",
                 this.maKH, this.tenKH, this.sdt, this.diaChi, this.diemTichLuy, this.daXoa);
     }
 

@@ -1,5 +1,7 @@
 package hoadon;
 
+
+import java.util.Locale;
 import java.util.Scanner;
 import java.util.Objects;
 
@@ -508,6 +510,14 @@ public class HoadonNhap extends HoaDon implements IHoaDon {
                 return false;
             }
 
+            // Hàng nhập đã quá hạn ngay tại thời điểm duyệt thì không được nhập kho
+            if (ct.getHanSuDung() != null && ct.getHanSuDung().isBefore(java.time.LocalDate.now())) {
+                System.out.println("[Lỗi] Sản phẩm " + ct.getMaSP() + " có hạn sử dụng ("
+                        + ct.getHanSuDung().format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy"))
+                        + ") đã qua, không thể duyệt nhập kho!");
+                return false;
+            }
+
             SanPham spTrongKho = dsSP.timKiem(ct.getMaSP());
             SanPham spMoi = ct.getSanPhamMoi();
 
@@ -791,6 +801,15 @@ public class HoadonNhap extends HoaDon implements IHoaDon {
                 return false;
             }
 
+            // Sản phẩm đã có trong kho: cập nhật HSD theo lần nhập này TRƯỚC khi cộng tồn,
+            // để hàng mới nhập không bị đánh giá theo HSD cũ (sản phẩm mới đã mang sẵn HSD từ hồ sơ).
+            if (ct.getSanPhamMoi() == null) {
+                String thongBaoHSD = sp.capNhatHanSuDungKhiNhap(ct.getHanSuDung());
+                if (thongBaoHSD != null) {
+                    System.out.println("[HSD] " + thongBaoHSD);
+                }
+            }
+
             sp.congTonKho(ct.getSoLuongNhap());
             sp.setDonGiaNhap(ct.getDonGiaNhap());
         }
@@ -846,7 +865,7 @@ public class HoadonNhap extends HoaDon implements IHoaDon {
     @Override
     public String toFileString() {
         String pt = (this.phuongThucThanhToan != null) ? this.phuongThucThanhToan.getLoaiThanhToan() : "CHUA_TT";
-        return String.format("HDNHAP;%s;%s;%s;%s;%s;%.0f;%.0f;%.0f;%s;%s",
+        return String.format(Locale.ROOT, "HDNHAP;%s;%s;%s;%s;%s;%.0f;%.0f;%.0f;%s;%s",
                 this.maHD, this.ngayLap, this.getMaNV(), this.maNCC, this.trangThai,
                 this.tinhTongTien(), this.tinhTienThue(), this.tinhThanhTien(), pt, (this.ghiChu != null ? this.ghiChu : ""));
     }

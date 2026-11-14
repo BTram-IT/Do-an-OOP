@@ -1,5 +1,7 @@
 package khuyenmai;
 
+
+import java.util.Locale;
 import java.time.LocalDate;
 import java.util.Scanner;
 import util.Ktradulieu;
@@ -205,6 +207,7 @@ public class KhuyenmaiMuatang extends Khuyenmai {
         return "MUATANG;"
                 + super.toDongFile()
                 + String.format(
+                Locale.ROOT,
                 ";%d;%d",
                 soLuongMuaToiThieu,
                 soLuongTang

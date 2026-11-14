@@ -1,10 +1,10 @@
 package doitac;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
+import java.io.FileInputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -169,44 +169,63 @@ public class DSNhaCungCap {
         System.out.println("Tổng số nhà cung cấp: " + danhSach.size());
     }
 
-    // ghi
-    public void ghiFile(String duongDan) {
-        try (BufferedWriter bw = new BufferedWriter(new FileWriter(duongDan))) {
-            for (NhaCungCap ncc : danhSach) {
-                bw.write(ncc.toFileString());
-                bw.newLine();
-            }
-            System.out.println("Đã lưu danh sách nhà cung cấp vào file: " + duongDan);
-        } catch (IOException e) {
+    // ghi (UTF-8, qua file tạm; file đang bị bảo vệ do đọc lỗi sẽ không bị ghi đè)
+    public boolean ghiFile(String duongDan) {
+        List<String> cacDong = new ArrayList<>();
+        for (NhaCungCap ncc : danhSach) {
+            cacDong.add(ncc.toFileString());
+        }
+        try {
+            String dich = Ktradulieu.ghiDongAnToan(duongDan, cacDong);
+            System.out.println("Đã lưu danh sách nhà cung cấp vào file: " + dich);
+            return true;
+        } catch (IOException | RuntimeException e) {
             System.out.println(" Lỗi ghi file nhà cung cấp: " + e.getMessage());
+            return false;
         }
     }
 
-    public void docFile(String duongDan) {
+    // đọc (UTF-8): đọc vào danh sách tạm, chỉ thay thế khi mọi dòng hợp lệ.
+    // true = thành công (hoặc chưa có file); false = file lỗi, danh sách hiện tại giữ nguyên và file gốc được bảo vệ.
+    public boolean docFile(String duongDan) {
         File file = new File(duongDan);
-        if (!file.exists()) return;
-        danhSach.clear();
-        try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+        if (!file.exists()) return true;
+
+        List<NhaCungCap> tam = new ArrayList<>();
+        int soDong = 0;
+        try (BufferedReader br = new BufferedReader(
+                new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8))) {
             String dong;
             while ((dong = br.readLine()) != null) {
+                soDong++;
                 dong = dong.trim();
                 if (dong.isEmpty() || dong.startsWith("#")) continue;
-                String[] p = dong.split(";");
-                if (p.length >= 6) {
-                    String ma = p[0].trim();
-                    String ten = p[1].trim();
-                    String sdt = p[2].trim();
-                    String diaChi = p[3].trim();
-                    String email = p[4].trim();
-                    boolean daXoa = Boolean.parseBoolean(p[5].trim());
-
-                    NhaCungCap ncc = new NhaCungCap(ma, ten, sdt, diaChi, email, daXoa);
-                    danhSach.add(ncc);
+                String[] p = dong.split(";", -1);
+                if (p.length < 6) {
+                    throw new IllegalArgumentException("Thiếu trường dữ liệu (cần 6, có " + p.length + ")");
                 }
+                String xoa = p[5].trim();
+                if (!xoa.equalsIgnoreCase("true") && !xoa.equalsIgnoreCase("false")) {
+                    throw new IllegalArgumentException("Trạng thái xóa phải là true/false: '" + xoa + "'");
+                }
+                NhaCungCap ncc = new NhaCungCap(p[0].trim(), p[1].trim(), p[2].trim(),
+                        p[3].trim(), p[4].trim(), Boolean.parseBoolean(xoa));
+                for (NhaCungCap da : tam) {
+                    if (da.getMaNCC().equalsIgnoreCase(ncc.getMaNCC())) {
+                        throw new IllegalArgumentException("Mã nhà cung cấp bị trùng: " + ncc.getMaNCC());
+                    }
+                }
+                tam.add(ncc);
             }
-            System.out.println("Đã đọc thành công " + danhSach.size() + " nhà cung cấp từ file: " + duongDan);
-        } catch (Exception e) {
-            System.out.println("Lỗi đọc file nhà cung cấp: " + e.getMessage());
+        } catch (IOException | RuntimeException e) {
+            System.out.println("Lỗi đọc file nhà cung cấp tại dòng " + soDong + ": " + e.getMessage());
+            System.out.println("Danh sách hiện tại được giữ nguyên, không có dữ liệu nào bị thay thế.");
+            Ktradulieu.danhDauFileLoi(duongDan, "Dòng " + soDong + ": " + e.getMessage());
+            return false;
         }
+        danhSach.clear();
+        danhSach.addAll(tam);
+        System.out.println("Đã đọc thành công " + danhSach.size() + " nhà cung cấp từ file: " + duongDan);
+        return true;
     }
 }

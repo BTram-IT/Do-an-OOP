@@ -1,7 +1,11 @@
 package util;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -12,6 +16,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.time.format.ResolverStyle;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Scanner;
 import java.util.Set;
 
@@ -334,5 +339,42 @@ public class Ktradulieu {
         if (tam != null && tam.exists()) {
             tam.delete();
         }
+    }
+
+    // Ghi toàn bộ các dòng ra file tạm (UTF-8) rồi thay file thật. Trả về đường dẫn thực sự đã ghi
+    // (là <file>.moi nếu file gốc đang được bảo vệ vì đọc lỗi). Ném IOException nếu ghi thất bại;
+    // khi đó file gốc giữ nguyên.
+    public static String ghiDongAnToan(String duongDan, List<String> cacDong) throws IOException {
+        String dich = duongDanGhi(duongDan);
+        File tam = chuanBiFileTam(dich);
+        try {
+            try (BufferedWriter bw = new BufferedWriter(
+                    new OutputStreamWriter(new FileOutputStream(tam), StandardCharsets.UTF_8))) {
+                for (String dong : cacDong) {
+                    bw.write(dong);
+                    bw.newLine();
+                }
+            }
+            hoanTatGhi(tam, dich);
+            return dich;
+        } catch (IOException | RuntimeException e) {
+            huyFileTam(tam);
+            throw e;
+        }
+    }
+
+    // Đọc số thực từ file, không phụ thuộc Locale: chấp nhận "8.0" và cả "8,0" (file cũ ghi theo Locale khác).
+    // Chỉ chấp nhận số hữu hạn.
+    public static double docSoThuc(String s) {
+        if (s == null) throw new NumberFormatException("Giá trị số rỗng");
+        String t = s.trim();
+        if (t.indexOf('.') < 0 && t.indexOf(',') >= 0 && t.indexOf(',') == t.lastIndexOf(',')) {
+            t = t.replace(',', '.');
+        }
+        double v = Double.parseDouble(t);
+        if (Double.isNaN(v) || Double.isInfinite(v)) {
+            throw new NumberFormatException("Giá trị không hữu hạn: " + s);
+        }
+        return v;
     }
 }

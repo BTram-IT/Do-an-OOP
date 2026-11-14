@@ -1,5 +1,7 @@
 package person;
 
+
+import java.util.Locale;
 import java.time.LocalDate;
 import java.util.Scanner;
 import util.Ktradulieu;
@@ -99,7 +101,7 @@ public class NhanVien extends Nguoidung {
     public String toFileString() {
         String ngayStr = (this.ngayVaoLam != null) ? this.ngayVaoLam.toString() : LocalDate.now().toString();
         String saThaiStr = (this.yeuCauSaThai != null && !this.yeuCauSaThai.trim().isEmpty()) ? this.yeuCauSaThai : "KHONG";
-        return String.format("NHANVIEN;%s;%s;%s;%s;%s;%s;%s;%.0f;%s;%b",
+        return String.format(Locale.ROOT, "NHANVIEN;%s;%s;%s;%s;%s;%s;%s;%.0f;%s;%b",
                 this.maND, this.tenND, this.taiKhoan, this.matKhau, this.soDienThoai,
                 this.vaiTro, ngayStr, this.luongCoBan, saThaiStr, this.daXoa);
     }

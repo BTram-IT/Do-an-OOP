@@ -1,13 +1,10 @@
 package hoadon;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Scanner;
@@ -676,27 +673,17 @@ public class DSHoadon {
         System.out.println(hd.inHoaDon());
     }
 
-    public void ghiFile(String filePath) {
-        File file = new File(filePath);
-        File parentDir = file.getParentFile();
+    public boolean ghiFile(String filePath) {
+        ArrayList<String> cacDong = new ArrayList<>();
 
-        if (parentDir != null && !parentDir.exists()) {
-            parentDir.mkdirs();
-        }
-
-        try (BufferedWriter bw = new BufferedWriter(
-                new OutputStreamWriter(
-                        new FileOutputStream(filePath),
-                        StandardCharsets.UTF_8))) {
-
+        try {
             for (HoaDon hd : this.danhSach) {
                 if (hd == null) {
                     continue;
                 }
 
                 // Lưu thông tin chung của hóa đơn
-                bw.write(hd.toFileString());
-                bw.newLine();
+                cacDong.add(hd.toFileString());
 
                 // Lưu chi tiết hóa đơn nhập
                 if (hd instanceof HoadonNhap) {
@@ -704,8 +691,7 @@ public class DSHoadon {
 
                     for (CTHDonNhap ct : hdn.getDsChiTiet()) {
                         if (ct != null) {
-                            bw.write("CTNHAP;" + ct.toDongFile());
-                            bw.newLine();
+                            cacDong.add("CTNHAP;" + ct.toDongFile());
                         }
                     }
                 } else if (hd instanceof Hoadonban) {
@@ -713,24 +699,30 @@ public class DSHoadon {
 
                     for (CTHDBan ct : hdb.getDsChiTiet()) {
                         if (ct != null) {
-                            bw.write("CTBAN;" + ct.toDongFile());
-                            bw.newLine();
+                            cacDong.add("CTBAN;" + ct.toDongFile());
                         }
                     }
                 }
             }
 
-        } catch (IOException e) {
+            // Ghi UTF-8 qua file tạm; file đang bị bảo vệ do đọc lỗi sẽ không bị ghi đè
+            Ktradulieu.ghiDongAnToan(filePath, cacDong);
+            return true;
+
+        } catch (IOException | RuntimeException e) {
             System.out.println("[Lỗi] Ghi file hóa đơn: " + e.getMessage());
+            return false;
         }
     }
 
-    public void docFile(String filePath, DSNhanVien dsNV) {
+    // true = đọc thành công (hoặc chưa có file); false = file có dòng lỗi / không đọc được.
+    // Khi false: danh sách hiện tại giữ nguyên và file gốc được bảo vệ, không bị ghi đè.
+    public boolean docFile(String filePath, DSNhanVien dsNV) {
         File file = new File(filePath);
 
         if (!file.exists()) {
             System.out.println("[Thông báo] Chưa có file dữ liệu hóa đơn tại: " + filePath);
-            return;
+            return true;
         }
 
         ArrayList<HoaDon> danhSachTam = new ArrayList<>();
@@ -743,8 +735,11 @@ public class DSHoadon {
             String dong;
             int dem = 0;
             int loi = 0;
+            int soDong = 0;
+            String loiDauTien = null;
 
             while ((dong = br.readLine()) != null) {
+                soDong++;
                 dong = dong.trim();
 
                 if (dong.isEmpty() || dong.startsWith("#")) {
@@ -763,6 +758,7 @@ public class DSHoadon {
 
                         if (ct == null) {
                             loi++;
+                            if (loiDauTien == null) loiDauTien = "Dòng " + soDong + ": dữ liệu không hợp lệ";
                             continue;
                         }
 
@@ -780,6 +776,7 @@ public class DSHoadon {
                         if (hdnTimDuoc == null
                                 || !hdnTimDuoc.themCTHDTuFile(ct)) {
                             loi++;
+                            if (loiDauTien == null) loiDauTien = "Dòng " + soDong + ": dữ liệu không hợp lệ";
                             continue;
                         }
 
@@ -797,6 +794,7 @@ public class DSHoadon {
 
                         if (ct == null) {
                             loi++;
+                            if (loiDauTien == null) loiDauTien = "Dòng " + soDong + ": dữ liệu không hợp lệ";
                             continue;
                         }
 
@@ -814,6 +812,7 @@ public class DSHoadon {
                         if (hdbTimDuoc == null
                                 || !hdbTimDuoc.themCTHDTuFile(ct)) {
                             loi++;
+                            if (loiDauTien == null) loiDauTien = "Dòng " + soDong + ": dữ liệu không hợp lệ";
                             continue;
                         }
 
@@ -825,6 +824,7 @@ public class DSHoadon {
 
                     if (p.length < 6) {
                         loi++;
+                        if (loiDauTien == null) loiDauTien = "Dòng " + soDong + ": dữ liệu không hợp lệ";
                         continue;
                     }
 
@@ -837,6 +837,7 @@ public class DSHoadon {
 
                     if (maHD.isEmpty() || maNV.isEmpty()) {
                         loi++;
+                        if (loiDauTien == null) loiDauTien = "Dòng " + soDong + ": dữ liệu không hợp lệ";
                         continue;
                     }
 
@@ -851,6 +852,7 @@ public class DSHoadon {
 
                     if (trungMa) {
                         loi++;
+                        if (loiDauTien == null) loiDauTien = "Dòng " + soDong + ": dữ liệu không hợp lệ";
                         continue;
                     }
 
@@ -862,6 +864,7 @@ public class DSHoadon {
                         ghiChu = (p.length > 10) ? p[10].trim() : "";
                     } else {
                         loi++;
+                        if (loiDauTien == null) loiDauTien = "Dòng " + soDong + ": dữ liệu không hợp lệ";
                         continue;
                     }
 
@@ -884,29 +887,57 @@ public class DSHoadon {
                                 maHD, nv, ngayLap, trangThai, ghiChu, maDoiTac);
                     }
 
+                    // Khôi phục thông tin thanh toán đã lưu trong file
+                    if (hd instanceof Hoadonban) {
+                        Hoadonban hdb = (Hoadonban) hd;
+                        if (p.length >= 12) {
+                            double tienDungDiem = Ktradulieu.docSoThuc(p[9]);
+                            double soTienTT = Ktradulieu.docSoThuc(p[10]);
+                            hdb.khoiPhucThanhToanTuFile(tienDungDiem, soTienTT, p[11].trim());
+                        }
+                        if (p.length >= 18) {
+                            double tienKhachDua = p[13].trim().isEmpty() ? 0 : Ktradulieu.docSoThuc(p[13]);
+                            hdb.khoiPhucChiTietThanhToanTuFile(tienKhachDua,
+                                    p[14].trim(), p[15].trim(), p[16].trim(), p[17].trim());
+                        }
+                    } else {
+                        HoadonNhap hdn = (HoadonNhap) hd;
+                        if (p.length >= 10) {
+                            double soTienTT = Ktradulieu.docSoThuc(p[8]);
+                            hdn.khoiPhucThanhToanTuFile(soTienTT, p[9].trim());
+                        }
+                    }
+
                     danhSachTam.add(hd);
                     dem++;
 
                 } catch (Exception e) {
                     loi++;
+                    if (loiDauTien == null) loiDauTien = "Dòng " + soDong + ": " + e.getMessage();
                     System.out.println(
-                            "[Cảnh báo] Bỏ qua một dòng hóa đơn không hợp lệ: "
+                            "[Lỗi] Dòng hóa đơn không hợp lệ: "
                                     + e.getMessage());
                 }
+            }
+
+            if (loi > 0) {
+                System.out.println("[Lỗi] Có " + loi + " dòng hóa đơn không hợp lệ, KHÔNG nạp dữ liệu hóa đơn.");
+                System.out.println("[Thông báo] Danh sách hóa đơn hiện tại được giữ nguyên.");
+                Ktradulieu.danhDauFileLoi(filePath, loi + " dòng lỗi; dòng lỗi đầu tiên: " + loiDauTien);
+                return false;
             }
 
             this.danhSach.clear();
             this.danhSach.addAll(danhSachTam);
 
             System.out.println("[Thành công] Đã nạp " + dem + " hóa đơn từ file.");
-
-            if (loi > 0) {
-                System.out.println(
-                        "[Cảnh báo] Có " + loi + " dòng hóa đơn không đọc được.");
-            }
+            return true;
 
         } catch (IOException e) {
             System.out.println("[Lỗi] Đọc file hóa đơn: " + e.getMessage());
+            Ktradulieu.danhDauFileLoi(filePath, "Không đọc được file: " + e.getMessage());
+            return false;
         }
     }
+
 }

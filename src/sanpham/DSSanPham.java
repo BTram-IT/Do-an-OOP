@@ -1,10 +1,7 @@
 package sanpham;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -240,21 +237,25 @@ public class DSSanPham {
         return true;
     }
 
+    // Thao tác nghiệp vụ có chủ đích: chuyển tồn của sản phẩm quá hạn sang "số lượng hết hạn" rồi lưu file.
     public void kiemTraVaCapNhatHanSuDung() {
         int hetHan = 0;
 
         for (int i = 0; i < this.soLuong; i++) {
-            if (!this.danhSach[i].kiemTraHanSuDung()) {
+            SanPham sp = this.danhSach[i];
+            int daChuyen = sp.xuLyHetHan();
+            if (daChuyen > 0) {
                 hetHan++;
+                System.out.println("Sản phẩm [" + sp.getMaSP() + "] " + sp.getTenSP()
+                        + " ĐÃ HẾT HẠN (HSD: " + sp.getHsd() + ")! Đã chuyển "
+                        + daChuyen + " " + sp.getDonViTinh() + " vào số lượng hết hạn (Tồn kho = 0).");
             }
         }
 
         if (hetHan == 0) {
-            System.out.println("Tất cả sản phẩm trong kho đều còn hạn sử dụng.");
+            System.out.println("Không có sản phẩm hết hạn nào còn tồn trong kho.");
         } else {
-            // Lưu lại số lượng tồn kho sau khi cập nhật
             ghiFile("data/sanpham.txt");
-
             System.out.println("Có " + hetHan + " sản phẩm hết hạn đã được cập nhật đưa về tồn kho = 0!");
         }
     }
@@ -279,17 +280,19 @@ public class DSSanPham {
         System.out.println("\n                             KẾT THÚC DANH SÁCH SẢN PHẨM");
     }
 
-    // đọc file
-    public void docFile(String duongDan) {
+    // đọc file: đọc toàn bộ vào danh sách tạm; chỉ thay thế danh sách hiện tại khi mọi dòng đều hợp lệ.
+    // Trả về true nếu đọc thành công (hoặc chưa có file), false nếu file có lỗi / không đọc được
+    // (khi đó danh sách hiện tại giữ nguyên và file gốc được bảo vệ, không bị ghi đè).
+    public boolean docFile(String duongDan) {
         File file = new File(duongDan);
 
         if (!file.exists()) {
             System.out.println("[Thông báo] Chưa tìm thấy file sản phẩm: " + duongDan);
-            return;
+            return true;
         }
 
-        // Xóa dữ liệu cũ trước khi đọc lại file
-        this.soLuong = 0;
+        java.util.ArrayList<SanPham> tam = new java.util.ArrayList<>();
+        int soDong = 0;
 
         try (BufferedReader br = new BufferedReader(
                 new java.io.InputStreamReader(
@@ -297,148 +300,129 @@ public class DSSanPham {
                         java.nio.charset.StandardCharsets.UTF_8))) {
 
             String line;
-            int dem = 0;
-            int loi = 0;
-
             while ((line = br.readLine()) != null) {
+                soDong++;
                 line = line.trim();
-
                 if (line.isEmpty() || line.startsWith("#")) {
                     continue;
                 }
 
+                SanPham sp;
                 try {
-                    String[] p = line.split(";", -1);
-
-                    if (p.length < 15) {
-                        loi++;
-                        continue;
-                    }
-
-                    String loai = p[0].trim();
-                    String ma = p[1].trim();
-                    String ten = p[2].trim();
-
-                    double giaNhap = Double.parseDouble(p[3].trim());
-                    double giaBan = Double.parseDouble(p[4].trim());
-                    int ton = Integer.parseInt(p[5].trim());
-
-                    String dvt = p[6].trim();
-                    String nsx = p[7].trim();
-                    String hsd = p[8].trim();
-
-                    double thue = Double.parseDouble(p[9].trim());
-
-                    SanPham sp;
-
-                    if ("DOUONG".equalsIgnoreCase(loai)) {
-
-                        double dungTich = Double.parseDouble(p[10].trim());
-                        String thuongHieu = p[11].trim();
-                        String huongVi = p[12].trim();
-                        String loaiDoUong = p[13].trim();
-                        String trangThai = p[14].trim();
-
-                        boolean daXoa = p.length > 15
-                                && Boolean.parseBoolean(p[15].trim());
-
-                        sp = new DoUong(
-                                ma, ten, giaNhap, giaBan, ton,
-                                dvt, nsx, hsd, thue,
-                                dungTich, thuongHieu, huongVi,
-                                loaiDoUong, trangThai, daXoa
-                        );
-
-                    } else if ("THUCAN".equalsIgnoreCase(loai)) {
-
-                        String thanhPhan = p[10].trim();
-                        String baoQuan = p[11].trim();
-                        String xuatXu = p[12].trim();
-
-                        boolean laDoChay =
-                                Boolean.parseBoolean(p[13].trim());
-
-                        String trangThai = p[14].trim();
-
-                        boolean daXoa = p.length > 15
-                                && Boolean.parseBoolean(p[15].trim());
-
-                        sp = new ThucAn(
-                                ma, ten, giaNhap, giaBan, ton,
-                                dvt, nsx, hsd, thue,
-                                thanhPhan, baoQuan, xuatXu,
-                                laDoChay, trangThai, daXoa
-                        );
-
-                    } else {
-                        loi++;
-                        continue;
-                    }
-
-                    if (timKiem(ma) != null) {
-                        loi++;
-                        continue;
-                    }
-
-                    if (this.soLuong >= this.danhSach.length) {
-                        moRongBoNho();
-                    }
-
-                    this.danhSach[this.soLuong++] = sp;
-                    dem++;
-
-                } catch (Exception e) {
-                    loi++;
-                    System.out.println(
-                            "[Cảnh báo] Dòng sản phẩm không hợp lệ: "
-                                    + e.getMessage()
-                    );
+                    sp = phanTichDong(line);
+                } catch (RuntimeException e) {
+                    throw new IllegalArgumentException("Dòng " + soDong + ": " + e.getMessage());
                 }
+
+                for (SanPham da : tam) {
+                    if (da.getMaSP().equalsIgnoreCase(sp.getMaSP())) {
+                        throw new IllegalArgumentException(
+                                "Dòng " + soDong + ": Mã sản phẩm bị trùng: " + sp.getMaSP());
+                    }
+                }
+                tam.add(sp);
             }
 
-            System.out.println(
-                    "[Thành công] Đã đọc " + dem
-                            + " sản phẩm từ file: " + duongDan
-            );
-
-            if (loi > 0) {
-                System.out.println(
-                        "[Cảnh báo] Có " + loi
-                                + " dòng sản phẩm không đọc được."
-                );
-            }
-
-        } catch (IOException e) {
-            System.out.println("[Lỗi] Đọc file sản phẩm: " + e.getMessage());
+        } catch (IOException | RuntimeException e) {
+            System.out.println("[Lỗi] Đọc file sản phẩm thất bại: " + e.getMessage());
+            System.out.println("[Thông báo] Danh sách sản phẩm hiện tại được giữ nguyên, không có dữ liệu nào bị thay thế.");
+            Ktradulieu.danhDauFileLoi(duongDan, e.getMessage());
+            return false;
         }
+
+        this.danhSach = new SanPham[Math.max(SUC_CHUA_MAC_DINH, tam.size() * 2)];
+        this.soLuong = 0;
+        for (SanPham sp : tam) {
+            this.danhSach[this.soLuong++] = sp;
+        }
+
+        System.out.println("[Thành công] Đã đọc " + this.soLuong + " sản phẩm từ file: " + duongDan);
+        return true;
     }
 
-    // ghi file
-    public void ghiFile(String duongDan) {
-        File file = new File(duongDan);
+    private static boolean docBoolean(String s, String tenTruong) {
+        String t = s.trim();
+        if (t.equalsIgnoreCase("true")) return true;
+        if (t.equalsIgnoreCase("false")) return false;
+        throw new IllegalArgumentException(tenTruong + " phải là true/false: '" + s + "'");
+    }
 
-        // Tự tạo thư mục chứa file nếu chưa tồn tại
-        File thuMucCha = file.getAbsoluteFile().getParentFile();
+    // Phân tích một dòng dữ liệu sản phẩm; ném IllegalArgumentException nếu dòng không hợp lệ
+    private SanPham phanTichDong(String line) {
+        String[] p = line.split(";", -1);
 
-        if (thuMucCha != null && !thuMucCha.exists()) {
-            thuMucCha.mkdirs();
+        if (p.length < 15) {
+            throw new IllegalArgumentException("Thiếu trường dữ liệu (cần ít nhất 15, có " + p.length + ")");
         }
 
-        try (BufferedWriter bw = new BufferedWriter(new FileWriter(file))) {
-            for (int i = 0; i < this.soLuong; i++) {
-                SanPham sp = this.danhSach[i];
+        String loai = p[0].trim();
+        String ma = p[1].trim();
+        String ten = p[2].trim();
 
-                if (sp instanceof ThucAn) {
-                    bw.write(((ThucAn) sp).toFileString());
-                } else if (sp instanceof DoUong) {
-                    bw.write(((DoUong) sp).toFileString());
-                }
+        double giaNhap = Ktradulieu.docSoThuc(p[3]);
+        double giaBan = Ktradulieu.docSoThuc(p[4]);
+        int ton = Integer.parseInt(p[5].trim());
 
-                bw.newLine();
+        String dvt = p[6].trim();
+        String nsx = p[7].trim();
+        String hsd = p[8].trim();
+
+        double thue = Ktradulieu.docSoThuc(p[9]);
+
+        boolean daXoa = p.length > 15 && docBoolean(p[15], "Trạng thái xóa");
+
+        // Trường tùy chọn (file cũ không có): số lượng hết hạn
+        int hetHan = 0;
+        if (p.length > 16 && !p[16].trim().isEmpty()) {
+            hetHan = Integer.parseInt(p[16].trim());
+            if (hetHan < 0) {
+                throw new IllegalArgumentException("Số lượng hết hạn không được âm: " + hetHan);
             }
+        }
 
-        } catch (IOException e) {
+        SanPham ketQua;
+
+        if ("DOUONG".equalsIgnoreCase(loai)) {
+            double dungTich = Ktradulieu.docSoThuc(p[10]);
+            ketQua = new DoUong(
+                    ma, ten, giaNhap, giaBan, ton,
+                    dvt, nsx, hsd, thue,
+                    dungTich, p[11].trim(), p[12].trim(),
+                    p[13].trim(), p[14].trim(), daXoa);
+        } else if ("THUCAN".equalsIgnoreCase(loai)) {
+            ketQua = new ThucAn(
+                    ma, ten, giaNhap, giaBan, ton,
+                    dvt, nsx, hsd, thue,
+                    p[10].trim(), p[11].trim(), p[12].trim(),
+                    docBoolean(p[13], "Đồ chay"), p[14].trim(), daXoa);
+        } else {
+            throw new IllegalArgumentException("Loại sản phẩm không hợp lệ: '" + loai + "'");
+        }
+        ketQua.setSoLuongHetHan(hetHan);
+        return ketQua;
+    }
+
+    // ghi file: ghi ra file tạm (UTF-8) rồi mới thay file thật; file đang bị bảo vệ do đọc lỗi sẽ không bị ghi đè
+    public boolean ghiFile(String duongDan) {
+        java.util.ArrayList<String> cacDong = new java.util.ArrayList<>();
+        for (int i = 0; i < this.soLuong; i++) {
+            SanPham sp = this.danhSach[i];
+            if (sp instanceof ThucAn) {
+                cacDong.add(((ThucAn) sp).toFileString());
+            } else if (sp instanceof DoUong) {
+                cacDong.add(((DoUong) sp).toFileString());
+            } else {
+                System.out.println("[Lỗi] Ghi file SP bị hủy: loại sản phẩm không xác định tại vị trí " + i);
+                return false;
+            }
+        }
+
+        try {
+            Ktradulieu.ghiDongAnToan(duongDan, cacDong);
+            return true;
+        } catch (IOException | RuntimeException e) {
             System.out.println("Lỗi ghi file SP: " + e.getMessage());
+            return false;
         }
     }
 }

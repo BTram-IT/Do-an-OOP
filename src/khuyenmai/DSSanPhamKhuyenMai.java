@@ -424,53 +424,46 @@ public class DSSanPhamKhuyenMai {
     // =====================================================
     // 9. GHI FILE
     // =====================================================
-    public void ghiFile(String filePath) {
+    public boolean ghiFile(String filePath) {
         if (filePath == null || filePath.trim().isEmpty()) {
             System.out.println("[Lỗi] Đường dẫn file không hợp lệ!");
-            return;
+            return false;
         }
 
-        File file = new File(filePath);
-        File parentDir = file.getParentFile();
-
         try {
-            if (parentDir != null && !parentDir.exists()) {
-                if (!parentDir.mkdirs() && !parentDir.exists()) {
-                    throw new IOException("Không thể tạo thư mục lưu file!");
+            java.util.ArrayList<String> cacDong = new java.util.ArrayList<>();
+            for (int i = 0; i < this.soLuong; i++) {
+                if (this.danhSach[i] == null) {
+                    throw new IllegalStateException("Danh sách chứa liên kết rỗng tại vị trí " + i);
                 }
+                cacDong.add(this.danhSach[i].toDongFile());
             }
 
-            try (BufferedWriter bw = new BufferedWriter(
-                    new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8))) {
-                for (int i = 0; i < this.soLuong; i++) {
-                    if (this.danhSach[i] == null) {
-                        throw new IllegalStateException("Danh sách chứa liên kết rỗng tại vị trí " + i);
-                    }
-                    bw.write(this.danhSach[i].toDongFile());
-                    bw.newLine();
-                }
-            }
-
-            System.out.println("[Thành công] Lưu file sản phẩm khuyến mãi tại: " + filePath);
+            // Ghi UTF-8 qua file tạm; file đang bị bảo vệ do đọc lỗi sẽ không bị ghi đè
+            String dich = Ktradulieu.ghiDongAnToan(filePath, cacDong);
+            System.out.println("[Thành công] Lưu file sản phẩm khuyến mãi tại: " + dich);
+            return true;
 
         } catch (IOException | RuntimeException e) {
             System.out.println("[Lỗi] Ghi file sản phẩm khuyến mãi: " + e.getMessage());
+            return false;
         }
     }
 
     // =====================================================
     // 10. ĐỌC FILE AN TOÀN
     // =====================================================
-    public void docFile(String filePath) {
+    // true = thành công (hoặc chưa có file); false = file lỗi, danh sách cũ giữ nguyên và file gốc được bảo vệ
+    public boolean docFile(String filePath) {
         if (filePath == null || filePath.trim().isEmpty()) {
             System.out.println("[Lỗi] Đường dẫn file không hợp lệ!");
-            return;
+            return false;
         }
 
         File file = new File(filePath);
         if (!file.exists()) {
             System.out.println("[Thông báo] Chưa có file dữ liệu sản phẩm khuyến mãi tại: " + filePath);
-            return;
+            return true;
         }
 
         SPKhMai[] danhSachTam = new SPKhMai[SUC_CHUA_MAC_DINH];
@@ -525,10 +518,13 @@ public class DSSanPhamKhuyenMai {
             this.soLuong = soLuongTam;
 
             System.out.println("[Thành công] Đọc file sản phẩm khuyến mãi! Tổng số: " + soLuongTam);
+            return true;
 
         } catch (IOException | RuntimeException e) {
             System.out.println("[Lỗi] Đọc file sản phẩm khuyến mãi: " + e.getMessage());
             System.out.println("[Thông báo] Danh sách cũ được giữ nguyên.");
+            Ktradulieu.danhDauFileLoi(filePath, e.getMessage());
+            return false;
         }
     }
 }

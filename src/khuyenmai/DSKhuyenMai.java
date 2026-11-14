@@ -578,7 +578,7 @@ public class DSKhuyenMai {
                                     "Khuyến mãi phần trăm phải có 6 trường!");
                         }
 
-                        double pt = Double.parseDouble(p[5].trim());
+                        double pt = Ktradulieu.docSoThuc(p[5]);
 
                         km = new KhuyenmaiPhantram(
                                 ma, tenLoai, ngayBD, ngayKT, pt);

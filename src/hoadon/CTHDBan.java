@@ -250,9 +250,9 @@ public class CTHDBan extends CTHoaDon {
             return new CTHDBan(
                     p[0].trim(), p[1].trim(), p[2].trim(),
                     Integer.parseInt(p[3].trim()),
-                    Double.parseDouble(p[4].trim()),
-                    Double.parseDouble(p[5].trim()),
-                    Double.parseDouble(p[6].trim()),
+                    Ktradulieu.docSoThuc(p[4]),
+                    Ktradulieu.docSoThuc(p[5]),
+                    Ktradulieu.docSoThuc(p[6]),
                     Integer.parseInt(p[7].trim()),
                     p[8].trim()
             );

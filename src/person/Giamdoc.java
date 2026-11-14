@@ -1,5 +1,7 @@
 package person;
 
+
+import java.util.Locale;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Scanner;
@@ -346,7 +348,7 @@ public class Giamdoc extends Nguoidung {
     }
 
     public String toFileString() {
-        return String.format("GIAMDOC;%s;%s;%s;%s;%s;%s;%b;%.0f;%.2f",
+        return String.format(Locale.ROOT, "GIAMDOC;%s;%s;%s;%s;%s;%s;%b;%.0f;%.2f",
                 getMaND(), getTenND(), getTaiKhoan(), getMatKhau(), getSoDienThoai(), getVaiTro(), isDaXoa(),
                 phuCapChucVu, tyLeCoPhan);
     }

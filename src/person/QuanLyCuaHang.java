@@ -1,5 +1,7 @@
 package person;
 
+
+import java.util.Locale;
 import java.time.DateTimeException;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
@@ -553,7 +555,7 @@ public class QuanLyCuaHang extends Nguoidung implements Thongke {
     }
 
     public String toFileString() {
-        return String.format("QUANLY;%s;%s;%s;%s;%s;%s;%b;%s;%.2f",
+        return String.format(Locale.ROOT, "QUANLY;%s;%s;%s;%s;%s;%s;%b;%s;%.2f",
                 getMaND(), getTenND(), getTaiKhoan(), getMatKhau(), getSoDienThoai(), getVaiTro(), isDaXoa(), khuVucQuanLy, heSoTrachNhiem);
     }
 }

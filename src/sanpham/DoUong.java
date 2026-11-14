@@ -1,5 +1,7 @@
 package sanpham;
 
+
+import java.util.Locale;
 import util.Ktradulieu;
 
 import java.util.Scanner;
@@ -99,11 +101,11 @@ public class DoUong extends SanPham {
     }
 
     public String toFileString() {
-        return String.format("DOUONG;%s;%s;%.0f;%.0f;%d;%s;%s;%s;%.1f;%.1f;%s;%s;%s;%s;%b",
+        return String.format(Locale.ROOT, "DOUONG;%s;%s;%.0f;%.0f;%d;%s;%s;%s;%.1f;%.1f;%s;%s;%s;%s;%b;%d",
                 this.maSP, this.tenSP, this.donGiaNhap, this.donGiaBan,
                 this.soLuongTon, this.donViTinh, this.nsx, this.hsd,
                 this.phanTramThue, this.dungTich, this.thuongHieu,
-                this.huongVi, this.loaiDoUong, this.trangThaiDuyet, this.daXoa);
+                this.huongVi, this.loaiDoUong, this.trangThaiDuyet, this.daXoa, this.soLuongHetHan);
     }
     @Override
     public String toString() {

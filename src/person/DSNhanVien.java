@@ -301,7 +301,7 @@ public class DSNhanVien {
                     bw.newLine();
                 }
             }
-            Files.move(tam.toPath(), file.toPath(), StandardCopyOption.REPLACE_EXISTING);
+            Ktradulieu.hoanTatGhi(tam, dichGhi);
             System.out.println("Đã lưu danh sách tài khoản vào file: " + dichGhi);
             return true;
         } catch (IOException | RuntimeException e) {

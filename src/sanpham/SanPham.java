@@ -203,36 +203,82 @@ public abstract class SanPham {
         this.daXoa = daXoa;
     }
 
-    // kiểm tra hạn sử dụng và cập nhật kho
-
-    public boolean kiemTraHanSuDung() {
+    // ===== HẠN SỬ DỤNG =====
+    // Đọc HSD của sản phẩm; trả về null nếu chưa có hoặc không đọc được.
+    public LocalDate layNgayHetHan() {
         if (this.hsd == null || this.hsd.trim().isEmpty()) {
-            return true;
+            return null;
         }
-
+        String hsdStr = this.hsd.trim();
         try {
-            LocalDate han;
-            String hsdStr = this.hsd.trim();
             if (hsdStr.matches(Ktradulieu.ngayRegex)) {
-                han = LocalDate.parse(hsdStr, DINH_DANG_NGAY);
-            } else {
-                han = LocalDate.parse(hsdStr);
+                return LocalDate.parse(hsdStr, DINH_DANG_NGAY);
             }
+            return LocalDate.parse(hsdStr);
+        } catch (DateTimeParseException e) {
+            return null;
+        }
+    }
 
-            if (LocalDate.now().isAfter(han)) {
-                if (this.soLuongTon > 0) {
-                    this.soLuongHetHan += this.soLuongTon;
-                    int tonCu = this.soLuongTon;
-                    this.soLuongTon = 0; // Cập nhật lại số lượng kho về 0
+    // Chỉ KIỂM TRA, không thay đổi dữ liệu: true nếu sản phẩm đã quá hạn sử dụng.
+    public boolean isHetHan() {
+        LocalDate han = layNgayHetHan();
+        return han != null && LocalDate.now().isAfter(han);
+    }
 
-                    System.out.println("Sản phẩm [" + this.maSP + "] " + this.tenSP
-                            + " ĐÃ HẾT HẠN (HSD: " + this.hsd + ")! Đã chuyển "
-                            + tonCu + " sản phẩm vào danh mục hết hạn (Tồn kho = 0).");
-                }
-                return false;
-            }
-        } catch (Exception e) {}
-        return true;
+    // Chỉ KIỂM TRA, không thay đổi dữ liệu: true nếu còn hạn (hoặc không có HSD để kiểm tra).
+    public boolean kiemTraHanSuDung() {
+        return !isHetHan();
+    }
+
+    // Thao tác nghiệp vụ có chủ đích: chuyển toàn bộ tồn của sản phẩm đã quá hạn sang số lượng hết hạn.
+    // Trả về số lượng đã chuyển (0 nếu còn hạn hoặc không còn tồn).
+    public int xuLyHetHan() {
+        if (!isHetHan() || this.soLuongTon <= 0) {
+            return 0;
+        }
+        int tonCu = this.soLuongTon;
+        this.soLuongHetHan += tonCu;
+        this.soLuongTon = 0;
+        return tonCu;
+    }
+
+    // Cập nhật HSD khi nhập bổ sung hàng (hệ thống chỉ lưu 1 HSD cho mỗi sản phẩm, không quản lý theo lô).
+    // GỌI TRƯỚC khi cộng tồn kho của lần nhập mới:
+    //  - Hàng cũ đã hết hạn: chuyển vào số lượng hết hạn rồi áp dụng HSD của lần nhập mới.
+    //  - Kho đang trống hoặc chưa có HSD: áp dụng HSD của lần nhập mới.
+    //  - Hàng cũ còn hạn: giữ HSD gần nhất (an toàn thực phẩm, không để hàng cũ bị bán quá hạn).
+    // Trả về thông báo mô tả việc đã làm (để hiển thị cho người duyệt).
+    public String capNhatHanSuDungKhiNhap(LocalDate hsdNhap) {
+        if (hsdNhap == null) {
+            return null;
+        }
+        String hsdMoi = hsdNhap.format(DINH_DANG_NGAY);
+        LocalDate hsdCu = layNgayHetHan();
+
+        if (hsdCu == null || this.soLuongTon <= 0) {
+            this.hsd = hsdMoi;
+            return "HSD của sản phẩm " + this.maSP + " được cập nhật theo lần nhập mới: " + hsdMoi;
+        }
+        if (LocalDate.now().isAfter(hsdCu)) {
+            int daChuyen = xuLyHetHan();
+            this.hsd = hsdMoi;
+            return "Đã chuyển " + daChuyen + " " + this.donViTinh + " hàng cũ hết hạn của " + this.maSP
+                    + " sang số lượng hết hạn; HSD mới: " + hsdMoi;
+        }
+        if (hsdNhap.isBefore(hsdCu)) {
+            this.hsd = hsdMoi;
+            return "Lô nhập mới có HSD sớm hơn nên HSD của " + this.maSP + " được đặt về " + hsdMoi;
+        }
+        return "Sản phẩm " + this.maSP + " còn hàng cũ (HSD " + this.hsd
+                + ") nên giữ HSD gần nhất, không kéo dài sang HSD lần nhập mới (" + hsdMoi + ").";
+    }
+
+    public void setSoLuongHetHan(int soLuongHetHan) {
+        if (soLuongHetHan < 0) {
+            throw new IllegalArgumentException("[Lỗi] Số lượng hết hạn phải >= 0! Nhận: " + soLuongHetHan);
+        }
+        this.soLuongHetHan = soLuongHetHan;
     }
 
     public void congTonKho ( int sl){

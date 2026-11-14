@@ -1,5 +1,7 @@
 package sanpham;
 
+
+import java.util.Locale;
 import util.Ktradulieu;
 
 import java.util.Scanner;
@@ -91,11 +93,11 @@ public class ThucAn extends SanPham {
     }
 
     public String toFileString() {
-        return String.format("THUCAN;%s;%s;%.0f;%.0f;%d;%s;%s;%s;%.1f;%s;%s;%s;%b;%s;%b",
+        return String.format(Locale.ROOT, "THUCAN;%s;%s;%.0f;%.0f;%d;%s;%s;%s;%.1f;%s;%s;%s;%b;%s;%b;%d",
                 this.maSP, this.tenSP, this.donGiaNhap, this.donGiaBan,
                 this.soLuongTon, this.donViTinh, this.nsx, this.hsd,
                 this.phanTramThue, this.thanhPhan, this.baoQuan,
-                this.xuatXu, this.laDoChay, this.trangThaiDuyet, this.daXoa);
+                this.xuatXu, this.laDoChay, this.trangThaiDuyet, this.daXoa, this.soLuongHetHan);
     }
 
     @Override

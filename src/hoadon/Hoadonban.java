@@ -1,5 +1,7 @@
 package hoadon;
 
+
+import java.util.Locale;
 import java.util.Scanner;
 import khuyenmai.DSKhuyenMai;
 import khuyenmai.DSSanPhamKhuyenMai;
@@ -736,13 +738,13 @@ public class Hoadonban extends HoaDon implements IHoaDon {
         // tiền khách đưa; mã GD ngân hàng; tên người chuyển; số TK; tên ngân hàng
         String moRong = ";0;;;;";
         if (this.phuongThucThanhToan instanceof TienMat) {
-            moRong = String.format(";%.0f;;;;", ((TienMat) this.phuongThucThanhToan).getTienKhachDua());
+            moRong = String.format(Locale.ROOT, ";%.0f;;;;", ((TienMat) this.phuongThucThanhToan).getTienKhachDua());
         } else if (this.phuongThucThanhToan instanceof ChuyenKhoan) {
             ChuyenKhoan ck = (ChuyenKhoan) this.phuongThucThanhToan;
             moRong = ";0;" + lamSachTruongFile(ck.getMaGDNganHang()) + ";" + lamSachTruongFile(ck.getTenNguoiChuyen())
                     + ";" + lamSachTruongFile(ck.getSoTKChuyen()) + ";" + lamSachTruongFile(ck.getTenNganHang());
         }
-        return String.format("HDBAN;%s;%s;%s;%s;%s;%.0f;%.0f;%.0f;%.0f;%.0f;%s;%s",
+        return String.format(Locale.ROOT, "HDBAN;%s;%s;%s;%s;%s;%.0f;%.0f;%.0f;%.0f;%.0f;%s;%s",
                 this.maHD, this.ngayLap, this.getMaNV(), this.maKH, this.trangThai,
                 this.tinhTongTien(), this.tinhTienGiamKhuyenMai(), this.tinhTienThue(),
                 this.tienDungDiem, this.tinhThanhTien(), pt, (this.ghiChu != null ? this.ghiChu : "")) + moRong;
