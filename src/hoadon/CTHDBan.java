@@ -185,7 +185,6 @@ public class CTHDBan extends CTHoaDon {
         }
 
         if (kmTotNhat == null || giaTriTotNhat <= 0) {
-            System.out.println("-> Sản phẩm không có khuyến mãi phù hợp.");
             return false;
         }
 

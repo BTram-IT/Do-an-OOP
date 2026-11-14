@@ -189,7 +189,7 @@ public class HoadonNhap extends HoaDon implements IHoaDon {
     @Override
     public String getLoaiHD() { return "Hóa đơn nhập"; }
 
-    public void nhapThongTin(Scanner sc, NhanVien nhanVienDangNhap, DSHoadon dsHD, DSNhaCungCap dsNCC, DSSanPham dsSP, Nguoidung nguoiDungDangNhap) {
+    public boolean nhapThongTin(Scanner sc, NhanVien nhanVienDangNhap, DSHoadon dsHD, DSNhaCungCap dsNCC, DSSanPham dsSP, Nguoidung nguoiDungDangNhap) {
         if (sc == null) sc = new Scanner(System.in);
         super.nhapThongTin(sc, nhanVienDangNhap, dsHD);
 
@@ -243,19 +243,30 @@ public class HoadonNhap extends HoaDon implements IHoaDon {
         }
         while (true) {
             CTHDonNhap ct = new CTHDonNhap();
-            if (ct.nhapThongTin(sc, this.maHD, dsSP, nguoiDungDangNhap)) {
-                if (this.themCTHD(ct)) {
-                    System.out.println("[Thành công] Đã thêm mặt hàng vào phiếu nhập.");
-                }
+
+            if (!ct.nhapThongTin(sc, this.maHD, dsSP, nguoiDungDangNhap)) {
+                System.out.println("[Thông báo] Đã hủy thao tác lập phiếu nhập!");
+                return false;
             }
+
+            if (this.themCTHD(ct)) {
+                System.out.println("[Thành công] Đã thêm mặt hàng vào phiếu nhập.");
+            }
+
             System.out.print("Bạn có muốn nhập tiếp không? (1: Có / 0: Hoàn tất): ");
-            if (!sc.nextLine().trim().equals("1")) {
-                if (this.soLuongCT == 0) {
-                    System.out.println("[Lỗi] Hóa đơn nhập phải có ít nhất 1 mặt hàng!");
-                    continue;
-                }
-                break;
+
+            String tiepTuc = sc.nextLine().trim();
+
+            if (tiepTuc.equals("1")) {
+                continue;
             }
+
+            if (this.soLuongCT == 0) {
+                System.out.println("[Lỗi] Hóa đơn nhập phải có ít nhất 1 mặt hàng!");
+                continue;
+            }
+
+            break;
         }
 
         double tongTien = this.tinhThanhTien();
@@ -296,7 +307,7 @@ public class HoadonNhap extends HoaDon implements IHoaDon {
 
             if (xacNhan != 1) {
                 System.out.println("[Thông báo] Chưa xác nhận thanh toán.");
-                return;
+                return false;
             }
 
             TienMat tm = new TienMat(this.maHD, tongTien, nhanVienDangNhap);
@@ -308,7 +319,7 @@ public class HoadonNhap extends HoaDon implements IHoaDon {
                 this.phuongThucThanhToan = tm;
             } else {
                 System.out.println("[Lỗi] Không thể ghi nhận thanh toán!");
-                return;
+                return false;
             }
 
         } else {
@@ -332,6 +343,7 @@ public class HoadonNhap extends HoaDon implements IHoaDon {
         System.out.println("[Thành công] Đã lập phiếu nhập kho [" + this.maHD
                 + "] (Trạng thái: Đang xử lý).");
 
+        return true;
     }
 
     private boolean coQuyen(Nguoidung nguoiDung, String maQuyen) {

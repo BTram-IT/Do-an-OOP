@@ -3,11 +3,8 @@ package doitac;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStreamReader;
-import java.io.FileOutputStream;
-import java.io.OutputStreamWriter;
-import java.nio.charset.StandardCharsets;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -174,58 +171,42 @@ public class DSNhaCungCap {
 
     // ghi
     public void ghiFile(String duongDan) {
-        String dich = Ktradulieu.duongDanGhi(duongDan);
-        File tam = Ktradulieu.chuanBiFileTam(dich);
-        try {
-            try (BufferedWriter bw = new BufferedWriter(
-                    new OutputStreamWriter(new FileOutputStream(tam), StandardCharsets.UTF_8))) {
-                for (NhaCungCap ncc : danhSach) {
-                    bw.write(ncc.toFileString());
-                    bw.newLine();
-                }
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(duongDan))) {
+            for (NhaCungCap ncc : danhSach) {
+                bw.write(ncc.toFileString());
+                bw.newLine();
             }
-            Ktradulieu.hoanTatGhi(tam, dich);
-            System.out.println("Đã lưu danh sách nhà cung cấp vào file: " + dich);
-        } catch (IOException | RuntimeException e) {
-            Ktradulieu.huyFileTam(tam);
-            System.out.println("[Lỗi] Ghi file nhà cung cấp: " + e.getMessage());
+            System.out.println("Đã lưu danh sách nhà cung cấp vào file: " + duongDan);
+        } catch (IOException e) {
+            System.out.println(" Lỗi ghi file nhà cung cấp: " + e.getMessage());
         }
     }
 
     public void docFile(String duongDan) {
         File file = new File(duongDan);
         if (!file.exists()) return;
-
-        List<NhaCungCap> tam = new ArrayList<>();
-        int soDong = 0;
-        try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8))) {
+        danhSach.clear();
+        try (BufferedReader br = new BufferedReader(new FileReader(file))) {
             String dong;
             while ((dong = br.readLine()) != null) {
-                soDong++;
                 dong = dong.trim();
                 if (dong.isEmpty() || dong.startsWith("#")) continue;
-                String[] p = dong.split(";", -1);
-                if (p.length < 6) {
-                    throw new IllegalArgumentException("Không đủ trường dữ liệu (cần 6, có " + p.length + ")");
+                String[] p = dong.split(";");
+                if (p.length >= 6) {
+                    String ma = p[0].trim();
+                    String ten = p[1].trim();
+                    String sdt = p[2].trim();
+                    String diaChi = p[3].trim();
+                    String email = p[4].trim();
+                    boolean daXoa = Boolean.parseBoolean(p[5].trim());
+
+                    NhaCungCap ncc = new NhaCungCap(ma, ten, sdt, diaChi, email, daXoa);
+                    danhSach.add(ncc);
                 }
-                String ma = p[0].trim();
-                if (ma.isEmpty()) {
-                    throw new IllegalArgumentException("Mã nhà cung cấp bị trống");
-                }
-                for (NhaCungCap da : tam) {
-                    if (da.getMaNCC().equalsIgnoreCase(ma)) {
-                        throw new IllegalArgumentException("Mã nhà cung cấp bị trùng: " + ma);
-                    }
-                }
-                boolean daXoa = Boolean.parseBoolean(p[5].trim());
-                tam.add(new NhaCungCap(ma, p[1].trim(), p[2].trim(), p[3].trim(), p[4].trim(), daXoa));
             }
+            System.out.println("Đã đọc thành công " + danhSach.size() + " nhà cung cấp từ file: " + duongDan);
         } catch (Exception e) {
-            Ktradulieu.danhDauFileLoi(duongDan, "Dòng " + soDong + ": " + e.getMessage());
-            return;
+            System.out.println("Lỗi đọc file nhà cung cấp: " + e.getMessage());
         }
-        danhSach.clear();
-        danhSach.addAll(tam);
-        System.out.println("Đã đọc thành công " + danhSach.size() + " nhà cung cấp từ file: " + duongDan);
     }
 }

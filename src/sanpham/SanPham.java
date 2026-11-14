@@ -294,15 +294,27 @@ public abstract class SanPham {
         this.setDonViTinh(Ktradulieu.nhapChuoi(sc, "Nhập đơn vị tính (gói/chai/hộp...): ", ".+", "Không được để trống!"));
         this.setPhanTramThue(Ktradulieu.nhapSoThuc(sc, "Nhập thuế VAT (%): "));
 
-        LocalDate dNsx = Ktradulieu.nhapNgay(
-                sc, "Nhập Ngày sản xuất (dd/MM/yyyy): "
-        );
-
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
+        LocalDate dNsx;
+
+        while (true) {
+            dNsx = Ktradulieu.nhapNgay(
+                    sc, "Nhập ngày sản xuất (dd/MM/yyyy): "
+            );
+
+            if (dNsx.isAfter(LocalDate.now())) {
+                System.out.println("[Lỗi] Ngày sản xuất không được ở tương lai!");
+                System.out.println("Vui lòng nhập lại ngày sản xuất!");
+                continue;
+            }
+
+            break;
+        }
 
         while (true) {
             LocalDate dHsd = Ktradulieu.nhapNgay(
-                    sc, "Nhập Hạn sử dụng (dd/MM/yyyy): "
+                    sc, "Nhập hạn sử dụng (dd/MM/yyyy): "
             );
 
             try {

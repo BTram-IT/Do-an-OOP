@@ -215,43 +215,58 @@ public class Giaodien {
     }
 
     public void hienThiManHinhDangNhap() {
-        String vien = "+-----------------------------------------------------+";
-        System.out.println("\n" + vien);
-        System.out.println("|   HỆ THỐNG QUẢN LÝ CỬA HÀNG THỨC ĂN VÀ NƯỚC UỐNG    |");
-        System.out.println("|                     ĐĂNG NHẬP                       |");
-        System.out.println(vien);
-        System.out.println("|  Tài khoản demo (mật khẩu: 123456)                  |");
-        System.out.println("|    - Nhân viên : nhanvien                           |");
-        System.out.println("|    - Quản lý   : quanly                             |");
-        System.out.println("|    - Giám đốc  : giamdoc                            |");
-        System.out.println(vien);
-        System.out.println("  Nhấn Enter sau mỗi mục để tiếp tục.");
-        System.out.println("  Nhập 0 tại 'Tên đăng nhập' để thoát chương trình.");
+
+        System.out.println();
+        System.out.println("==============================================");
+        System.out.println("=       HỆ THỐNG QUẢN LÝ CỬA HÀNG            =");
+        System.out.println("=          THỨC ĂN & NƯỚC UỐNG               =");
+        System.out.println("----------------------------------------------");
+        System.out.println("=                 ĐĂNG NHẬP                  =");
+        System.out.println("==============================================");
         System.out.println();
 
         int soLanSai = 0;
+
         while (true) {
-            String tk = Ktradulieu.nhapChuoiKhongRong(sc, "Tên đăng nhập : ");
+
+            String tk = Ktradulieu.nhapChuoiKhongRong(
+                    sc, "TÊN ĐĂNG NHẬP : ");
+
             if (tk.equals("0")) {
                 this.nguoiDangNhap = null;
                 ghiDuLieu();
                 return;
             }
-            String mk = Ktradulieu.nhapChuoiKhongRong(sc, "Mật khẩu      : ");
+
+            String mk = Ktradulieu.nhapChuoiKhongRong(
+                    sc, "MẬT KHẨU       : ");
 
             Nguoidung nd = dsNhanVien.timKiemTheoTaiKhoan(tk);
+
             if (nd != null && nd.getMatKhau().equals(mk)) {
+
                 if (nd.isDaXoa()) {
-                    System.out.println("[Từ chối] Tài khoản đã nghỉ việc hoặc bị khóa!\n");
+                    System.out.println(
+                            "[Từ chối] Tài khoản đã nghỉ việc hoặc bị khóa!\n");
                     continue;
                 }
+
                 this.nguoiDangNhap = nd;
-                System.out.println("\n>> Đăng nhập thành công! Xin chào " + nd.getVaiTro() + ": " + nd.getTenND() + " <<");
+
+                System.out.println("\n----------------------------------------------");
+                System.out.println("=           ĐĂNG NHẬP THÀNH CÔNG!              =");
+                System.out.println("  Xin chào: " + nd.getVaiTro()
+                        + " - " + nd.getTenND());
+                System.out.println("----------------------------------------------");
+
                 return;
             }
+
             soLanSai++;
-            System.out.println("[Lỗi] Sai tên đăng nhập hoặc mật khẩu! (lần sai: " + soLanSai
-                    + "). Vui lòng thử lại hoặc nhập 0 để thoát.\n");
+
+            System.out.println("\n[Lỗi] Sai tên đăng nhập hoặc mật khẩu!");
+            System.out.println("Số lần đăng nhập sai: " + soLanSai);
+            System.out.println("Vui lòng thử lại.\n");
         }
     }
 
@@ -287,10 +302,10 @@ public class Giaodien {
             System.out.println("6. Xem danh sách nhà cung cấp");
             System.out.println("7. Thêm nhà cung cấp");
             System.out.println("8. Tìm kiếm nhà cung cấp");
-            System.out.println("9. Quay lại menu nhân viên");
+            System.out.println("0. Quay lại menu nhân viên");
             System.out.println("=====================================");
 
-            int chon = Ktradulieu.luaChon(sc, "Chọn chức năng (1-9): ", 1, 9);
+            int chon = Ktradulieu.luaChon(sc, "Chọn chức năng (0-8): ", 0, 8);
             switch (chon) {
                 case 1: taoHoaDonNhap(); break;
                 case 2:
@@ -307,7 +322,9 @@ public class Giaodien {
                     break;
                 }
                 case 8: timKiemNhaCungCap(); break;
-                case 9: return;
+                case 0: return;
+                default:
+                    System.out.println("Lựa chọn không hợp lệ");
             }
         }
     }
@@ -319,7 +336,7 @@ public class Giaodien {
             System.out.println("2. Lập hóa đơn bán");
             System.out.println("3. Quản lý hóa đơn bán");
             System.out.println("4. Tra cứu khuyến mãi");
-            System.out.println("5. Quay lại menu nhân viên");
+            System.out.println("0. Quay lại menu nhân viên");
             System.out.println("==============================");
 
             int chon = Ktradulieu.luaChon(sc, "Chọn chức năng (1-5): ", 1, 5);
@@ -341,7 +358,7 @@ public class Giaodien {
                     menuXemVaTimKiemKhuyenMai();
                     break;
 
-                case 5:
+                case 0:
                     return;
             }
         }
@@ -624,16 +641,7 @@ public class Giaodien {
             int chon = Ktradulieu.luaChon(sc, "Chọn (0-4): ", 0, 4);
             switch (chon) {
                 case 1:
-                    System.out.println("\n--- HÓA ĐƠN NHẬP KHO CHỜ PHÊ DUYỆT ---");
-                    int dem = 0;
-                    for (int i = 0; i < dsHoaDon.getSoLuong(); i++) {
-                        HoaDon hd = dsHoaDon.get(i);
-                        if (hd instanceof HoadonNhap && !hd.isDaXuLyThanhCong() && !hd.getTrangThai().equalsIgnoreCase("Da huy")) {
-                            dem++;
-                            System.out.println(dem + ". " + hd.toString());
-                        }
-                    }
-                    if (dem == 0) System.out.println("Hiện không có hóa đơn nhập nào đang chờ duyệt.");
+                    dsHoaDon.xuatDanhSachHoaDonChoDuyet();
                     break;
                 case 2:
                     if (nguoiDangNhap instanceof QuanLyCuaHang) {

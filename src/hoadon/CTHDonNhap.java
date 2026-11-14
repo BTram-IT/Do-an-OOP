@@ -4,6 +4,8 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.Scanner;
+import sanpham.ThucAn;
+import sanpham.DoUong;
 
 import person.Nguoidung;
 import sanpham.DSSanPham;
@@ -115,6 +117,7 @@ public class CTHDonNhap extends CTHoaDon {
             System.out.print("Nhập mã sản phẩm (Ví dụ: TA001, DU001 - Nhập 0 để hủy): ");
             String input = sc.nextLine().trim();
             if (input.equals("0")) {
+                System.out.println("[Thông báo] Đã hủy thao tác nhập chi tiết hàng nhập!");
                 return false;
             }
 
@@ -239,17 +242,55 @@ public class CTHDonNhap extends CTHoaDon {
 
             double vat = Ktradulieu.nhapSoThuc(sc, "Nhập thuế VAT (%): ");
 
-            LocalDate nsx = Ktradulieu.nhapNgay(sc, "Nhập ngày sản xuất (dd/MM/yyyy): ");
-            LocalDate hsd = Ktradulieu.nhapNgay(sc, "Nhập hạn sử dụng (dd/MM/yyyy): ");
+            LocalDate nsx;
+            LocalDate hsd;
 
-            if (nsx.isAfter(LocalDate.now())) {
-                throw new IllegalArgumentException("Ngày sản xuất không được ở tương lai!");
+            // Nhập ngày sản xuất
+            while (true) {
+                try {
+                    nsx = Ktradulieu.nhapNgay(
+                            sc, "Nhập ngày sản xuất (dd/MM/yyyy): "
+                    );
+
+                    if (nsx.isAfter(LocalDate.now())) {
+                        throw new IllegalArgumentException(
+                                "Ngày sản xuất không được ở tương lai!"
+                        );
+                    }
+
+                    break;
+
+                } catch (IllegalArgumentException e) {
+                    System.out.println("[Lỗi] " + e.getMessage());
+                    System.out.println("Vui lòng nhập lại ngày sản xuất!");
+                }
             }
-            if (hsd.isBefore(LocalDate.now())) {
-                throw new IllegalArgumentException("Hạn sử dụng không được trước ngày hiện tại!");
-            }
-            if (hsd.isBefore(nsx)) {
-                throw new IllegalArgumentException("Hạn sử dụng không được trước ngày sản xuất!");
+
+// Nhập hạn sử dụng
+            while (true) {
+                try {
+                    hsd = Ktradulieu.nhapNgay(
+                            sc, "Nhập hạn sử dụng (dd/MM/yyyy): "
+                    );
+
+                    if (hsd.isBefore(LocalDate.now())) {
+                        throw new IllegalArgumentException(
+                                "Hạn sử dụng không được trước ngày hiện tại!"
+                        );
+                    }
+
+                    if (hsd.isBefore(nsx)) {
+                        throw new IllegalArgumentException(
+                                "Hạn sử dụng không được trước ngày sản xuất!"
+                        );
+                    }
+
+                    break;
+
+                } catch (IllegalArgumentException e) {
+                    System.out.println("[Lỗi] " + e.getMessage());
+                    System.out.println("Vui lòng nhập lại hạn sử dụng!");
+                }
             }
             if (giaNhap <= 0 || giaBan <= 0 || Double.isNaN(giaNhap) || Double.isNaN(giaBan) || Double.isInfinite(giaNhap) || Double.isInfinite(giaBan)) {
                 throw new IllegalArgumentException("Giá nhập và giá bán phải lớn hơn 0!");
@@ -293,16 +334,47 @@ public class CTHDonNhap extends CTHoaDon {
 
     @Override
     public String toDongFile() {
-        String hsd = (this.hanSuDung != null) ? this.hanSuDung.format(DINH_DANG_NGAY) : "";
-        return String.format("%s;%s;%s;%d;%.0f;%.2f;%s", maHD, maSP, tenSP, getSoLuongNhap(), getDonGiaNhap(), this.thueSuatNhap, hsd);
+
+        String hsd = (this.hanSuDung != null)
+                ? this.hanSuDung.format(DINH_DANG_NGAY)
+                : "";
+
+        String dong = String.format(
+                "%s;%s;%s;%d;%.0f;%.2f;%s",
+                maHD, maSP, tenSP, getSoLuongNhap(),
+                getDonGiaNhap(), this.thueSuatNhap, hsd
+        );
+
+        if (this.sanPhamMoi != null) {
+
+            String dongSanPham;
+
+            if (this.sanPhamMoi instanceof ThucAn) {
+                dongSanPham = ((ThucAn) this.sanPhamMoi).toFileString();
+
+            } else if (this.sanPhamMoi instanceof DoUong) {
+                dongSanPham = ((DoUong) this.sanPhamMoi).toFileString();
+
+            } else {
+                throw new IllegalStateException("Loại sản phẩm không hợp lệ!");
+            }
+
+            dong += ";SPMOI;" + dongSanPham;
+        }
+
+        return dong;
     }
 
     public static CTHDonNhap tuDongFile(String dong) {
-        if (dong == null || dong.trim().isEmpty()) return null;
+
+        if (dong == null || dong.trim().isEmpty()) {
+            return null;
+        }
+
         try {
             String[] p = dong.split(";", -1);
+
             if (p.length < 7) {
-                System.out.println("[Lỗi] Dòng chi tiết nhập không đủ trường dữ liệu!");
                 return null;
             }
 
@@ -310,21 +382,81 @@ public class CTHDonNhap extends CTHoaDon {
             double donGia = Double.parseDouble(p[4].trim());
             double vat = Double.parseDouble(p[5].trim());
 
-            LocalDate hsd = !p[6].trim().isEmpty() ? LocalDate.parse(p[6].trim(), DINH_DANG_NGAY) : LocalDate.now();
+            LocalDate hsd = null;
+
+            if (!p[6].trim().isEmpty()) {
+                hsd = LocalDate.parse(p[6].trim(), DINH_DANG_NGAY);
+            }
 
             CTHDonNhap ct = new CTHDonNhap();
+
             ct.maHD = Ktradulieu.chuanHoaMa(p[0].trim());
             ct.maSP = Ktradulieu.chuanHoaMa(p[1].trim());
             ct.tenSP = Ktradulieu.chuanHoaChuoi(p[2].trim());
+
             ct.soLuong = soLuong;
             ct.donGia = donGia;
             ct.thueSuatNhap = vat;
-            ct.hanSuDung = hsd; // Gán trực tiếp tránh bị chặn bởi ràng buộc ngày tương lai nếu dữ liệu cũ quá hạn
+            ct.hanSuDung = hsd;
+
             ct.sanPhamMoi = null;
 
+            // Khôi phục hồ sơ sản phẩm mới
+            if (p.length > 8 && p[7].equalsIgnoreCase("SPMOI")) {
+
+                String[] sp = java.util.Arrays.copyOfRange(p, 8, p.length);
+
+                String loai = sp[0].trim();
+
+                if ("THUCAN".equalsIgnoreCase(loai)) {
+
+                    if (sp.length < 15) {
+                        return null;
+                    }
+
+                    ct.sanPhamMoi = new ThucAn(
+                            sp[1], sp[2],
+                            Double.parseDouble(sp[3]),
+                            Double.parseDouble(sp[4]),
+                            Integer.parseInt(sp[5]),
+                            sp[6], sp[7], sp[8],
+                            Double.parseDouble(sp[9]),
+                            sp[10], sp[11], sp[12],
+                            Boolean.parseBoolean(sp[13]),
+                            sp[14],
+                            sp.length > 15 && Boolean.parseBoolean(sp[15])
+                    );
+
+                } else if ("DOUONG".equalsIgnoreCase(loai)) {
+
+                    if (sp.length < 15) {
+                        return null;
+                    }
+
+                    ct.sanPhamMoi = new DoUong(
+                            sp[1], sp[2],
+                            Double.parseDouble(sp[3]),
+                            Double.parseDouble(sp[4]),
+                            Integer.parseInt(sp[5]),
+                            sp[6], sp[7], sp[8],
+                            Double.parseDouble(sp[9]),
+                            Double.parseDouble(sp[10]),
+                            sp[11], sp[12], sp[13],
+                            sp[14],
+                            sp.length > 15 && Boolean.parseBoolean(sp[15])
+                    );
+
+                } else {
+                    return null;
+                }
+            }
+
             return ct;
+
         } catch (Exception e) {
-            System.out.println("[Lỗi] Không thể khôi phục chi tiết nhập hàng: " + e.getMessage());
+            System.out.println(
+                    "[Lỗi] Đọc chi tiết hóa đơn nhập: " + e.getMessage()
+            );
             return null;
         }
     }

@@ -426,22 +426,85 @@ public class QuanLyCuaHang extends Nguoidung implements Thongke {
     }
 
     public void thongKeTonKho(DSSanPham dsSP) {
-        if (dsSP == null) { System.out.println("[Lỗi] Danh sách sản phẩm không hợp lệ!"); return; }
+        if (dsSP == null) {
+            System.out.println("[Lỗi] Danh sách sản phẩm không hợp lệ!");
+            return;
+        }
+
+        int sapHet = 0;
+        int anToan = 0;
+        int tongMatHang = 0;
+
         System.out.println("\n---------------- BÁO CÁO TỒN KHO & CẢNH BÁO HÀNG HÓA ----------------");
-        int sapHet = 0, anToan = 0;
+
+        // 1. Danh sách sản phẩm an toàn
+        System.out.println("\n========== DANH SÁCH SẢN PHẨM AN TOÀN ==========");
+        System.out.printf("%-5s | %-12s | %-25s | %-12s | %-12s%n",
+                "STT", "MÃ SP", "TÊN SẢN PHẨM", "TỒN KHO", "ĐƠN VỊ");
+
+        System.out.println("--------------------------------------------------------------------------");
+
         for (int i = 0; i < dsSP.getSoLuong(); i++) {
             SanPham sp = dsSP.get(i);
-            if (sp != null) {
-                if (sp.getSoLuongTon() <= 10) {
-                    System.out.printf("[Cảnh báo sắp hết] %-8s | %-25s | Tồn kho: %d %s\n", sp.getMaSP(), sp.getTenSP(), sp.getSoLuongTon(), sp.getDonViTinh());
-                    sapHet++;
-                } else { anToan++; }
+
+            if (sp == null || sp.isDaXoa()) {
+                continue;
+            }
+
+            if (sp.getSoLuongTon() > 10) {
+                anToan++;
+                tongMatHang++;
+
+                System.out.printf("%-5d | %-12s | %-25s | %-12d | %-12s%n",
+                        anToan,
+                        sp.getMaSP(),
+                        sp.getTenSP(),
+                        sp.getSoLuongTon(),
+                        sp.getDonViTinh());
             }
         }
-        System.out.println("---------------------------------------------------------------------");
-        System.out.println("- Tổng số mặt hàng quản lý: " + dsSP.getSoLuong());
+
+        if (anToan == 0) {
+            System.out.println("Không có sản phẩm nào đang ở mức tồn kho an toàn.");
+        }
+
+        // 2. Danh sách sản phẩm cần nhập bổ sung
+        System.out.println("\n========== DANH SÁCH SẢN PHẨM CẦN NHẬP BỔ SUNG ==========");
+        System.out.printf("%-5s | %-12s | %-25s | %-12s | %-12s%n",
+                "STT", "MÃ SP", "TÊN SẢN PHẨM", "TỒN KHO", "ĐƠN VỊ");
+
+        System.out.println("--------------------------------------------------------------------------");
+
+        for (int i = 0; i < dsSP.getSoLuong(); i++) {
+            SanPham sp = dsSP.get(i);
+
+            if (sp == null || sp.isDaXoa()) {
+                continue;
+            }
+
+            if (sp.getSoLuongTon() <= 10) {
+                sapHet++;
+                tongMatHang++;
+
+                System.out.printf("%-5d | %-12s | %-25s | %-12d | %-12s%n",
+                        sapHet,
+                        sp.getMaSP(),
+                        sp.getTenSP(),
+                        sp.getSoLuongTon(),
+                        sp.getDonViTinh());
+            }
+        }
+
+        if (sapHet == 0) {
+            System.out.println("Không có sản phẩm nào cần nhập bổ sung.");
+        }
+
+        // 3. Tổng kết
+        System.out.println("\n======================= TỔNG KẾT =======================");
+        System.out.println("- Tổng số mặt hàng quản lý: " + tongMatHang);
         System.out.println("- Số mặt hàng an toàn: " + anToan);
         System.out.println("- Số mặt hàng cần nhập bổ sung ngay (<= 10): " + sapHet);
+        System.out.println("========================================================");
     }
 
     @Override

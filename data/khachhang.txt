@@ -1,1 +1,2 @@
 KH001;Trâm;0394050495;lam dong;0;false
+KH002;Quyên;0390449585;hcm;0;false

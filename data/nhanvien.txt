@@ -1,3 +1,5 @@
 NHANVIEN;NV001;Nguyễn Văn An;nhanvien;123456;0912345678;NhanVien;2023-01-15;5000000;KHONG;false
 QUANLY;QL001;Trần Thị Mai;quanly;123456;0987654321;Quản lý;false;Toàn cửa hàng;1.80
 GIAMDOC;GD001;Lê Hoàng Long;giamdoc;123456;0909123456;Giám đốc;false;15000000;45.00
+NHANVIEN;NV002;Nguyễn Thu Trang;nhanvien2;123456;0867034450;NhanVien;2026-11-14;4000000;KHONG;false
+QUANLY;QL002;Nguyễn Văn Bình;quanly2;123456;0367254989;Quản lý;false;Quầy thực phẩm;1.50

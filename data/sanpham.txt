@@ -1,2 +1,3 @@
-THUCAN;TA001;Gà Rán;20000;30000;15;cái;10/11/2026;13/11/2026;8.0;gà, bột mì, muối;nơi thoáng mát;Việt Nam;false;Đang xử lý;false
-DOUONG;DU001;Trà Sữa Khoai Môn;15000;23000;28;chai;11/11/2026;15/11/2026;5.0;500.0;Gongcha;khoai môn;Trà Sữa;Đang xử lý;false
+THUCAN;TA001;Gà Rán;20000;30000;25;cái;10/11/2026;13/11/2026;8.0;gà, bột mì, muối;nơi thoáng mát;Việt Nam;false;Đang xử lý;false
+DOUONG;DU001;Trà Sữa Khoai Môn;15000;23000;27;chai;11/11/2026;15/11/2026;5.0;500.0;Gongcha;khoai môn;Trà Sữa;Đang xử lý;false
+THUCAN;TA002;Bánh Gạo;20000;35000;20;hộp;14/11/2026;16/11/2026;4.0;;;;false;Đã duyệt;false

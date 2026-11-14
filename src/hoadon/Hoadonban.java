@@ -107,8 +107,6 @@ public class Hoadonban extends HoaDon implements IHoaDon {
 
                 // Tính lại khuyến mãi dựa trên tổng số lượng đã cộng dồn.
                 ctCu.apDungKhuyenMai(dsKM, dsSPKM, sp);
-
-                System.out.println("[Thông báo] Đã cộng dồn sản phẩm. Số lượng mua: " + slMoi);
                 return true;
             }
         }
@@ -133,6 +131,8 @@ public class Hoadonban extends HoaDon implements IHoaDon {
 
         return true;
     }
+
+
 
     private boolean kiemTraTonKhoTruocThanhToan(DSSanPham dsSP) {
         if (dsSP == null) {
@@ -715,6 +715,20 @@ public class Hoadonban extends HoaDon implements IHoaDon {
         this.phuongThucThanhToan = phuongThucThanhToan;
     }
 
+    public boolean themCTHDBanTuFile(CTHDBan ct) {
+        if (ct == null || !this.maHD.equalsIgnoreCase(ct.getMaHD())) {
+            return false;
+        }
+
+        if (this.soLuongCT >= this.dsChiTiet.length) {
+            moRongBoNho();
+        }
+
+        this.dsChiTiet[this.soLuongCT] = new CTHDBan(ct);
+        this.soLuongCT++;
+
+        return true;
+    }
     @Override
     public String toFileString() {
         String pt = (this.phuongThucThanhToan != null) ? this.phuongThucThanhToan.getLoaiThanhToan() : "CHUA_TT";

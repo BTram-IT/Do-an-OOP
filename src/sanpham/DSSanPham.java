@@ -3,16 +3,11 @@ package sanpham;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStreamReader;
-import java.io.FileOutputStream;
-import java.io.OutputStreamWriter;
-import java.nio.charset.StandardCharsets;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Scanner;
 
 import person.Nguoidung;
@@ -289,98 +284,165 @@ public class DSSanPham {
     // đọc file
     public void docFile(String duongDan) {
         File file = new File(duongDan);
-        if (!file.exists()) return;
-        List<SanPham> tam = new ArrayList<>();
-        int soDong = 0;
-        try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8))) {
+
+        if (!file.exists()) {
+            System.out.println("[Thông báo] Chưa tìm thấy file sản phẩm: " + duongDan);
+            return;
+        }
+
+        // Xóa dữ liệu cũ trước khi đọc lại file
+        this.soLuong = 0;
+
+        try (BufferedReader br = new BufferedReader(
+                new java.io.InputStreamReader(
+                        new java.io.FileInputStream(file),
+                        java.nio.charset.StandardCharsets.UTF_8))) {
+
             String line;
+            int dem = 0;
+            int loi = 0;
+
             while ((line = br.readLine()) != null) {
-                soDong++;
                 line = line.trim();
-                if (line.isEmpty() || line.startsWith("#")) continue;
-                String[] p = line.split(";", -1);
-                if (p.length < 15) {
-                    throw new IllegalArgumentException("Không đủ trường dữ liệu (cần ít nhất 15, có " + p.length + ")");
+
+                if (line.isEmpty() || line.startsWith("#")) {
+                    continue;
                 }
-                {
+
+                try {
+                    String[] p = line.split(";", -1);
+
+                    if (p.length < 15) {
+                        loi++;
+                        continue;
+                    }
+
                     String loai = p[0].trim();
                     String ma = p[1].trim();
                     String ten = p[2].trim();
+
                     double giaNhap = Double.parseDouble(p[3].trim());
                     double giaBan = Double.parseDouble(p[4].trim());
                     int ton = Integer.parseInt(p[5].trim());
+
                     String dvt = p[6].trim();
                     String nsx = p[7].trim();
                     String hsd = p[8].trim();
+
                     double thue = Double.parseDouble(p[9].trim());
 
                     SanPham sp;
+
                     if ("DOUONG".equalsIgnoreCase(loai)) {
+
                         double dungTich = Double.parseDouble(p[10].trim());
                         String thuongHieu = p[11].trim();
                         String huongVi = p[12].trim();
                         String loaiDoUong = p[13].trim();
                         String trangThai = p[14].trim();
-                        boolean daXoa = (p.length > 15) && Boolean.parseBoolean(p[15].trim());
-                        sp = new DoUong(ma, ten, giaNhap, giaBan, ton, dvt, nsx, hsd, thue,
-                                dungTich, thuongHieu, huongVi, loaiDoUong, trangThai, daXoa);
-                    } else {
+
+                        boolean daXoa = p.length > 15
+                                && Boolean.parseBoolean(p[15].trim());
+
+                        sp = new DoUong(
+                                ma, ten, giaNhap, giaBan, ton,
+                                dvt, nsx, hsd, thue,
+                                dungTich, thuongHieu, huongVi,
+                                loaiDoUong, trangThai, daXoa
+                        );
+
+                    } else if ("THUCAN".equalsIgnoreCase(loai)) {
+
                         String thanhPhan = p[10].trim();
                         String baoQuan = p[11].trim();
                         String xuatXu = p[12].trim();
-                        boolean laDoChay = Boolean.parseBoolean(p[13].trim());
+
+                        boolean laDoChay =
+                                Boolean.parseBoolean(p[13].trim());
+
                         String trangThai = p[14].trim();
-                        boolean daXoa = (p.length > 15) && Boolean.parseBoolean(p[15].trim());
-                        sp = new ThucAn(ma, ten, giaNhap, giaBan, ton, dvt, nsx, hsd, thue,
-                                thanhPhan, baoQuan, xuatXu, laDoChay, trangThai, daXoa);
+
+                        boolean daXoa = p.length > 15
+                                && Boolean.parseBoolean(p[15].trim());
+
+                        sp = new ThucAn(
+                                ma, ten, giaNhap, giaBan, ton,
+                                dvt, nsx, hsd, thue,
+                                thanhPhan, baoQuan, xuatXu,
+                                laDoChay, trangThai, daXoa
+                        );
+
+                    } else {
+                        loi++;
+                        continue;
                     }
 
-                    for (SanPham da : tam) {
-                        if (da.getMaSP().equalsIgnoreCase(sp.getMaSP())) {
-                            throw new IllegalArgumentException("Mã sản phẩm bị trùng: " + sp.getMaSP());
-                        }
+                    if (timKiem(ma) != null) {
+                        loi++;
+                        continue;
                     }
-                    tam.add(sp);
+
+                    if (this.soLuong >= this.danhSach.length) {
+                        moRongBoNho();
+                    }
+
+                    this.danhSach[this.soLuong++] = sp;
+                    dem++;
+
+                } catch (Exception e) {
+                    loi++;
+                    System.out.println(
+                            "[Cảnh báo] Dòng sản phẩm không hợp lệ: "
+                                    + e.getMessage()
+                    );
                 }
             }
-        } catch (Exception e) {
-            Ktradulieu.danhDauFileLoi(duongDan, "Dòng " + soDong + ": " + e.getMessage());
-            return;
-        }
-        this.soLuong = 0;
-        for (SanPham sp : tam) {
-            if (this.soLuong >= this.danhSach.length) {
-                moRongBoNho();
+
+            System.out.println(
+                    "[Thành công] Đã đọc " + dem
+                            + " sản phẩm từ file: " + duongDan
+            );
+
+            if (loi > 0) {
+                System.out.println(
+                        "[Cảnh báo] Có " + loi
+                                + " dòng sản phẩm không đọc được."
+                );
             }
-            this.danhSach[this.soLuong++] = sp;
+
+        } catch (IOException e) {
+            System.out.println("[Lỗi] Đọc file sản phẩm: " + e.getMessage());
         }
-        System.out.println("Đã đọc thành công " + this.soLuong + " sản phẩm từ file: " + duongDan);
     }
 
     // ghi file
     public void ghiFile(String duongDan) {
-        String dich = Ktradulieu.duongDanGhi(duongDan);
-        File tam = Ktradulieu.chuanBiFileTam(dich);
-        try {
-            try (BufferedWriter bw = new BufferedWriter(
-                    new OutputStreamWriter(new FileOutputStream(tam), StandardCharsets.UTF_8))) {
-                for (int i = 0; i < this.soLuong; i++) {
-                    SanPham sp = this.danhSach[i];
-                    if (sp instanceof ThucAn) {
-                        bw.write(((ThucAn) sp).toFileString());
-                    } else if (sp instanceof DoUong) {
-                        bw.write(((DoUong) sp).toFileString());
-                    } else {
-                        continue;
-                    }
-                    bw.newLine();
+        File file = new File(duongDan);
+
+        // Tự tạo thư mục chứa file nếu chưa tồn tại
+        File thuMucCha = file.getAbsoluteFile().getParentFile();
+
+        if (thuMucCha != null && !thuMucCha.exists()) {
+            thuMucCha.mkdirs();
+        }
+
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(file))) {
+            for (int i = 0; i < this.soLuong; i++) {
+                SanPham sp = this.danhSach[i];
+
+                if (sp instanceof ThucAn) {
+                    bw.write(((ThucAn) sp).toFileString());
+                } else if (sp instanceof DoUong) {
+                    bw.write(((DoUong) sp).toFileString());
                 }
+
+                bw.newLine();
             }
-            Ktradulieu.hoanTatGhi(tam, dich);
-            System.out.println("Đã lưu danh sách " + this.soLuong + " sản phẩm vào file: " + dich);
-        } catch (IOException | RuntimeException e) {
-            Ktradulieu.huyFileTam(tam);
-            System.out.println("[Lỗi] Ghi file SP: " + e.getMessage());
+
+            System.out.println("Đã lưu danh sách " + this.soLuong + " sản phẩm vào file: " + duongDan);
+
+        } catch (IOException e) {
+            System.out.println("Lỗi ghi file SP: " + e.getMessage());
         }
     }
 }
