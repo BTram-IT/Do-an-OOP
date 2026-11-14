@@ -32,8 +32,8 @@ public abstract class HoaDon implements IHoaDon {
             throw new IllegalArgumentException("Mã hóa đơn không được để trống!");
         }
 
-        if (ngayLap == null || !ngayLap.trim().matches(Ktradulieu.ngayRegex)) {
-            throw new IllegalArgumentException("Ngày lập không hợp lệ!");
+        if (!Ktradulieu.laNgayHopLe(ngayLap)) {
+            throw new IllegalArgumentException("Ngày lập không hợp lệ: " + ngayLap);
         }
 
         if (trangThai == null || trangThai.trim().isEmpty()) {
@@ -107,8 +107,10 @@ public abstract class HoaDon implements IHoaDon {
                 + this.nguoiLap.getMaND() + "] "
                 + this.nguoiLap.getTenND());
 
-        this.setNgayLap(LocalDate.now().format(
-                DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+        if (!Ktradulieu.laNgayHopLe(ngayLap)) {
+            throw new IllegalArgumentException(
+                    "Ngày lập không tồn tại hoặc sai định dạng dd/MM/yyyy!");
+        }
 
         System.out.println("Ngày lập hóa đơn: " + this.ngayLap);
 

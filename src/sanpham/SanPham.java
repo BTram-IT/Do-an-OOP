@@ -23,7 +23,7 @@ public abstract class SanPham {
     protected int soLuongHetHan;
     protected boolean daXoa;
     protected double phanTramThue;
-    private Scanner sc=new Scanner(System.in);
+
 
     private static final DateTimeFormatter DINH_DANG_NGAY = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
@@ -335,11 +335,10 @@ public abstract class SanPham {
 
         this.setTenSP(Ktradulieu.nhapChuoiKhongRong(sc, "Nhập tên sản phẩm: "));
         this.setDonGiaNhap(Ktradulieu.nhapSoThucKhongAm(sc, "Nhập đơn giá nhập (đ): "));
-        this.setDonGiaBan(Ktradulieu.nhapSoThuc(sc, "Nhập đơn giá bán (đ): "));
+        this.setDonGiaBan(Ktradulieu.nhapSoThucDuong(sc, "Nhập đơn giá bán (đ): "));
         this.setSoLuongTon(Ktradulieu.nhapSoNguyen(sc, "Nhập số lượng nhập kho: "));
         this.setDonViTinh(Ktradulieu.nhapChuoi(sc, "Nhập đơn vị tính (gói/chai/hộp...): ", ".+", "Không được để trống!"));
-        this.setPhanTramThue(Ktradulieu.nhapSoThuc(sc, "Nhập thuế VAT (%): "));
-
+        this.setPhanTramThue(Ktradulieu.nhapSoThucTrongKhoang(sc, "Nhập thuế VAT (%) (0-100): ", 0, 100));
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
         LocalDate dNsx;

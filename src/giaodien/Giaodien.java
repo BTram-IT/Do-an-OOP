@@ -96,16 +96,7 @@ public class Giaodien {
     }
     // HÀM NHẬP NGÀY DÙNG CHUNG
     private LocalDate nhapNgay(Scanner sc, String thongBao) {
-        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd/MM/uuuu");
-        while (true) {
-            try {
-                String ngay = Ktradulieu.nhapChuoi(sc, thongBao, "\\d{2}/\\d{2}/\\d{4}", "Ngày phải có định dạng dd/MM/yyyy!");
-                return LocalDate.parse(ngay, fmt);
-            } catch (DateTimeParseException e) {
-                System.out.println(
-                        "[Lỗi] Ngày không tồn tại hoặc không hợp lệ!");
-            }
-        }
+        return Ktradulieu.nhapNgay(sc, thongBao);
     }
     // HÀM CHỌN KỲ BÁO CÁO DÙNG CHUNG
     private LocalDate[] chonKyBaoCao() {
@@ -1217,8 +1208,15 @@ public class Giaodien {
 
     public void timKiemNhaCungCap() {
         String key = Ktradulieu.nhapChuoiKhongRong(sc, "Nhập mã hoặc tên NCC: ");
-        NhaCungCap ncc = dsNhaCungCap.timKiem(key);
-        System.out.println(ncc != null ? "\nKết quả: " + ncc.toString() : "Không tìm thấy nhà cung cấp: " + key);
+        List<NhaCungCap> ketQua = dsNhaCungCap.timKiemGanDung(key);
+        if (ketQua.isEmpty()) {
+            System.out.println("Không tìm thấy nhà cung cấp: " + key);
+            return;
+        }
+        System.out.println("\n===== KẾT QUẢ TÌM KIẾM NHÀ CUNG CẤP =====");
+        for (int i = 0; i < ketQua.size(); i++) {
+            System.out.println((i + 1) + ". " + ketQua.get(i));
+        }
     }
 
     public void timKiemKhachHang() {

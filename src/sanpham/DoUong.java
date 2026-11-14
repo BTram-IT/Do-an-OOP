@@ -11,7 +11,6 @@ public class DoUong extends SanPham {
     private String thuongHieu;
     private String huongVi;
     private String loaiDoUong;
-    Scanner sc = new Scanner(System.in);
 
     // Constructor đầy đủ
     public DoUong(String maSP, String tenSP, double donGiaNhap, double donGiaBan, int soLuongTon,
@@ -96,7 +95,7 @@ public class DoUong extends SanPham {
         this.setThuongHieu(Ktradulieu.nhapChuoiKhongRong(sc, "Nhập thương hiệu: "));
         this.setLoaiDoUong(Ktradulieu.nhapChuoiKhongRong(sc, "Nhập loại đồ uống: "));
         this.setHuongVi(Ktradulieu.nhapChuoiKhongRong(sc, "Nhập hương vị: "));
-        this.setDungTich(Ktradulieu.nhapSoThuc(sc, "Nhập dung tích (ml): "));
+        this.setDungTich(Ktradulieu.nhapSoThucDuong(sc, "Nhập dung tích (ml): "));
         System.out.println("Đã thêm xong đồ uống: [" + this.maSP + "] " + this.tenSP);
     }
 

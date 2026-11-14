@@ -54,7 +54,6 @@ public class DSNhaCungCap {
             System.out.println("Mã nhà cung cấp đã tồn tại!");
             return false;
         }
-
         danhSach.add(ncc);
 
         // Lưu danh sách vào file
@@ -69,9 +68,36 @@ public class DSNhaCungCap {
     //Phát sinh lỗi
     public NhaCungCap timKiem(String maHoacTen) {
         if (maHoacTen == null || maHoacTen.trim().isEmpty()) return null;
+        NhaCungCap theoMa = timTheoMa(maHoacTen);
+        if (theoMa != null) return theoMa;
+
         String key = maHoacTen.trim();
         for (NhaCungCap ncc : danhSach) {
-            if (ncc.getMaNCC().equalsIgnoreCase(key) || ncc.getTenNCC().toLowerCase().contains(key.toLowerCase())) {
+            if (ncc.getTenNCC().equalsIgnoreCase(key)) {
+                return ncc;
+            }
+        }
+        return null;
+    }
+
+    public List<NhaCungCap> timKiemGanDung(String tuKhoa) {
+        List<NhaCungCap> ketQua = new ArrayList<>();
+        if (tuKhoa == null || tuKhoa.trim().isEmpty()) return ketQua;
+        String key = tuKhoa.trim().toLowerCase();
+        for (NhaCungCap ncc : danhSach) {
+            if (ncc.getMaNCC().toLowerCase().contains(key)
+                    || ncc.getTenNCC().toLowerCase().contains(key)) {
+                ketQua.add(ncc);
+            }
+        }
+        return ketQua;
+    }
+
+    public NhaCungCap timTheoMa(String ma) {
+        if (ma == null || ma.trim().isEmpty()) return null;
+        String key = ma.trim();
+        for (NhaCungCap ncc : danhSach) {
+            if (ncc.getMaNCC().equalsIgnoreCase(key)) {
                 return ncc;
             }
         }
@@ -85,7 +111,7 @@ public class DSNhaCungCap {
             return false;
         }
 
-        NhaCungCap ncc = timKiem(maNCC);
+        NhaCungCap ncc = timTheoMa(maNCC);
         if (ncc == null) {
             System.out.println("Không tìm thấy nhà cung cấp: " + maNCC);
             return false;
@@ -109,7 +135,7 @@ public class DSNhaCungCap {
             return false;
         }
 
-        NhaCungCap ncc = timKiem(maNCC);
+        NhaCungCap ncc = timTheoMa(maNCC);
         if (ncc == null) {
             System.out.println("Không tìm thấy nhà cung cấp: " + maNCC);
             return false;

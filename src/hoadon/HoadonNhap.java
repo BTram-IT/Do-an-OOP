@@ -352,78 +352,66 @@ public class HoadonNhap extends HoaDon implements IHoaDon {
         return false;
     }
 
-    private boolean thucHienThanhToan(
-            Scanner sc,
-            Nguoidung nguoiDuyet
-    ) {
-        if (!(nguoiDuyet instanceof NhanVien)) {
+    private boolean thucHienThanhToan(Scanner sc, Nguoidung nguoiDuyet) {
+        if (nguoiDuyet == null || nguoiDuyet.isDaXoa()) {
             System.out.println("[Lỗi] Người duyệt không hợp lệ!");
             return false;
         }
 
-        if (this.phuongThucThanhToan != null
-                && this.phuongThucThanhToan.isThanhCong()) {
-            System.out.println("[Thông báo] Hóa đơn đã được thanh toán!");
-            return false;
+        // Đã chi tiền ở lần duyệt trước (các bước sau đó lỗi): không chi lần hai
+        if (this.phuongThucThanhToan != null && this.phuongThucThanhToan.isThanhCong()) {
+            System.out.println("[Thông báo] Hóa đơn đã được thanh toán trước đó, bỏ qua bước thanh toán.");
+            return true;
         }
 
-        double tongTienCanThanhToan = tinhThanhTien();
-
-        if (tongTienCanThanhToan <= 0) {
-            System.out.println("[Lỗi] Tổng tiền hóa đơn không hợp lệ!");
+        double tongTien = tinhThanhTien();
+        if (tongTien <= 0) {
+            System.out.println("[Lỗi] Tổng tiền thanh toán không hợp lệ!");
             return false;
         }
 
         System.out.println("\n========== THANH TOÁN HÓA ĐƠN NHẬP ==========");
-        System.out.println("Mã hóa đơn: " + getMaHD());
-        System.out.println("Tiền hàng: "
-                + util.Ktradulieu.dinhDangTien(tinhTongTien()));
-        System.out.println("Tiền thuế: "
-                + util.Ktradulieu.dinhDangTien(tinhTienThue()));
-        System.out.println("Tổng thanh toán: "
-                + util.Ktradulieu.dinhDangTien(tongTienCanThanhToan));
-
-        System.out.println("\n1. Thanh toán tiền mặt");
-        System.out.println("2. Thanh toán chuyển khoản");
+        System.out.println("Mã hóa đơn: " + this.maHD);
+        System.out.println("Mã nhà cung cấp: " + this.maNCC);
+        System.out.println("Tổng tiền hàng: " + Ktradulieu.dinhDangTien(tinhTongTien()));
+        System.out.println("Tiền thuế: " + Ktradulieu.dinhDangTien(tinhTienThue()));
+        System.out.println("Tổng tiền phải trả: " + Ktradulieu.dinhDangTien(tongTien));
+        System.out.println("\n1. Tiền mặt");
+        System.out.println("2. Chuyển khoản");
         System.out.println("0. Hủy thanh toán");
 
-        int chon = util.Ktradulieu.nhapSoNguyen(
-                sc, "Chọn phương thức thanh toán: ", 0, 2
-        );
-
+        int chon = Ktradulieu.luaChon(sc, "Nhập lựa chọn (0-2): ", 0, 2);
         if (chon == 0) {
-            System.out.println("Đã hủy thanh toán. Hóa đơn vẫn chờ duyệt.");
+            System.out.println("[Thông báo] Đã hủy thanh toán. Hóa đơn vẫn chờ duyệt, kho chưa thay đổi.");
             return false;
         }
 
-        ThanhToan thanhToan;
-
-        NhanVien nhanVien = (NhanVien) nguoiDuyet;
-
+        ThanhToan tt;
         if (chon == 1) {
-            thanhToan = new TienMat(
-                    getMaHD(),
-                    tongTienCanThanhToan,
-                    nhanVien
-            );
+            System.out.println("Cửa hàng chi tiền mặt cho nhà cung cấp: " + Ktradulieu.dinhDangTien(tongTien));
+            if (!Ktradulieu.nhapXacNhan(sc, "Xác nhận đã chi tiền?")) {
+                System.out.println("[Thông báo] Chưa xác nhận. Hóa đơn vẫn chờ duyệt, kho chưa thay đổi.");
+                return false;
+            }
+            TienMat tm = new TienMat(this.maHD, tongTien, nguoiDuyet);
+            tm.setTienKhachDua(tongTien);
+            if (!tm.qTrinhThanhToan()) {
+                System.out.println("[Lỗi] Thanh toán tiền mặt thất bại!");
+                return false;
+            }
+            tt = tm;
         } else {
-            thanhToan = new ChuyenKhoan(
-                    getMaHD(),
-                    tongTienCanThanhToan,
-                    nhanVien
-            );
+            System.out.println("\n========== CHUYỂN KHOẢN CHO NHÀ CUNG CẤP ==========");
+            ChuyenKhoan ck = new ChuyenKhoan(this.maHD, tongTien, nguoiDuyet);
+            ck.nhap(sc);
+            if (!ck.isThanhCong()) {
+                System.out.println("[Lỗi] Thanh toán chuyển khoản thất bại! Hóa đơn vẫn chờ duyệt, kho chưa thay đổi.");
+                return false;
+            }
+            tt = ck;
         }
 
-        thanhToan.nhap(sc);
-
-        if (!thanhToan.isThanhCong()) {
-            System.out.println("[Lỗi] Thanh toán thất bại!");
-            System.out.println("Hóa đơn chưa được duyệt và chưa cập nhật kho.");
-            return false;
-        }
-
-        this.phuongThucThanhToan = thanhToan;
-
+        this.phuongThucThanhToan = tt;
         System.out.println("[Thành công] Thanh toán hóa đơn nhập thành công!");
         return true;
     }
@@ -643,122 +631,10 @@ public class HoadonNhap extends HoaDon implements IHoaDon {
                 return false;
             }
         }
-
-        // =====================================================
-        // 8. THANH TOÁN CHO NHÀ CUNG CẤP
-        // =====================================================
-
-        double tongTienThanhToan = this.tinhThanhTien();
-
-        if (tongTienThanhToan <= 0) {
-            System.out.println("[Lỗi] Tổng tiền thanh toán không hợp lệ!");
+        // thanh toán
+        if (!thucHienThanhToan(sc, nguoiDuyet)) {
             return false;
         }
-
-        System.out.println("\n========== THANH TOÁN HÓA ĐƠN NHẬP ==========");
-        System.out.println("Mã hóa đơn: " + this.maHD);
-        System.out.println("Mã nhà cung cấp: " + this.maNCC);
-        System.out.println("Tổng tiền hàng: "
-                + Ktradulieu.dinhDangTien(this.tinhTongTien()));
-        System.out.println("Tiền thuế: "
-                + Ktradulieu.dinhDangTien(this.tinhTienThue()));
-        System.out.println("Tổng tiền phải trả: "
-                + Ktradulieu.dinhDangTien(tongTienThanhToan));
-
-        System.out.println("\nChọn hình thức thanh toán:");
-        System.out.println("1. Tiền mặt");
-        System.out.println("2. Chuyển khoản");
-        System.out.println("0. Hủy thanh toán");
-
-        int chonTT;
-
-        while (true) {
-            chonTT = (int) Ktradulieu.nhapSoNguyen(sc, "Nhập lựa chọn (0-2): ");
-
-            if (chonTT >= 0 && chonTT <= 2) {
-                break;
-            }
-
-            System.out.println("[Lỗi] Chỉ được chọn từ 0 đến 2!");
-        }
-
-        // Nếu quản lý hủy thanh toán
-        if (chonTT == 0) {
-            System.out.println("[Thông báo] Đã hủy thanh toán.");
-            System.out.println("[Thông báo] Hóa đơn vẫn đang chờ duyệt, kho chưa thay đổi.");
-            return false;
-        }
-
-        ThanhToan thanhToan;
-
-        // Thanh toán tiền mặt
-        if (chonTT == 1) {
-
-            System.out.println("\n========== CHI TIỀN MẶT ==========");
-            System.out.println("Cửa hàng chi tiền cho nhà cung cấp.");
-            System.out.println("Số tiền chi: "
-                    + Ktradulieu.dinhDangTien(tongTienThanhToan));
-
-            int xacNhan;
-
-            while (true) {
-                xacNhan = (int) Ktradulieu.nhapSoNguyen(
-                        sc, "Xác nhận đã chi tiền? (1: Có / 0: Không): ");
-
-                if (xacNhan == 0 || xacNhan == 1) {
-                    break;
-                }
-
-                System.out.println("[Lỗi] Chỉ được chọn 1 hoặc 0!");
-            }
-
-            if (xacNhan == 0) {
-                System.out.println("[Thông báo] Chưa xác nhận thanh toán.");
-                System.out.println("[Thông báo] Hóa đơn vẫn đang chờ duyệt, kho chưa thay đổi.");
-                return false;
-            }
-
-            TienMat tm = new TienMat(
-                    this.maHD,
-                    tongTienThanhToan,
-                    nguoiDuyet
-            );
-
-            tm.setTienKhachDua(tongTienThanhToan);
-
-            if (!tm.qTrinhThanhToan()) {
-                System.out.println("[Lỗi] Thanh toán tiền mặt thất bại!");
-                return false;
-            }
-
-            thanhToan = tm;
-
-        } else {
-
-            // Thanh toán chuyển khoản
-            System.out.println("\n========== CHUYỂN KHOẢN CHO NHÀ CUNG CẤP ==========");
-
-            ChuyenKhoan ck = new ChuyenKhoan(
-                    this.maHD,
-                    tongTienThanhToan,
-                    nguoiDuyet
-            );
-
-            ck.nhap(sc);
-
-            if (!ck.isThanhCong()) {
-                System.out.println("[Lỗi] Thanh toán chuyển khoản thất bại!");
-                System.out.println("[Thông báo] Hóa đơn vẫn đang chờ duyệt, kho chưa thay đổi.");
-                return false;
-            }
-
-            thanhToan = ck;
-        }
-
-        // Chỉ ghi nhận phương thức thanh toán sau khi thanh toán thành công
-        this.phuongThucThanhToan = thanhToan;
-
-        System.out.println("[Thành công] Thanh toán hóa đơn nhập thành công!");
 
         // =====================================================
         // 9. THANH TOÁN THÀNH CÔNG - THÊM SẢN PHẨM MỚI

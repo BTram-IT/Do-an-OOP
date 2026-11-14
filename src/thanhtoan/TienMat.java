@@ -37,6 +37,13 @@ public class TienMat extends ThanhToan {
         System.out.println("• Thu ngân phụ trách : [" + this.maNV + "]");
         System.out.println("• Tổng tiền cần thu  : " + Ktradulieu.dinhDangTien(this.soTien));
 
+        if (this.soTien <= 0) {
+            this.tienKhachDua = 0.0;
+            this.tienThoi = 0.0;
+            System.out.println("Hóa đơn đã được thanh toán đủ bằng điểm thưởng, không cần thu thêm tiền.");
+            qTrinhThanhToan();
+            return;
+        }
         while (true) {
             try {
                 double tienDua = Ktradulieu.nhapSoThucKhongAm(sc, "Nhập số tiền khách đưa: ");
@@ -60,7 +67,8 @@ public class TienMat extends ThanhToan {
     }
     @Override
     public boolean qTrinhThanhToan() {
-        if (this.tienKhachDua >= this.soTien && this.soTien > 0) {
+        // soTien == 0 (đã trả đủ bằng điểm) vẫn là thanh toán hợp lệ
+        if (this.soTien >= 0 && this.tienKhachDua >= this.soTien) {
             ketThuc(true);
             System.out.println("ĐÃ HOÀN TẤT THANH TOÁN TIỀN MẶT THÀNH CÔNG.");
             return true;

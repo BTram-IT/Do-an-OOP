@@ -75,17 +75,32 @@ public class DSSanPham {
 
     public boolean themSP(SanPham sp) {
         if (sp == null) {
-            throw new IllegalArgumentException("Không thể thêm sản phẩm null!");
-        }
-        if (timKiem(sp.getMaSP()) != null) {
-            System.out.println("Mã SP " + sp.getMaSP() + " đã tồn tại trong kho!");
+            System.out.println("[Lỗi] Không thể thêm sản phẩm null!");
             return false;
         }
+
+        String ma = sp.getMaSP();
+        if (ma == null || ma.trim().isEmpty()) {
+            System.out.println("[Lỗi] Mã sản phẩm không được để trống!");
+            return false;
+        }
+
+        if (timKiem(ma) != null) {
+            System.out.println("[Lỗi] Mã SP " + ma + " đã tồn tại trong kho!");
+            return false;
+        }
+
         if (this.soLuong >= this.danhSach.length) {
             moRongBoNho();
         }
         this.danhSach[this.soLuong++] = sp;
-        ghiFile("data/sanpham.txt");
+
+        // Ghi file thất bại thì hoàn tác, không báo thêm thành công
+        if (!ghiFile("data/sanpham.txt")) {
+            this.danhSach[--this.soLuong] = null;
+            System.out.println("[Lỗi] Không lưu được file, sản phẩm chưa được thêm.");
+            return false;
+        }
         return true;
     }
 
@@ -103,7 +118,11 @@ public class DSSanPham {
             sp = new DoUong();
         }
         sp.nhapThongTin(sc, this);
-        this.themSP(sp);
+        if (this.themSP(sp)) {
+            System.out.println("[Thành công] Đã thêm sản phẩm [" + sp.getMaSP() + "] vào kho.");
+        } else {
+            System.out.println("[Thất bại] Sản phẩm chưa được thêm vào kho.");
+        }
     }
 
     public SanPham timKiem(String maSP) {
@@ -195,15 +214,15 @@ public class DSSanPham {
                     sp.setDonGiaNhap(giaNhap);
                     break;
                 case 3:
-                    double giaBan = Ktradulieu.nhapSoThuc(sc, "Nhập đơn giá bán mới (đ): ");
+                    double giaBan = Ktradulieu.nhapSoThucDuong(sc, "Nhập đơn giá bán mới (đ): ");
                     sp.setDonGiaBan(giaBan);
                     break;
                 case 4:
-                    int tonMoi = Ktradulieu.nhapSoNguyen(sc, "Nhập số lượng tồn kho mới: ");
+                    int tonMoi = Ktradulieu.nhapSoNguyenKhongAm(sc, "Nhập số lượng tồn kho mới (>= 0): ");
                     sp.setSoLuongTon(tonMoi);
                     break;
                 case 5:
-                    double thueMoi = Ktradulieu.nhapSoThuc(sc, "Nhập % thuế VAT mới (VD: 8 hoặc 10): ");
+                    double thueMoi = Ktradulieu.nhapSoThucTrongKhoang(sc, "Nhập % thuế VAT mới (0-100): ", 0, 100);
                     sp.setPhanTramThue(thueMoi);
                     break;
                 case 6:

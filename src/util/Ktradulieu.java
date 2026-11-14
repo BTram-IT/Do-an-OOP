@@ -99,31 +99,60 @@ public class Ktradulieu {
             System.out.print(thongBao);
             String input = sc.nextLine().trim();
             try {
-                double val =  Double.parseDouble(input);
-                if( Double.isFinite(val))
-                    return val ;
+                double val = Double.parseDouble(input);
+                if (Double.isFinite(val)) {
+                    return val;
+                }
+                System.out.println("Giá trị không hợp lệ!");
             } catch (NumberFormatException e) {
                 System.out.println("Giá trị không hợp lệ! Vui lòng nhập số thực.");
             }
         }
+    }// Số thực >= 0
+    public static double nhapSoThucKhongAm(Scanner sc, String thongBao) {
+        while (true) {
+            double val = nhapSoThuc(sc, thongBao);
+            if (val >= 0) return val;
+            System.out.println("Vui lòng nhập số không âm (>= 0)!");
+        }
     }
+
+    // Số thực > 0
+    public static double nhapSoThucDuong(Scanner sc, String thongBao) {
+        while (true) {
+            double val = nhapSoThuc(sc, thongBao);
+            if (val > 0) return val;
+            System.out.println("Vui lòng nhập số lớn hơn 0!");
+        }
+    }
+
+    // Số thực trong khoảng [min, max]
+    public static double nhapSoThucTrongKhoang(Scanner sc, String thongBao, double min, double max) {
+        while (true) {
+            double val = nhapSoThuc(sc, thongBao);
+            if (val >= min && val <= max) return val;
+            System.out.println("Vui lòng nhập số trong khoảng từ " + min + " đến " + max + "!");
+        }
+    }
+
+
 
     // =========================================================================
     // 5. NHẬP SỐ THỰC KHÔNG ÂM (>= 0) (HÀM GỐC 5)
     // =========================================================================
-    public static double nhapSoThucKhongAm(Scanner sc, String thongBao) {
+    public static int nhapSoNguyenKhongAm(Scanner sc, String thongBao) {
         if (sc == null) sc = new Scanner(System.in);
         while (true) {
             System.out.print(thongBao);
             String input = sc.nextLine().trim();
             try {
-                double val = Double.parseDouble(input);
-                if (val >= 0 && Double.isFinite(val)) {
+                int val = Integer.parseInt(input);
+                if (val >= 0) {
                     return val;
                 }
-                System.out.println("Vui lòng nhập số không âm (>= 0)!");
+                System.out.println("Vui lòng nhập số nguyên không âm (>= 0)!");
             } catch (NumberFormatException e) {
-                System.out.println("Giá trị không hợp lệ! Vui lòng nhập số thực.");
+                System.out.println("Giá trị không hợp lệ! Vui lòng nhập số nguyên.");
             }
         }
     }
@@ -189,6 +218,17 @@ public class Ktradulieu {
             } catch (DateTimeParseException e) {
                 System.out.println("Ngày không hợp lệ! Nhập theo định dạng dd/MM/yyyy (ví dụ: 25/10/2026).");
             }
+        }
+    }
+
+    /** true nếu chuỗi là ngày dd/MM/yyyy thật sự tồn tại (vd: 31/02/2026 -> false) */
+    public static boolean laNgayHopLe(String s) {
+        if (s == null) return false;
+        try {
+            LocalDate.parse(s.trim(), DINH_DANG_NGAY);
+            return true;
+        } catch (DateTimeParseException e) {
+            return false;
         }
     }
 

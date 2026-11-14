@@ -11,7 +11,7 @@ public class ThucAn extends SanPham {
     private String baoQuan;
     private String xuatXu;
     private boolean laDoChay;
-    Scanner sc = new Scanner(System.in);
+
 
     // Constructor đầy đủ
     public ThucAn(String maSP, String tenSP, double donGiaNhap, double donGiaBan, int soLuongTon,

@@ -372,6 +372,10 @@ public class Hoadonban extends HoaDon implements IHoaDon {
         }
         return tongThue;
     }
+    public double tinhDoanhThuThuan() {
+        double dt = tinhTongTien() - tinhTienGiamKhuyenMai() - this.tienDungDiem;
+        return Math.max(0, dt);
+    }
 
     public double getThanhTien() { return this.tinhThanhTien(); }
 
@@ -422,16 +426,22 @@ public class Hoadonban extends HoaDon implements IHoaDon {
             System.out.println("[Lỗi] Danh sách khách hàng chưa được khởi tạo!");
             return false;
         }
-
         while (true) {
-            System.out.print("Nhập mã khách hàng: ");
+            System.out.print("Nhập mã khách hàng (nhập 0 để hủy): ");
 
-            String maChuan = Ktradulieu.chuanHoaMa(sc.nextLine().trim());
+            String nhap = sc.nextLine().trim();
+
+            if (nhap.equals("0")) {
+                System.out.println("[Thông báo] Đã hủy tiếp nhận, giữ nguyên khách hàng hiện tại.");
+                return false;
+            }
+
+            String maChuan = Ktradulieu.chuanHoaMa(nhap);
 
             Khachhang khachHang = dsKH.timKiem(maChuan);
 
             if (khachHang == null) {
-                System.out.println("[Lỗi] Không tìm thấy khách hàng! Vui lòng nhập lại.");
+                System.out.println("[Lỗi] Không tìm thấy khách hàng! Vui lòng nhập lại hoặc nhập 0 để hủy.");
                 continue;
             }
 
@@ -445,6 +455,7 @@ public class Hoadonban extends HoaDon implements IHoaDon {
 
             return true;
         }
+
     }
 
     public boolean themSanPham(Scanner sc, DSSanPham dsSP,
@@ -565,7 +576,18 @@ public class Hoadonban extends HoaDon implements IHoaDon {
         System.out.println("------------------------------------------");
         System.out.println("TỔNG PHẢI TRẢ   : "
                 + Ktradulieu.dinhDangTien(phaiTra));
+        if (phaiTra <= 0) {
+            TienMat tm = new TienMat(this.maHD, 0, nhanVienDangNhap);
+            tm.nhap(sc);
 
+            if (!tm.isThanhCong()) {
+                System.out.println("[Lỗi] Không ghi nhận được thanh toán bằng điểm!");
+                return false;
+            }
+
+            this.phuongThucThanhToan = tm;
+            return hoanTatDonHang(dsSP, khachHang);
+        }
         // Chọn phương thức thanh toán
         int chonTT;
 

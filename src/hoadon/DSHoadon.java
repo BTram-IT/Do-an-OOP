@@ -19,12 +19,21 @@ import sanpham.DSSanPham;
 import khuyenmai.DSKhuyenMai;
 import khuyenmai.DSSanPhamKhuyenMai;
 import util.Ktradulieu;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 
 public class DSHoadon {
     private ArrayList<HoaDon> danhSach;
 
     public DSHoadon() {
         this.danhSach = new ArrayList<>();
+    }
+    private static final DateTimeFormatter DINH_DANG_NGAY_HD = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
+    // Nhập ngày hợp lệ (STRICT) và trả về chuỗi dd/MM/yyyy
+    private String nhapNgayLapHopLe(Scanner sc) {
+        LocalDate ngay = Ktradulieu.nhapNgay(sc, "Nhập ngày lập mới (dd/MM/yyyy): ");
+        return ngay.format(DINH_DANG_NGAY_HD);
     }
 
     public int getSoLuong() {
@@ -426,12 +435,7 @@ public class DSHoadon {
                         break;
 
                     case 2:
-                        hd.setNgayLap(Ktradulieu.nhapChuoi(
-                                sc,
-                                "Nhập ngày lập mới (dd/MM/yyyy): ",
-                                Ktradulieu.ngayRegex,
-                                "Định dạng ngày phải là dd/MM/yyyy!"
-                        ));
+                        hd.setNgayLap(nhapNgayLapHopLe(sc));
                         break;
 
                     case 3: {
