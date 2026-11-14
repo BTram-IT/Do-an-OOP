@@ -293,38 +293,71 @@ public class Giaodien {
 
     public void menuQuanLyKhoHang() {
         while (true) {
-            System.out.println("\n========== QUẢN LÝ KHO HÀNG ==========");
+            System.out.println("\n================================================");
+            System.out.println("                 QUẢN LÝ KHO HÀNG");
+            System.out.println("================================================");
             System.out.println("1. Tạo hóa đơn nhập");
             System.out.println("2. Xem danh sách hóa đơn nhập");
             System.out.println("3. Tra cứu hóa đơn nhập");
-            System.out.println("4. Xem danh sách sản phẩm");
-            System.out.println("5. Tìm kiếm sản phẩm");
-            System.out.println("6. Xem danh sách nhà cung cấp");
-            System.out.println("7. Thêm nhà cung cấp");
-            System.out.println("8. Tìm kiếm nhà cung cấp");
+            System.out.println("4. Sửa hóa đơn nhập đang chờ duyệt");
+            System.out.println("5. Hủy hóa đơn nhập đang chờ duyệt");
+            System.out.println("6. Xem danh sách sản phẩm");
+            System.out.println("7. Tìm kiếm sản phẩm");
+            System.out.println("8. Xem danh sách nhà cung cấp");
+            System.out.println("9. Thêm nhà cung cấp");
+            System.out.println("10. Tìm kiếm nhà cung cấp");
             System.out.println("0. Quay lại menu nhân viên");
-            System.out.println("=====================================");
+            System.out.println("================================================");
 
-            int chon = Ktradulieu.luaChon(sc, "Chọn chức năng (0-8): ", 0, 8);
+            int chon = Ktradulieu.luaChon(
+                    sc, "Chọn chức năng (0-10): ", 0, 10);
+
             switch (chon) {
-                case 1: taoHoaDonNhap(); break;
+                case 1:
+                    taoHoaDonNhap();
+                    break;
+
                 case 2:
                     dsHoaDon.xuatDanhSachHoaDonNhap();
                     break;
-                case 3: traCuuHoaDonNhap(); break;
-                case 4: dsSanPham.xuatDanhSach(); break;
-                case 5: timKiemSanPham(); break;
-                case 6: dsNhaCungCap.xuatDanhSach(); break;
-                case 7: {
+
+                case 3:
+                    traCuuHoaDonNhap();
+                    break;
+
+                case 4:
+                    dsHoaDon.suaHD(sc, nguoiDangNhap, dsSanPham);
+                    break;
+
+                case 5:
+                    dsHoaDon.xoaHD(sc, nguoiDangNhap);
+                    break;
+
+                case 6:
+                    dsSanPham.xuatDanhSach();
+                    break;
+
+                case 7:
+                    timKiemSanPham();
+                    break;
+
+                case 8:
+                    dsNhaCungCap.xuatDanhSach();
+                    break;
+
+                case 9: {
                     NhaCungCap ncc = new NhaCungCap();
                     ncc.nhapThongTin(sc, dsNhaCungCap);
                     dsNhaCungCap.them(ncc);
                     break;
                 }
-                case 8: timKiemNhaCungCap(); break;
-                case 0: return;
-                default:
-                    System.out.println("Lựa chọn không hợp lệ");
+
+                case 10:
+                    timKiemNhaCungCap();
+                    break;
+
+                case 0:
+                    return;
             }
         }
     }
@@ -339,7 +372,7 @@ public class Giaodien {
             System.out.println("0. Quay lại menu nhân viên");
             System.out.println("==============================");
 
-            int chon = Ktradulieu.luaChon(sc, "Chọn chức năng (1-5): ", 1, 5);
+            int chon = Ktradulieu.luaChon(sc, "Chọn chức năng (1-5): ", 0, 4);
 
             switch (chon) {
                 case 1:
@@ -631,32 +664,55 @@ public class Giaodien {
 
     public void menuQuanLyNhapKhoQuyTrinh() {
         while (true) {
-            System.out.println("\n--- 3. QUẢN LÝ NHẬP KHO ---");
+            System.out.println("\n================================================");
+            System.out.println("           QUẢN LÝ NHẬP KHO");
+            System.out.println("================================================");
             System.out.println("1. Xem danh sách hóa đơn nhập kho chờ duyệt");
-            System.out.println("2. Duyệt hóa đơn nhập kho ");
+            System.out.println("2. Duyệt hóa đơn nhập kho");
             System.out.println("3. Xem lịch sử hóa đơn nhập kho");
             System.out.println("4. Tìm kiếm hóa đơn nhập kho");
+            System.out.println("5. Sửa hóa đơn nhập kho");
+            System.out.println("6. Hủy hóa đơn nhập kho");
             System.out.println("0. Quay lại");
+            System.out.println("================================================");
 
-            int chon = Ktradulieu.luaChon(sc, "Chọn (0-4): ", 0, 4);
+            int chon = Ktradulieu.luaChon(sc, "Chọn chức năng (0-6): ", 0, 6);
+
             switch (chon) {
                 case 1:
                     dsHoaDon.xuatDanhSachHoaDonChoDuyet();
                     break;
+
                 case 2:
                     if (nguoiDangNhap instanceof QuanLyCuaHang) {
-                        ((QuanLyCuaHang) nguoiDangNhap).duyetHoaDon(sc, dsHoaDon, dsSanPham);
+                        ((QuanLyCuaHang) nguoiDangNhap)
+                                .duyetHoaDon(sc, dsHoaDon, dsSanPham);
                     } else {
                         dsHoaDon.duyetHoaDon(sc, nguoiDangNhap, dsSanPham);
                     }
+
                     dsHoaDon.ghiFile("data/hoadon.txt");
                     dsSanPham.ghiFile("data/sanpham.txt");
                     break;
+
                 case 3:
                     dsHoaDon.xuatDanhSachHoaDonNhap();
                     break;
-                case 4: traCuuHoaDonNhap(); break;
-                case 0: return;
+
+                case 4:
+                    traCuuHoaDonNhap();
+                    break;
+
+                case 5:
+                    dsHoaDon.suaHD(sc, nguoiDangNhap,dsSanPham);
+                    break;
+
+                case 6:
+                    dsHoaDon.xoaHD(sc, nguoiDangNhap);
+                    break;
+
+                case 0:
+                    return;
             }
         }
     }

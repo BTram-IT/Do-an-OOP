@@ -224,28 +224,85 @@ public class CTHDonNhap extends CTHoaDon {
 
     private SanPham taoHoSoSanPhamMoi(Scanner sc, String maSP) {
         System.out.println("\n========== TẠO HỒ SƠ SẢN PHẨM MỚI ==========");
+
         try {
-            System.out.print("Nhập tên sản phẩm: ");
-            String tenSP = sc.nextLine().trim().replace(';', ',');
-            if (tenSP.isEmpty()) {
-                throw new IllegalArgumentException("Tên sản phẩm không được để trống!");
+            if (sc == null) {
+                sc = new Scanner(System.in);
             }
 
-            double giaNhap = Ktradulieu.nhapSoThuc(sc, "Nhập giá nhập: ");
-            double giaBan = Ktradulieu.nhapSoThuc(sc, "Nhập giá bán: ");
+            // 1. Xác định loại sản phẩm
+            String loaiSP;
 
-            System.out.print("Nhập đơn vị tính: ");
-            String donVi = sc.nextLine().trim().replace(';', ',');
-            if (donVi.isEmpty()) {
-                throw new IllegalArgumentException("Đơn vị tính không được để trống!");
+            if (maSP.startsWith("TA")) {
+                loaiSP = "TA";
+            } else if (maSP.startsWith("DU")) {
+                loaiSP = "DU";
+            } else {
+                System.out.println("Mã SP chưa xác định được loại sản phẩm.");
+                System.out.println("1. Thức ăn");
+                System.out.println("2. Đồ uống");
+
+                while (true) {
+                    System.out.print("Chọn loại sản phẩm: ");
+                    String chon = sc.nextLine().trim();
+
+                    if (chon.equals("1")) {
+                        loaiSP = "TA";
+                        break;
+                    } else if (chon.equals("2")) {
+                        loaiSP = "DU";
+                        break;
+                    }
+
+                    System.out.println("[Lỗi] Chỉ được chọn 1 hoặc 2!");
+                }
             }
 
-            double vat = Ktradulieu.nhapSoThuc(sc, "Nhập thuế VAT (%): ");
+            // 2. Nhập thông tin chung
+            String tenSP = Ktradulieu.nhapChuoiKhongRong(
+                    sc, "Nhập tên sản phẩm: "
+            ).replace(';', ',');
 
+            double giaNhap;
+            while (true) {
+                giaNhap = Ktradulieu.nhapSoThuc(sc, "Nhập giá nhập: ");
+
+                if (giaNhap > 0 && Double.isFinite(giaNhap)) {
+                    break;
+                }
+
+                System.out.println("[Lỗi] Giá nhập phải lớn hơn 0!");
+            }
+
+            double giaBan;
+            while (true) {
+                giaBan = Ktradulieu.nhapSoThuc(sc, "Nhập giá bán: ");
+
+                if (giaBan > 0 && Double.isFinite(giaBan)) {
+                    break;
+                }
+
+                System.out.println("[Lỗi] Giá bán phải lớn hơn 0!");
+            }
+
+            String donVi = Ktradulieu.nhapChuoiKhongRong(
+                    sc, "Nhập đơn vị tính: "
+            ).replace(';', ',');
+
+            double vat;
+            while (true) {
+                vat = Ktradulieu.nhapSoThuc(sc, "Nhập thuế VAT (%): ");
+
+                if (vat >= 0 && vat <= 100 && Double.isFinite(vat)) {
+                    break;
+                }
+
+                System.out.println("[Lỗi] Thuế VAT phải từ 0 đến 100%!");
+            }
+
+            // 3. Nhập ngày sản xuất
             LocalDate nsx;
-            LocalDate hsd;
 
-            // Nhập ngày sản xuất
             while (true) {
                 try {
                     nsx = Ktradulieu.nhapNgay(
@@ -253,20 +310,22 @@ public class CTHDonNhap extends CTHoaDon {
                     );
 
                     if (nsx.isAfter(LocalDate.now())) {
-                        throw new IllegalArgumentException(
-                                "Ngày sản xuất không được ở tương lai!"
+                        System.out.println(
+                                "[Lỗi] Ngày sản xuất không được ở tương lai!"
                         );
+                        continue;
                     }
 
                     break;
 
                 } catch (IllegalArgumentException e) {
                     System.out.println("[Lỗi] " + e.getMessage());
-                    System.out.println("Vui lòng nhập lại ngày sản xuất!");
                 }
             }
 
-// Nhập hạn sử dụng
+            // 4. Nhập hạn sử dụng
+            LocalDate hsd;
+
             while (true) {
                 try {
                     hsd = Ktradulieu.nhapNgay(
@@ -274,45 +333,133 @@ public class CTHDonNhap extends CTHoaDon {
                     );
 
                     if (hsd.isBefore(LocalDate.now())) {
-                        throw new IllegalArgumentException(
-                                "Hạn sử dụng không được trước ngày hiện tại!"
+                        System.out.println(
+                                "[Lỗi] Hạn sử dụng không được trước ngày hiện tại!"
                         );
+                        continue;
                     }
 
                     if (hsd.isBefore(nsx)) {
-                        throw new IllegalArgumentException(
-                                "Hạn sử dụng không được trước ngày sản xuất!"
+                        System.out.println(
+                                "[Lỗi] Hạn sử dụng không được trước ngày sản xuất!"
                         );
+                        continue;
                     }
 
                     break;
 
                 } catch (IllegalArgumentException e) {
                     System.out.println("[Lỗi] " + e.getMessage());
-                    System.out.println("Vui lòng nhập lại hạn sử dụng!");
                 }
             }
-            if (giaNhap <= 0 || giaBan <= 0 || Double.isNaN(giaNhap) || Double.isNaN(giaBan) || Double.isInfinite(giaNhap) || Double.isInfinite(giaBan)) {
-                throw new IllegalArgumentException("Giá nhập và giá bán phải lớn hơn 0!");
-            }
-            if (vat < 0 || vat > 100) {
-                throw new IllegalArgumentException("Thuế VAT phải nằm trong khoảng 0-100%!");
+
+            // 5. Tạo đối tượng theo loại sản phẩm
+            SanPham spMoi;
+
+            if (loaiSP.equals("TA")) {
+
+                System.out.println("\n========== THÔNG TIN RIÊNG CỦA THỨC ĂN ==========");
+
+                ThucAn thucAn = new ThucAn();
+
+                thucAn.setThanhPhan(
+                        Ktradulieu.nhapChuoiKhongRong(
+                                sc, "Nhập thành phần: "
+                        ).replace(';', ',')
+                );
+
+                thucAn.setBaoQuan(
+                        Ktradulieu.nhapChuoiKhongRong(
+                                sc, "Nhập hướng dẫn bảo quản: "
+                        ).replace(';', ',')
+                );
+
+                thucAn.setXuatXu(
+                        Ktradulieu.nhapChuoiKhongRong(
+                                sc, "Nhập xuất xứ: "
+                        ).replace(';', ',')
+                );
+
+                thucAn.setLaDoChay(
+                        Ktradulieu.nhapXacNhan(
+                                sc, "Có phải đồ chay không?"
+                        )
+                );
+
+                spMoi = thucAn;
+
+            } else {
+
+                System.out.println("\n========== THÔNG TIN RIÊNG CỦA ĐỒ UỐNG ==========");
+
+                DoUong doUong = new DoUong();
+
+                doUong.setThuongHieu(
+                        Ktradulieu.nhapChuoiKhongRong(
+                                sc, "Nhập thương hiệu: "
+                        ).replace(';', ',')
+                );
+
+                doUong.setLoaiDoUong(
+                        Ktradulieu.nhapChuoiKhongRong(
+                                sc, "Nhập loại đồ uống: "
+                        ).replace(';', ',')
+                );
+
+                doUong.setHuongVi(
+                        Ktradulieu.nhapChuoiKhongRong(
+                                sc, "Nhập hương vị: "
+                        ).replace(';', ',')
+                );
+
+                double dungTich;
+
+                while (true) {
+                    dungTich = Ktradulieu.nhapSoThuc(
+                            sc, "Nhập dung tích (ml): "
+                    );
+
+                    if (dungTich > 0 && Double.isFinite(dungTich)) {
+                        break;
+                    }
+
+                    System.out.println("[Lỗi] Dung tích phải lớn hơn 0!");
+                }
+
+                doUong.setDungTich(dungTich);
+
+                spMoi = doUong;
             }
 
-            SanPham spMoi = maSP.startsWith("DU") ? new DoUong() : new ThucAn();
+            // 6. Gán thông tin chung cho sản phẩm
             spMoi.setMaSP(maSP);
             spMoi.setTenSP(tenSP);
             spMoi.setDonGiaNhap(giaNhap);
             spMoi.setDonGiaBan(giaBan);
             spMoi.setDonViTinh(donVi);
             spMoi.setSoLuongTon(0);
-            spMoi.setHSD(nsx.format(DINH_DANG_NGAY), hsd.format(DINH_DANG_NGAY));
+
+            spMoi.setHSD(
+                    nsx.format(DINH_DANG_NGAY),
+                    hsd.format(DINH_DANG_NGAY)
+            );
+
             spMoi.setPhanTramThue(vat);
             spMoi.setTrangThaiDuyet("Chờ duyệt");
             spMoi.setDaXoa(false);
 
+            // Lưu hạn sử dụng vào chi tiết hóa đơn
             setHanSuDung(hsd);
+
+            System.out.println("\n[Thành công] Đã tạo hồ sơ sản phẩm mới!");
+            System.out.println("Mã sản phẩm: " + maSP);
+            System.out.println("Tên sản phẩm: " + tenSP);
+            System.out.println("Loại sản phẩm: "
+                    + (spMoi instanceof ThucAn ? "Thức ăn" : "Đồ uống"));
+            System.out.println("Trạng thái: Chờ duyệt");
+
             return spMoi;
+
         } catch (IllegalArgumentException e) {
             System.out.println("[Lỗi] " + e.getMessage());
             return null;
@@ -429,7 +576,7 @@ public class CTHDonNhap extends CTHoaDon {
 
                 } else if ("DOUONG".equalsIgnoreCase(loai)) {
 
-                    if (sp.length < 15) {
+                    if (sp.length < 16) {
                         return null;
                     }
 

@@ -89,8 +89,6 @@ public class DSSanPham {
         }
         this.danhSach[this.soLuong++] = sp;
         ghiFile("data/sanpham.txt");
-
-        System.out.println("Đã lưu sản phẩm: [" + sp.getMaSP() + "] " + sp.getTenSP() + " vào kho.");
         return true;
     }
 
@@ -438,8 +436,6 @@ public class DSSanPham {
 
                 bw.newLine();
             }
-
-            System.out.println("Đã lưu danh sách " + this.soLuong + " sản phẩm vào file: " + duongDan);
 
         } catch (IOException e) {
             System.out.println("Lỗi ghi file SP: " + e.getMessage());

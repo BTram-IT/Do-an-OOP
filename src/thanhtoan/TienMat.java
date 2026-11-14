@@ -1,8 +1,8 @@
 package thanhtoan;
 
 import java.util.Scanner;
-import person.NhanVien;
 import util.Ktradulieu;
+import person.Nguoidung;
 
 public class TienMat extends ThanhToan {
 
@@ -16,7 +16,7 @@ public class TienMat extends ThanhToan {
         this.tienThoi = 0.0;
     }
 
-    public TienMat(String maHD, double soTien, NhanVien nvDangDangNhap) {
+    public TienMat(String maHD, double soTien, Nguoidung nvDangDangNhap) {
         super(maHD, "TienMat", soTien, nvDangDangNhap);
         this.tienKhachDua = 0.0;
         this.tienThoi = 0.0;

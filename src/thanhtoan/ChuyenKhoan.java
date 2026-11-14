@@ -1,7 +1,7 @@
 package thanhtoan;
 
 import java.util.Scanner;
-import person.NhanVien;
+import person.Nguoidung;
 import util.Ktradulieu;
 
 public class ChuyenKhoan extends ThanhToan {
@@ -22,7 +22,7 @@ public class ChuyenKhoan extends ThanhToan {
     }
 
 
-    public ChuyenKhoan(String maHD, double soTien, NhanVien nvDangDangNhap) {
+    public ChuyenKhoan(String maHD, double soTien, Nguoidung nvDangDangNhap) {
         super(maHD, "ChuyenKhoan", soTien, nvDangDangNhap);
         this.maGDNganHang = "";
         this.tenNguoiChuyen = "";
@@ -43,7 +43,7 @@ public class ChuyenKhoan extends ThanhToan {
 
         System.out.println("\n========== THANH TOÁN CHUYỂN KHOẢN ==========");
         System.out.println("• Mã giao dịch       : [" + this.maGD + "]");
-        System.out.println("• Thu ngân phụ trách : [" + this.maNV + "]");
+        System.out.println("• Người thực hiện  : [" + this.maNV + "]");
         System.out.println("• Số tiền cần chuyển : " + Ktradulieu.dinhDangTien(this.soTien));
 
         while (true) {
@@ -110,7 +110,7 @@ public class ChuyenKhoan extends ThanhToan {
     public boolean thanhToan(Scanner sc, double tongTien) {
         this.soTien = tongTien;
         nhap(sc);
-        return qTrinhThanhToan();
+        return isThanhCong();
     }
 
     public boolean thanhToan(double tongTien) {

@@ -3,8 +3,9 @@ package thanhtoan;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Scanner;
-import person.NhanVien;
+import person.Nguoidung;
 import util.Ktradulieu;
+
 
 public abstract class ThanhToan {
 
@@ -30,7 +31,7 @@ public abstract class ThanhToan {
     }
 
 
-    public ThanhToan(String maHD, String loaiThanhToan, double soTien, NhanVien nvDangDangNhap) {
+    public ThanhToan(String maHD, String loaiThanhToan, double soTien, Nguoidung nvDangDangNhap) {
         setMaGD("TT_" + ((maHD != null && !maHD.isEmpty()) ? maHD : "GD001"));
         setLoaiThanhToan(loaiThanhToan);
         setSoTien(soTien);
