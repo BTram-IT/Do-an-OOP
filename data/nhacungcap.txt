@@ -1,2 +1,10 @@
-NCC001;Dong Khoi;0847834958;hcm;ekrfjfj@gmail.com;false
-NCC002;Viet Tin;0348485894;hcm;dlksjdf@gmail.com;false
+NCC001;Thực phẩm An Phú;0903000001;11 Đường số 1, Quận Bình Thạnh, TP Hồ Chí Minh;ncc001@example.com;false
+NCC002;Nông sản Đà Lạt;0903000002;12 Đường số 2, Quận Bình Thạnh, TP Hồ Chí Minh;ncc002@example.com;false
+NCC003;Đồ uống Ánh Dương;0903000003;13 Đường số 3, Quận Bình Thạnh, TP Hồ Chí Minh;ncc003@example.com;false
+NCC004;Bánh kẹo Hòa Bình;0903000004;14 Đường số 4, Quận Bình Thạnh, TP Hồ Chí Minh;ncc004@example.com;false
+NCC005;Sữa và Dinh dưỡng Việt;0903000005;15 Đường số 5, Quận Bình Thạnh, TP Hồ Chí Minh;ncc005@example.com;false
+NCC006;Cà phê Tây Nguyên;0903000006;16 Đường số 6, Quận Bình Thạnh, TP Hồ Chí Minh;ncc006@example.com;false
+NCC007;Hàng khô Tân Thành;0903000007;17 Đường số 7, Quận Bình Thạnh, TP Hồ Chí Minh;ncc007@example.com;false
+NCC008;Thực phẩm Xanh;0903000008;18 Đường số 8, Quận Bình Thạnh, TP Hồ Chí Minh;ncc008@example.com;false
+NCC009;Thương mại Minh Châu;0903000009;19 Đường số 9, Quận Bình Thạnh, TP Hồ Chí Minh;ncc009@example.com;true
+NCC010;Phân phối Phương Nam;0903000010;20 Đường số 10, Quận Bình Thạnh, TP Hồ Chí Minh;ncc010@example.com;true
