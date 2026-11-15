@@ -1,0 +1,20 @@
+?ã ??c thành công 5 tài kho?n t? file: data/nhanvien.txt
+?ã ??c thành công 2 khách hàng t? file: data/khachhang.txt
+?ã ??c thành công 2 nhà cung c?p t? file: data/nhacungcap.txt
+[Thành công] ?ã ??c 3 s?n ph?m t? file: data/sanpham.txt
+?ã n?p thành công 1 ch??ng trình khuy?n mãi t? file: data/khuyenmai.txt
+[Thành công] ??c file s?n ph?m khuy?n mãi! T?ng s?: 0
+[Thành công] ?ã n?p 7 hóa ??n t? file.
+
+========== QU?N LÝ KHO HÀNG ==========
+1. T?o hóa ??n nh?p
+2. Xem danh sách hóa ??n nh?p
+3. Tra c?u hóa ??n nh?p
+4. Xem danh sách s?n ph?m
+5. Tìm ki?m s?n ph?m
+6. Xem danh sách nhà cung c?p
+7. Thêm nhà cung c?p
+8. Tìm ki?m nhà cung c?p
+0. Quay l?i menu nhân viên
+=====================================
+Ch?n ch?c n?ng (0-8): Nh?p mã hóa ??n nh?p: AUDIT_EOF

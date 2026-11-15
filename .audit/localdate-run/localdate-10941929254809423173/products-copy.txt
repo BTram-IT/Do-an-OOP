@@ -1,0 +1,2 @@
+THUCAN;TA901;Audit;100;200;0;box;10/11/2026;14/11/2026;5.0;a;b;c;false;Đã duyệt;false
+DOUONG;DU901;Audit;100;200;2;bottle;15/11/2026;25/11/2026;5.0;500.0;a;b;c;Đã duyệt;false

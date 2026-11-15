@@ -11,30 +11,73 @@ public abstract class Khuyenmai {
     protected String loaiKM;
     protected LocalDate ngayBatDau;
     protected LocalDate ngayKetThuc;
-    protected long mucChiToiThieu;
+
     private static final DateTimeFormatter DINH_DANG_NGAY = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
-
+    // Constructor mặc định
     public Khuyenmai() {
         this.maKM = "";
         this.loaiKM = "";
-        this.ngayBatDau = LocalDate.now();
-        this.ngayKetThuc = LocalDate.now().plusMonths(1);
-        this.mucChiToiThieu = 0;
+        this.ngayBatDau = null;
+        this.ngayKetThuc = null;
     }
 
+    // Constructor đầy đủ
+    public Khuyenmai(String maKM, String loaiKM, LocalDate ngayBatDau, LocalDate ngayKetThuc) {
+        String maChuan = chuanHoaMaKM(maKM);
 
-    public Khuyenmai(String maKM, String loaiKM, LocalDate ngayBatDau, LocalDate ngayKetThuc, long mucChiToiThieu) {
-        this.maKM = maKM;
-        this.loaiKM = loaiKM;
+        if (loaiKM == null || loaiKM.trim().isEmpty()) {
+            throw new IllegalArgumentException("[Lỗi] Loại khuyến mãi không được để trống!");
+        }
+
+        kiemTraKhoangNgay(ngayBatDau, ngayKetThuc);
+
+        this.maKM = maChuan;
+        this.loaiKM = loaiKM.trim();
         this.ngayBatDau = ngayBatDau;
         this.ngayKetThuc = ngayKetThuc;
-        this.mucChiToiThieu = mucChiToiThieu;
     }
 
+    // Chuẩn hóa và kiểm tra mã khuyến mãi (KM001, KM002, ... KM1000 trở lên vẫn hợp lệ)
+    private String chuanHoaMaKM(String maKM) {
+        if (maKM == null || maKM.trim().isEmpty()) {
+            throw new IllegalArgumentException("[Lỗi] Mã khuyến mãi không được để trống!");
+        }
+
+        String maChuan = Ktradulieu.chuanHoaMa(maKM);
+
+        if (!maChuan.matches("^KM\\d{3,}$")) {
+            throw new IllegalArgumentException("[Lỗi] Mã khuyến mãi phải có dạng KM001, KM002,...!");
+        }
+
+        return maChuan;
+    }
+
+    // Kiểm tra khoảng ngày
+    private static void kiemTraKhoangNgay(LocalDate ngayBatDau, LocalDate ngayKetThuc) {
+        if (ngayBatDau == null || ngayKetThuc == null) {
+            throw new IllegalArgumentException("[Lỗi] Ngày bắt đầu và ngày kết thúc không được để trống!");
+        }
+
+        if (ngayKetThuc.isBefore(ngayBatDau)) {
+            throw new IllegalArgumentException("[Lỗi] Ngày kết thúc không thể trước ngày bắt đầu!");
+        }
+    }
+
+    // Cập nhật khoảng ngày
+    public void setKhoangNgay(LocalDate ngayBatDau, LocalDate ngayKetThuc) {
+        kiemTraKhoangNgay(ngayBatDau, ngayKetThuc);
+        this.ngayBatDau = ngayBatDau;
+        this.ngayKetThuc = ngayKetThuc;
+    }
+
+    // Nhập thông tin khuyến mãi
     public void nhapThongTin(Scanner sc, DSKhuyenMai dsKM) {
         System.out.println("\n--- THIẾT LẬP CHƯƠNG TRÌNH KHUYẾN MÃI ---");
+
+        // 1. Nhập mã khuyến mãi
         String maGoiY = (dsKM != null) ? dsKM.sinhMaTuDong("KM") : "KM001";
+
         while (true) {
             System.out.print("Nhập mã khuyến mãi (Nhấn / để tự tạo mã): ");
             String input = sc.nextLine().trim();
@@ -46,53 +89,44 @@ public abstract class Khuyenmai {
             }
 
             try {
-                String maChuan = Ktradulieu.chuanHoaMa(input);
-                if (!maChuan.startsWith("KM")) {
-                    System.out.println("Lỗi: Mã khuyến mãi phải bắt đầu bằng 'KM' (Ví dụ: KM001, KM_TET)! Hoặc nhấn / để tự tạo mã.");
-                    continue;
-                }
+                String maChuan = chuanHoaMaKM(input);
+
                 if (dsKM != null && dsKM.timKiem(maChuan) != null) {
-                    System.out.println("Lỗi: Mã '" + maChuan + "' đã tồn tại! Vui lòng nhập lại hoặc nhấn / để tự tạo.");
+                    System.out.println("Lỗi: Mã " + maChuan + " đã tồn tại! Vui lòng nhập lại.");
                     continue;
                 }
+
                 this.setMaKM(maChuan);
                 break;
+
             } catch (IllegalArgumentException e) {
                 System.out.println(e.getMessage());
             }
         }
 
+        // 2. Nhập ngày bắt đầu và ngày kết thúc
         while (true) {
             try {
                 LocalDate batDau = Ktradulieu.nhapNgay(sc, "Nhập ngày bắt đầu khuyến mãi (dd/MM/yyyy): ");
-                setNgayBatDau(batDau);
-                break;
-            } catch (IllegalArgumentException e) {
-                System.out.println( e.getMessage());
-            }
-        }
-
-        while (true) {
-            try {
                 LocalDate ketThuc = Ktradulieu.nhapNgay(sc, "Nhập ngày kết thúc khuyến mãi (dd/MM/yyyy): ");
-                setNgayKetThuc(ketThuc);
-                break;
-            } catch (IllegalArgumentException e) {
-                System.out.println(e.getMessage());
-            }
-        }
 
-        while (true) {
-            try {
-                long mucChi = (long) Ktradulieu.nhapSoThucKhongAm(sc, "Nhập mức chi tiêu tối thiểu của đơn hàng (đ): ");
-                setMucChiToiThieu(mucChi);
+                // Chỉ chặn khi tạo mới. Khi đọc file, khuyến mãi cũ đã hết hạn vẫn được nạp bình thường.
+                if (ketThuc != null && ketThuc.isBefore(LocalDate.now())) {
+                    throw new IllegalArgumentException(
+                            "[Lỗi] Ngày kết thúc không được ở trong quá khứ (khuyến mãi sẽ không bao giờ có hiệu lực)!");
+                }
+
+                setKhoangNgay(batDau, ketThuc);
                 break;
+
             } catch (IllegalArgumentException e) {
                 System.out.println(e.getMessage());
+                System.out.println("Vui lòng nhập lại cả hai ngày!");
             }
         }
     }
 
+    // Kiểm tra khuyến mãi còn trong thời hạn không
     public boolean kiemTraThoiHan() {
         return kiemTraThoiHan(LocalDate.now());
     }
@@ -101,57 +135,91 @@ public abstract class Khuyenmai {
         if (ngayKiemTra == null || ngayBatDau == null || ngayKetThuc == null) {
             return false;
         }
+
         return !ngayKiemTra.isBefore(ngayBatDau) && !ngayKiemTra.isAfter(ngayKetThuc);
     }
 
-    public boolean kiemTraApDung(String maSP, long tongTienTruocKM, DSSanPhamKhuyenMai dsSPKM) {
+    // Kiểm tra điều kiện áp dụng khuyến mãi cho sản phẩm
+    public boolean kiemTraApDung(String maSP, DSSanPhamKhuyenMai dsSPKM) {
         if (maSP == null || maSP.trim().isEmpty()) {
             return false;
         }
+
         if (!kiemTraThoiHan()) {
             return false;
         }
-        if (tongTienTruocKM < mucChiToiThieu) {
-            return false;
-        }
+
         if (dsSPKM == null) {
             return false;
         }
+
         return dsSPKM.kiemTraLienKet(maSP, maKM);
     }
 
-
+    // Tính tiền giảm trên một sản phẩm
     public abstract long tinhTienGiam(long giaBan);
 
-    // Trả về tổng tiền giảm trên toàn bộ số lượng sản phẩm
+    // Tính tổng tiền giảm của một dòng sản phẩm
     public long tinhTongTienGiam(long giaBan, int soLuong) {
         if (giaBan <= 0 || soLuong <= 0) {
             return 0;
         }
+
         long giamMotSP = tinhTienGiam(giaBan);
+
         if (giamMotSP <= 0) {
             return 0;
         }
-        long thanhTien = Math.multiplyExact(giaBan, (long) soLuong);
-        long tongGiam = Math.multiplyExact(giamMotSP, (long) soLuong);
-        return Math.min(tongGiam, thanhTien);
+
+        if (giamMotSP > giaBan) {
+            giamMotSP = giaBan;
+        }
+
+        try {
+            long tongGiam = Math.multiplyExact(giamMotSP, (long) soLuong);
+            long thanhTien = Math.multiplyExact(giaBan, (long) soLuong);
+
+            return Math.min(tongGiam, thanhTien);
+
+        } catch (ArithmeticException e) {
+            throw new IllegalArgumentException("[Lỗi] Số tiền quá lớn, không thể tính khuyến mãi!", e);
+        }
     }
 
+    // Mặc định không có sản phẩm tặng
     public int tinhSoLuongTang(int soLuongMua) {
         return 0;
     }
 
+    /**
+     * Quy đổi ưu đãi của một dòng hàng ra tiền (tiền giảm + giá trị hàng tặng).
+     * Dùng để so sánh các khuyến mãi cùng áp dụng cho một sản phẩm và chọn cái có lợi nhất cho khách.
+     */
+    public long tinhGiaTriUuDai(long giaBan, int soLuong) {
+        if (giaBan <= 0 || soLuong <= 0) {
+            return 0;
+        }
+
+        long giam = tinhTongTienGiam(giaBan, soLuong);
+
+        try {
+            long tienHangTang = Math.multiplyExact((long) tinhSoLuongTang(soLuong), giaBan);
+            return Math.addExact(giam, tienHangTang);
+        } catch (ArithmeticException e) {
+            return Long.MAX_VALUE;
+        }
+    }
+
+    // Tạo đối tượng khuyến mãi rỗng theo từng loại
     public abstract Khuyenmai taoKhuyenMaiRong();
 
+    // Getter và Setter
     public String getMaKM() {
         return maKM;
     }
 
     public void setMaKM(String maKM) {
-        if (maKM == null || maKM.trim().isEmpty()) {
-            throw new IllegalArgumentException("[Lỗi] Mã khuyến mãi không được để trống!");
-        }
-        this.maKM = Ktradulieu.chuanHoaMa(maKM);
+        this.maKM = chuanHoaMaKM(maKM);
     }
 
     public String getLoaiKM() {
@@ -162,6 +230,7 @@ public abstract class Khuyenmai {
         if (loaiKM == null || loaiKM.trim().isEmpty()) {
             throw new IllegalArgumentException("[Lỗi] Loại khuyến mãi không được để trống!");
         }
+
         this.loaiKM = loaiKM.trim();
     }
 
@@ -173,9 +242,11 @@ public abstract class Khuyenmai {
         if (ngayBatDau == null) {
             throw new IllegalArgumentException("[Lỗi] Ngày bắt đầu không được để trống!");
         }
-        if (this.ngayKetThuc != null && ngayBatDau.isAfter(this.ngayKetThuc)) {
+
+        if (ngayKetThuc != null && ngayKetThuc.isBefore(ngayBatDau)) {
             throw new IllegalArgumentException("[Lỗi] Ngày bắt đầu không thể sau ngày kết thúc!");
         }
+
         this.ngayBatDau = ngayBatDau;
     }
 
@@ -187,32 +258,44 @@ public abstract class Khuyenmai {
         if (ngayKetThuc == null) {
             throw new IllegalArgumentException("[Lỗi] Ngày kết thúc không được để trống!");
         }
-        if (this.ngayBatDau != null && ngayKetThuc.isBefore(this.ngayBatDau)) {
+
+        if (ngayBatDau != null && ngayKetThuc.isBefore(ngayBatDau)) {
             throw new IllegalArgumentException("[Lỗi] Ngày kết thúc không thể trước ngày bắt đầu!");
         }
+
         this.ngayKetThuc = ngayKetThuc;
     }
 
-    public long getMucChiToiThieu() {
-        return mucChiToiThieu;
-    }
-
-    public void setMucChiToiThieu(long mucChiToiThieu) {
-        if (mucChiToiThieu < 0) {
-            throw new IllegalArgumentException("[Lỗi] Mức chi tối thiểu không được âm! Nhận: " + mucChiToiThieu);
+    // Kiểm tra dữ liệu trước khi ghi file
+    private void kiemTraDuLieuGhiFile() {
+        if (maKM == null || maKM.trim().isEmpty() || loaiKM == null || loaiKM.trim().isEmpty()) {
+            throw new IllegalStateException("[Lỗi] Không thể ghi khuyến mãi chưa đủ thông tin!");
         }
-        this.mucChiToiThieu = mucChiToiThieu;
+
+        kiemTraKhoangNgay(ngayBatDau, ngayKetThuc);
     }
 
+    // Chuyển thành một dòng dữ liệu để ghi file
     public String toDongFile() {
-        return String.format("%s;%s;%s;%s;%d",
-                maKM, loaiKM, ngayBatDau.format(DINH_DANG_NGAY), ngayKetThuc.format(DINH_DANG_NGAY), mucChiToiThieu);
+        kiemTraDuLieuGhiFile();
+
+        return String.format("%s;%s;%s;%s",
+                maKM,
+                loaiKM,
+                ngayBatDau.format(DINH_DANG_NGAY),
+                ngayKetThuc.format(DINH_DANG_NGAY));
     }
 
     @Override
     public String toString() {
-        return "[" + maKM + "] " + loaiKM
-                + " | Thời gian: " + ngayBatDau.format(DINH_DANG_NGAY) + " -> " + ngayKetThuc.format(DINH_DANG_NGAY)
-                + " | Đơn tối thiểu: " + Ktradulieu.dinhDangTien(mucChiToiThieu);
+        String thoiGian;
+
+        if (ngayBatDau == null || ngayKetThuc == null) {
+            thoiGian = "Chưa thiết lập thời hạn";
+        } else {
+            thoiGian = ngayBatDau.format(DINH_DANG_NGAY) + " -> " + ngayKetThuc.format(DINH_DANG_NGAY);
+        }
+
+        return "[" + maKM + "] " + loaiKM + " | Thời gian: " + thoiGian;
     }
 }

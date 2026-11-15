@@ -82,7 +82,7 @@ public abstract class CTHoaDon {
     }
 
     public void setDonGia(double donGia) {
-        if (donGia <= 0) {
+        if (!Double.isFinite(donGia) || donGia <= 0) {
             throw new IllegalArgumentException("[Lỗi] Đơn giá phải > 0! Nhận: " + donGia);
         }
         this.donGia = donGia;

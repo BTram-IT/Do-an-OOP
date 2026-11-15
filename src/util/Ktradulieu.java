@@ -1,17 +1,22 @@
 package util;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.AtomicMoveNotSupportedException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.text.DecimalFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.time.format.ResolverStyle;
+import java.util.HashSet;
 import java.util.Scanner;
+import java.util.Set;
 
 public class Ktradulieu {
 
-    // =========================================================================
-    // CÁC REGEX THÔNG DỤNG (GIỮ NGUYÊN 100% KHÔNG ĐỔI)
-    // =========================================================================
     public static final String soNguyenRegex = "^[+-]?\\d+$";
     public static final String soThucRegex = "^[+-]?\\d+(\\.\\d+)?$";
     public static final String phoneRegex = "^(03|05|07|08|09)\\d{8}$";
@@ -27,9 +32,14 @@ public class Ktradulieu {
     // 1. NHẬP CHUỖI BẮT BUỘC THEO REGEX (HÀM GỐC 1)
     // =========================================================================
     public static String nhapChuoi(Scanner sc, String thongBao, String regex, String thongBaoLoi) {
+        if (sc == null) throw new IllegalArgumentException("Scanner không được null!");
         while (true) {
             System.out.print(thongBao);
             String input = sc.nextLine().trim();
+            if (input.indexOf(';') >= 0) {
+                System.out.println("[Lỗi] Không được nhập dấu chấm phẩy (;) vì đây là ký tự phân cách của file dữ liệu!");
+                continue;
+            }
             if (regex == null || regex.isEmpty() || input.matches(regex)) {
                 return input;
             }
@@ -41,10 +51,14 @@ public class Ktradulieu {
     // 2. NHẬP CHUỖI TÙY CHỌN (HÀM GỐC 2 - ENTER = RỖNG)
     // =========================================================================
     public static String nhapChuoiTuyChon(Scanner sc, String thongBao, String regex, String thongBaoLoi) {
-        if (sc == null) sc = new Scanner(System.in);
+        if (sc == null) throw new IllegalArgumentException("Scanner không được null!");
         while (true) {
             System.out.print(thongBao);
             String input = sc.nextLine().trim();
+            if (input.indexOf(';') >= 0) {
+                System.out.println("[Lỗi] Không được nhập dấu chấm phẩy (;) vì đây là ký tự phân cách của file dữ liệu!");
+                continue;
+            }
             if (input.isEmpty() || regex == null || input.matches(regex) || regex.isEmpty()) {
                 return input;
             }
@@ -56,7 +70,7 @@ public class Ktradulieu {
     // 3. NHẬP SỐ NGUYÊN DƯƠNG (> 0) (HÀM GỐC 3)
     // =========================================================================
     public static int nhapSoNguyen(Scanner sc, String thongBao) {
-        if (sc == null) sc = new Scanner(System.in);
+        if (sc == null) throw new IllegalArgumentException("Scanner không được null!");
         while (true) {
             System.out.print(thongBao);
             String input = sc.nextLine().trim();
@@ -76,7 +90,7 @@ public class Ktradulieu {
     // 4. NHẬP SỐ THỰC (HÀM GỐC 4)
     // =========================================================================
     public static double nhapSoThuc(Scanner sc, String thongBao) {
-        if (sc == null) sc = new Scanner(System.in);
+        if (sc == null) throw new IllegalArgumentException("Scanner không được null!");
         while (true) {
             System.out.print(thongBao);
             String input = sc.nextLine().trim();
@@ -94,7 +108,7 @@ public class Ktradulieu {
     // 5. NHẬP SỐ THỰC KHÔNG ÂM (>= 0) (HÀM GỐC 5)
     // =========================================================================
     public static double nhapSoThucKhongAm(Scanner sc, String thongBao) {
-        if (sc == null) sc = new Scanner(System.in);
+        if (sc == null) throw new IllegalArgumentException("Scanner không được null!");
         while (true) {
             System.out.print(thongBao);
             String input = sc.nextLine().trim();
@@ -114,6 +128,7 @@ public class Ktradulieu {
     // 6. NHẬP LỰA CHỌN MENU TỪ MIN ĐẾN MAX (HÀM GỐC 6)
     // =========================================================================
     public static int luaChon(Scanner sc, String thongBao, int min, int max) {
+        if (sc == null) throw new IllegalArgumentException("Scanner không được null!");
         if ( min > max )
         {
             int tam = min;
@@ -139,7 +154,7 @@ public class Ktradulieu {
     // 7. NHẬP NGÀY SINH (yyyy-MM-dd) (HÀM GỐC 7)
     // =========================================================================
     public static LocalDate nhapNgaySinh(Scanner sc, String thongBao) {
-        if (sc == null) sc = new Scanner(System.in);
+        if (sc == null) throw new IllegalArgumentException("Scanner không được null!");
         while (true) {
             System.out.print(thongBao);
             String input = sc.nextLine().trim();
@@ -159,7 +174,7 @@ public class Ktradulieu {
     // 8. NHẬP NGÀY THÔNG DỤNG (dd/MM/yyyy) (HÀM GỐC 8)
     // =========================================================================
     public static LocalDate nhapNgay(Scanner sc, String thongBao, boolean batBuoc) {
-        if (sc == null) sc = new Scanner(System.in);
+        if (sc == null) throw new IllegalArgumentException("Scanner không được null!");
         while (true) {
             System.out.print(thongBao);
             String input = sc.nextLine().trim();
@@ -167,11 +182,24 @@ public class Ktradulieu {
                 return null;
             }
             try {
-                return LocalDate.parse(input, DINH_DANG_NGAY);
+                return chuyenChuoiThanhNgay(input);
             } catch (DateTimeParseException e) {
                 System.out.println("Ngày không hợp lệ! Nhập theo định dạng dd/MM/yyyy (ví dụ: 25/10/2026).");
             }
         }
+    }
+
+    /** Đọc ngày dd/MM/yyyy tại ranh giới nhập liệu hoặc đọc file. */
+    public static LocalDate chuyenChuoiThanhNgay(String giaTri) {
+        if (giaTri == null) {
+            throw new IllegalArgumentException("Ngày không được để trống!");
+        }
+        return LocalDate.parse(giaTri.trim(), DINH_DANG_NGAY);
+    }
+
+    /** Chuyển ngày sang chuỗi chỉ khi hiển thị hoặc ghi file. */
+    public static String dinhDangNgay(LocalDate ngay) {
+        return ngay == null ? "" : ngay.format(DINH_DANG_NGAY);
     }
 
     // =========================================================================
@@ -202,7 +230,7 @@ public class Ktradulieu {
 
     /** Xác nhận Có/Không (y/n) */
     public static boolean nhapXacNhan(Scanner sc, String thongBao) {
-        if (sc == null) sc = new Scanner(System.in);
+        if (sc == null) throw new IllegalArgumentException("Scanner không được null!");
         while (true) {
             System.out.print(thongBao + " (y/n): ");
             String input = sc.nextLine().trim().toLowerCase();
@@ -261,6 +289,65 @@ public class Ktradulieu {
             return Integer.parseInt(phanSo);
         } catch (NumberFormatException e) {
             return 0;
+        }
+    }
+
+    // =========================================================================
+    // BẢO VỆ DỮ LIỆU KHI ĐỌC/GHI FILE (dùng chung cho mọi danh sách)
+    // - File đọc lỗi: sao lưu sang <file>.loi.bak, KHÔNG bị ghi đè trong phiên làm việc;
+    //   dữ liệu của phiên được ghi sang <file>.moi để không mất công việc vừa làm.
+    // - Ghi file: ghi ra file tạm rồi mới thay file thật, tránh file bị cụt khi lỗi giữa chừng.
+    // =========================================================================
+    private static final Set<String> FILE_BI_BAO_VE = new HashSet<>();
+
+    public static void danhDauFileLoi(String duongDan, String chiTiet) {
+        System.out.println("[Lỗi dữ liệu] File: " + duongDan);
+        System.out.println("              " + chiTiet);
+        try {
+            File file = new File(duongDan);
+            if (file.exists()) {
+                String bak = duongDan + ".loi.bak";
+                Files.copy(file.toPath(), Paths.get(bak), StandardCopyOption.REPLACE_EXISTING);
+                System.out.println("[Sao lưu] Đã sao lưu file gốc sang: " + bak);
+            }
+        } catch (IOException e) {
+            System.out.println("[Cảnh báo] Không thể sao lưu file lỗi: " + e.getMessage());
+        }
+        FILE_BI_BAO_VE.add(new File(duongDan).getAbsolutePath());
+        System.out.println("[Bảo vệ] File gốc sẽ KHÔNG bị ghi đè. Hãy sửa dòng lỗi rồi khởi động lại;");
+        System.out.println("         dữ liệu làm việc trong phiên này được lưu vào: " + duongDan + ".moi");
+    }
+
+    // Trả về đường dẫn thực sự được phép ghi cho file này
+    public static String duongDanGhi(String duongDan) {
+        if (FILE_BI_BAO_VE.contains(new File(duongDan).getAbsolutePath())) {
+            return duongDan + ".moi";
+        }
+        return duongDan;
+    }
+
+    // Tạo thư mục cha (nếu thiếu) và trả về file tạm để ghi
+    public static File chuanBiFileTam(String duongDanDich) {
+        File dich = new File(duongDanDich);
+        File thuMuc = dich.getAbsoluteFile().getParentFile();
+        if (thuMuc != null && !thuMuc.exists()) {
+            thuMuc.mkdirs();
+        }
+        return new File(duongDanDich + ".tmp");
+    }
+
+    public static void hoanTatGhi(File tam, String duongDanDich) throws IOException {
+        try {
+            Files.move(tam.toPath(), Paths.get(duongDanDich),
+                    StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+        } catch (AtomicMoveNotSupportedException e) {
+            Files.move(tam.toPath(), Paths.get(duongDanDich), StandardCopyOption.REPLACE_EXISTING);
+        }
+    }
+
+    public static void huyFileTam(File tam) {
+        if (tam != null && tam.exists()) {
+            tam.delete();
         }
     }
 }

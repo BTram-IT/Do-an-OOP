@@ -44,8 +44,6 @@ public abstract class ThanhToan {
         this.ngayThanhToan = null;
     }
 
-    public abstract void nhap();
-
     public abstract void nhap(Scanner sc);
 
     public abstract boolean qTrinhThanhToan();
@@ -90,7 +88,7 @@ public abstract class ThanhToan {
     }
 
     public void setSoTien(double soTien) {
-        if (soTien < 0) {
+        if (!Double.isFinite(soTien) || soTien < 0) {
             throw new IllegalArgumentException("[Lỗi] Số tiền thanh toán không được âm! Nhận: " + soTien);
         }
         this.soTien = soTien;

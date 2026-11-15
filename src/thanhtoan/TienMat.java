@@ -23,14 +23,8 @@ public class TienMat extends ThanhToan {
     }
 
     @Override
-    public void nhap() {
-        Scanner sc = new Scanner(System.in);
-        nhap(sc);
-    }
-
-    @Override
     public void nhap(Scanner sc) {
-        if (sc == null) sc = new Scanner(System.in);
+        if (sc == null) throw new IllegalArgumentException("Scanner không được null!");
 
         System.out.println("\n========== THANH TOÁN TIỀN MẶT ==========");
         System.out.println("• Mã giao dịch       : [" + this.maGD + "]");
@@ -60,7 +54,7 @@ public class TienMat extends ThanhToan {
     }
     @Override
     public boolean qTrinhThanhToan() {
-        if (this.tienKhachDua >= this.soTien && this.soTien > 0) {
+        if (this.tienKhachDua >= this.soTien && this.soTien >= 0) {
             ketThuc(true);
             System.out.println("ĐÃ HOÀN TẤT THANH TOÁN TIỀN MẶT THÀNH CÔNG.");
             return true;
@@ -74,10 +68,6 @@ public class TienMat extends ThanhToan {
         this.soTien = tongTien;
         nhap(sc);
         return isThanhCong();
-    }
-
-    public boolean thanhToan(double tongTien) {
-        return thanhToan(new Scanner(System.in), tongTien);
     }
 
     public double getTienKhachDua() {

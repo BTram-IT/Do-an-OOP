@@ -32,14 +32,8 @@ public class ChuyenKhoan extends ThanhToan {
 
 
     @Override
-    public void nhap() {
-        Scanner sc = new Scanner(System.in);
-        nhap(sc);
-    }
-
-    @Override
     public void nhap(Scanner sc) {
-        if (sc == null) sc = new Scanner(System.in);
+        if (sc == null) throw new IllegalArgumentException("Scanner không được null!");
 
         System.out.println("\n========== THANH TOÁN CHUYỂN KHOẢN ==========");
         System.out.println("• Mã giao dịch       : [" + this.maGD + "]");
@@ -94,7 +88,7 @@ public class ChuyenKhoan extends ThanhToan {
         // Hợp lệ khi đã nhập đầy đủ mã giao dịch ngân hàng và số tài khoản
         boolean hopLe = (this.maGDNganHang != null && !this.maGDNganHang.isEmpty())
                 && (this.soTKChuyen != null && !this.soTKChuyen.isEmpty())
-                && (this.soTien > 0);
+                && (this.soTien >= 0);
 
         if (hopLe) {
             ketThuc(true);
@@ -111,10 +105,6 @@ public class ChuyenKhoan extends ThanhToan {
         this.soTien = tongTien;
         nhap(sc);
         return qTrinhThanhToan();
-    }
-
-    public boolean thanhToan(double tongTien) {
-        return thanhToan(new Scanner(System.in), tongTien);
     }
 
 

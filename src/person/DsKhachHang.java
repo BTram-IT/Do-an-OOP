@@ -44,8 +44,11 @@ public class DsKhachHang {
 
     public void themTuBanPhim(Scanner sc) {
         Khachhang kh = new Khachhang();
-        kh.nhapThongTin(sc, this); // Tự hiện dòng "Nhấn / để tự tạo mã"
-        this.them(kh);
+        kh.nhapThongTin(sc, this);
+
+        if (this.them(kh)) {
+            this.ghiFile("data/khachhang.txt");
+        }
     }
 
     public boolean them(Khachhang kh) {
@@ -73,12 +76,18 @@ public class DsKhachHang {
     // xóa
     public boolean xoa(String maKH) {
         Khachhang kh = timKiem(maKH);
+
         if (kh == null) {
-            System.out.println(" Không tìm thấy khách hàng: " + maKH);
+            System.out.println("Không tìm thấy khách hàng: " + maKH);
             return false;
         }
+
         kh.setDaXoa(true);
-        System.out.println(" Đã xóa khách hàng: " + maKH);
+
+        // Cập nhật file sau khi xóa
+        ghiFile("data/khachhang.txt");
+
+        System.out.println("Đã xóa khách hàng: " + maKH);
         return true;
     }
 
@@ -129,7 +138,10 @@ public class DsKhachHang {
                         System.out.println(">> Đã cập nhật điểm tích lũy thành công!");
                         break;
                     case 0:
-                        System.out.println("Đã hoàn tất chỉnh sửa khách hàng [" + kh.getMaKH() + "].");
+                        ghiFile("data/khachhang.txt");
+
+                        System.out.println("Đã hoàn tất chỉnh sửa khách hàng ["
+                                + kh.getMaKH() + "].");
                         return true;
                 }
             } catch (IllegalArgumentException e) {
@@ -147,11 +159,14 @@ public class DsKhachHang {
 
     // ghi
     public void ghiFile(String duongDan) {
-        try (BufferedWriter bw = new BufferedWriter(new FileWriter(duongDan))) {
+        duongDan = Ktradulieu.duongDanGhi(duongDan);
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(duongDan + ".tmp"))) {
             for (Khachhang kh : danhSach) {
                 bw.write(kh.toFileString());
                 bw.newLine();
             }
+            bw.close();
+            Ktradulieu.hoanTatGhi(new File(duongDan + ".tmp"), duongDan);
             System.out.println("Đã lưu danh sách khách hàng vào file: " + duongDan);
         } catch (IOException e) {
             System.out.println("Lỗi ghi file khách hàng: " + e.getMessage());
@@ -162,6 +177,7 @@ public class DsKhachHang {
     public void docFile(String duongDan) {
         File file = new File(duongDan);
         if (!file.exists()) return;
+        java.util.List<Khachhang> banCu = new java.util.ArrayList<>(danhSach);
         danhSach.clear();
         try (BufferedReader br = new BufferedReader(new FileReader(file))) {
             String dong;
@@ -183,6 +199,8 @@ public class DsKhachHang {
             }
             System.out.println("Đã đọc thành công " + danhSach.size() + " khách hàng từ file: " + duongDan);
         } catch (Exception e) {
+            danhSach.clear(); danhSach.addAll(banCu);
+            Ktradulieu.danhDauFileLoi(duongDan, e.getMessage());
             System.out.println("Lỗi đọc file khách hàng: " + e.getMessage());
         }
     }

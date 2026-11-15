@@ -1,0 +1,66 @@
+?ã ??c thành công 5 tài kho?n t? file: data/nhanvien.txt
+?ã ??c thành công 2 khách hàng t? file: data/khachhang.txt
+?ã ??c thành công 2 nhà cung c?p t? file: data/nhacungcap.txt
+[Thành công] ?ã ??c 3 s?n ph?m t? file: data/sanpham.txt
+?ã n?p thành công 1 ch??ng trình khuy?n mãi t? file: data/khuyenmai.txt
+[Thành công] ??c file s?n ph?m khuy?n mãi! T?ng s?: 0
+[Thành công] ?ã n?p 7 hóa ??n t? file.
+
+========== BÁO CÁO - TH?NG KÊ ==========
+1. Báo cáo t?ng quan hóa ??n
+2. Th?ng kê doanh thu và chi phí nh?p hàng
+3. Báo cáo thu? VAT
+4. Th?ng kê s?n ph?m bán ???c và không bán ???c
+5. Báo cáo nhân viên và b?ng l??ng
+6. Báo cáo t?n kho
+0. Quay l?i
+========================================
+Ch?n ch?c n?ng (0-6): 
+========== BÁO CÁO NHÂN VIÊN ==========
+--------------------------------------
+Mã nhân viên: NV001
+H? tên: Nguy?n V?n An
+Ngày vào làm: 2023-01-15
+L??ng c? b?n: 5,000,000 VND
+--------------------------------------
+Mã nhân viên: NV002
+H? tên: Nguy?n Thu Trang
+Ngày vào làm: 2026-11-14
+L??ng c? b?n: 4,000,000 VND
+--------------------------------------
+T?ng s? nhân viên: 2
+======================================
+
+========== BÁO CÁO B?NG L??NG ==========
+
+--------------------------------------------------
+[B?NG TÍNH L??NG NHÂN VIÊN] Nguy?n V?n An [NV001]
+- Ngày vào làm: 2023-01-15 (45 tháng c?ng hi?n)
+- L??ng c? b?n: 5,000,000 VND
+- S? l?n t?ng thâm niên (m?i 6 tháng): 7 l?n (+ 3,500,000 VND)
+[T?ng l?nh] 8,500,000 VND
+--------------------------------------------------
+
+--------------------------------------------------
+[B?NG TÍNH L??NG NHÂN VIÊN] Nguy?n Thu Trang [NV002]
+- Ngày vào làm: 2026-11-14 (0 tháng c?ng hi?n)
+- L??ng c? b?n: 4,000,000 VND
+- S? l?n t?ng thâm niên (m?i 6 tháng): 0 l?n (+ 0 VND)
+[T?ng l?nh] 4,000,000 VND
+--------------------------------------------------
+
+========== T?NG K?T B?NG L??NG ==========
+S? nhân viên tính l??ng: 2
+T?ng qu? l??ng: 12,500,000 VND
+=========================================
+
+========== BÁO CÁO - TH?NG KÊ ==========
+1. Báo cáo t?ng quan hóa ??n
+2. Th?ng kê doanh thu và chi phí nh?p hàng
+3. Báo cáo thu? VAT
+4. Th?ng kê s?n ph?m bán ???c và không bán ???c
+5. Báo cáo nhân viên và b?ng l??ng
+6. Báo cáo t?n kho
+0. Quay l?i
+========================================
+Ch?n ch?c n?ng (0-6): AUDIT_EOF

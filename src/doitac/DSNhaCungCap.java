@@ -49,11 +49,17 @@ public class DSNhaCungCap {
     // Thêm nhà cung cấp
     public boolean them(NhaCungCap ncc) {
         if (ncc == null) return false;
+
         if (timKiem(ncc.getMaNCC()) != null) {
             System.out.println("Mã nhà cung cấp đã tồn tại!");
             return false;
         }
+
         danhSach.add(ncc);
+
+        // Lưu danh sách vào file
+        ghiFile("data/nhacungcap.txt");
+
         return true;
     }
 
@@ -86,6 +92,8 @@ public class DSNhaCungCap {
         }
 
         ncc.setDaXoa(true);
+        ghiFile("data/nhacungcap.txt");
+
         System.out.println("Đã chuyển nhà cung cấp [" + maNCC + "] sang trạng thái [NGỪNG HỢP TÁC]. Dữ liệu phiếu nhập cũ vẫn được bảo lưu.");
         return true;
     }
@@ -140,6 +148,7 @@ public class DSNhaCungCap {
                         System.out.println(">> Đã cập nhật email!");
                         break;
                     case 0:
+                        ghiFile("data/nhacungcap.txt");
                         return true;
                 }
             } catch (IllegalArgumentException e) {
@@ -162,11 +171,14 @@ public class DSNhaCungCap {
 
     // ghi
     public void ghiFile(String duongDan) {
-        try (BufferedWriter bw = new BufferedWriter(new FileWriter(duongDan))) {
+        duongDan = Ktradulieu.duongDanGhi(duongDan);
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(duongDan + ".tmp"))) {
             for (NhaCungCap ncc : danhSach) {
                 bw.write(ncc.toFileString());
                 bw.newLine();
             }
+            bw.close();
+            Ktradulieu.hoanTatGhi(new File(duongDan + ".tmp"), duongDan);
             System.out.println("Đã lưu danh sách nhà cung cấp vào file: " + duongDan);
         } catch (IOException e) {
             System.out.println(" Lỗi ghi file nhà cung cấp: " + e.getMessage());
@@ -176,6 +188,7 @@ public class DSNhaCungCap {
     public void docFile(String duongDan) {
         File file = new File(duongDan);
         if (!file.exists()) return;
+        java.util.List<NhaCungCap> banCu = new java.util.ArrayList<>(danhSach);
         danhSach.clear();
         try (BufferedReader br = new BufferedReader(new FileReader(file))) {
             String dong;
@@ -197,6 +210,8 @@ public class DSNhaCungCap {
             }
             System.out.println("Đã đọc thành công " + danhSach.size() + " nhà cung cấp từ file: " + duongDan);
         } catch (Exception e) {
+            danhSach.clear(); danhSach.addAll(banCu);
+            Ktradulieu.danhDauFileLoi(duongDan, e.getMessage());
             System.out.println("Lỗi đọc file nhà cung cấp: " + e.getMessage());
         }
     }

@@ -2,123 +2,153 @@ package khuyenmai;
 
 import java.time.LocalDate;
 import java.util.Scanner;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import util.Ktradulieu;
 
 public class KhuyenmaiPhantram extends Khuyenmai {
 
     private double phanTramGiamGia;
-    private long mucGiamToiDa; // 0 = Không giới hạn trần
 
-
+    // Constructor mặc định
     public KhuyenmaiPhantram() {
         super();
         this.phanTramGiamGia = 0;
-        this.mucGiamToiDa = 0;
         setLoaiKM("Giảm theo phần trăm");
     }
 
+    // Constructor đầy đủ
+    public KhuyenmaiPhantram(
+            String maKM,
+            String loaiKM,
+            LocalDate ngayBatDau,
+            LocalDate ngayKetThuc,
+            double phanTramGiamGia) {
+        super(
+                maKM,
+                (loaiKM == null || loaiKM.trim().isEmpty()) ? "Giảm theo phần trăm" : loaiKM,
+                ngayBatDau,
+                ngayKetThuc
+        );
+        setPhanTramGiamGia(phanTramGiamGia);
+    }
 
-    public KhuyenmaiPhantram(String maKM, String loaiKM, LocalDate ngayBatDau, LocalDate ngayKetThuc, long mucChiToiThieu, double phanTramGiamGia, long mucGiamToiDa) {
-        super(maKM, loaiKM, ngayBatDau, ngayKetThuc, mucChiToiThieu);
-        this.phanTramGiamGia = phanTramGiamGia;
-        this.mucGiamToiDa = mucGiamToiDa;
-        if (loaiKM == null || loaiKM.trim().isEmpty()) {
-            setLoaiKM("Giảm " + phanTramGiamGia + "%");
+    // Kiểm tra phần trăm giảm giá
+    private void kiemTraPhanTram(double phanTram) {
+        if (!Double.isFinite(phanTram) || phanTram <= 0 || phanTram > 100) {
+            throw new IllegalArgumentException(
+                    "[Lỗi] Phần trăm giảm phải lớn hơn 0 và không vượt quá 100%!"
+            );
         }
     }
 
+    // Hiển thị phần trăm gọn: 10.0 -> "10", 12.5 -> "12.5"
+    private String dinhDangPhanTram() {
+        return BigDecimal.valueOf(phanTramGiamGia).stripTrailingZeros().toPlainString();
+    }
 
+    // Cập nhật mô tả loại khuyến mãi
+    private void capNhatLoaiKM() {
+        if (phanTramGiamGia > 0) {
+            setLoaiKM("Giảm " + dinhDangPhanTram() + "%");
+        } else {
+            setLoaiKM("Giảm theo phần trăm");
+        }
+    }
+
+    // Nhập thông tin khuyến mãi
     @Override
     public void nhapThongTin(Scanner sc, DSKhuyenMai dsKM) {
         super.nhapThongTin(sc, dsKM);
 
         while (true) {
             try {
-                double pt = Ktradulieu.nhapSoThucKhongAm(sc, "Nhập phần trăm giảm giá (0 < % <= 100): ");
+                double pt = Ktradulieu.nhapSoThucKhongAm(
+                        sc, "Nhập phần trăm giảm giá (0 < % <= 100): "
+                );
+
                 setPhanTramGiamGia(pt);
                 break;
+
             } catch (IllegalArgumentException e) {
                 System.out.println(e.getMessage());
             }
         }
 
-        while (true) {
-            try {
-                long trantoDa = (long) Ktradulieu.nhapSoThucKhongAm(sc, "Nhập mức giảm tối đa (0 = Không giới hạn): ");
-                setMucGiamToiDa(trantoDa);
-                break;
-            } catch (IllegalArgumentException e) {
-                System.out.println(e.getMessage());
-            }
-        }
-
-        setLoaiKM("Giảm " + this.phanTramGiamGia + "%");
+        System.out.println(
+                "Đã thiết lập xong chương trình: [" + this.maKM + "] " + this.loaiKM
+        );
     }
 
-    @Override
-    public long tinhTienGiam(long giaBan) {
+    // Tính tiền giảm theo phần trăm trên một sản phẩm
+    private long tinhTienGiamTheoPhanTram(long giaBan) {
         if (giaBan <= 0 || phanTramGiamGia <= 0) {
             return 0;
         }
 
-        long tienGiam = Math.round(giaBan * phanTramGiamGia / 100.0);
-        if (mucGiamToiDa > 0) {
-            tienGiam = Math.min(tienGiam, mucGiamToiDa);
+        BigDecimal tien = BigDecimal.valueOf(giaBan);
+        BigDecimal phanTram = BigDecimal.valueOf(phanTramGiamGia);
+
+        try {
+            return tien.multiply(phanTram)
+                    .divide(
+                            BigDecimal.valueOf(100),
+                            0,
+                            RoundingMode.HALF_UP
+                    )
+                    .longValueExact();
+
+        } catch (ArithmeticException e) {
+            throw new IllegalArgumentException(
+                    "[Lỗi] Tiền giảm vượt giới hạn!", e
+            );
         }
-        return Math.min(tienGiam, giaBan);
     }
 
+    // Tính tiền giảm trên một đơn vị sản phẩm
     @Override
-    public long tinhTongTienGiam(long giaBan, int soLuong) {
-        if (giaBan <= 0 || soLuong <= 0 || phanTramGiamGia <= 0) {
+    public long tinhTienGiam(long giaBan) {
+        if (giaBan <= 0) {
             return 0;
         }
 
-        long thanhTien = Math.multiplyExact(giaBan, (long) soLuong);
-        long tongGiam = Math.round(thanhTien * phanTramGiamGia / 100.0);
-
-        if (mucGiamToiDa > 0) {
-            tongGiam = Math.min(tongGiam, mucGiamToiDa);
-        }
-        return Math.min(tongGiam, thanhTien);
+        return Math.min(
+                tinhTienGiamTheoPhanTram(giaBan),
+                giaBan
+        );
     }
 
+    // Cập nhật phần trăm giảm giá
+    public void setPhanTramGiamGia(double phanTramGiamGia) {
+        kiemTraPhanTram(phanTramGiamGia);
+        this.phanTramGiamGia = phanTramGiamGia;
+        capNhatLoaiKM();
+    }
+
+    // Getter
+    public double getPhanTramGiamGia() {
+        return phanTramGiamGia;
+    }
+
+    // Tạo đối tượng khuyến mãi rỗng
     @Override
     public Khuyenmai taoKhuyenMaiRong() {
         return new KhuyenmaiPhantram();
     }
 
+    // Ghi dữ liệu ra file
     @Override
     public String toDongFile() {
-        return "PHANTRAM;" + super.toDongFile() + ";" + phanTramGiamGia + ";" + mucGiamToiDa;
-    }
+        kiemTraPhanTram(phanTramGiamGia);
 
-    public double getPhanTramGiamGia() {
-        return phanTramGiamGia;
-    }
-
-    public void setPhanTramGiamGia(double phanTramGiamGia) {
-        if (!Double.isFinite(phanTramGiamGia) || phanTramGiamGia <= 0 || phanTramGiamGia > 100) {
-            throw new IllegalArgumentException("[Lỗi] Phần trăm giảm phải > 0 và <= 100! Nhận: " + phanTramGiamGia);
-        }
-        this.phanTramGiamGia = phanTramGiamGia;
-    }
-
-    public long getMucGiamToiDa() {
-        return mucGiamToiDa;
-    }
-
-    public void setMucGiamToiDa(long mucGiamToiDa) {
-        if (mucGiamToiDa < 0) {
-            throw new IllegalArgumentException("[Lỗi] Mức giảm tối đa không được âm! Nhận: " + mucGiamToiDa);
-        }
-        this.mucGiamToiDa = mucGiamToiDa;
+        return "PHANTRAM;"
+                + super.toDongFile()
+                + ";" + phanTramGiamGia;
     }
 
     @Override
     public String toString() {
         return super.toString()
-                + " | Giảm: " + phanTramGiamGia + "%"
-                + " | Tối đa: " + (mucGiamToiDa == 0 ? "Không giới hạn" : Ktradulieu.dinhDangTien(mucGiamToiDa));
+                + " | Giảm: " + dinhDangPhanTram() + "%";
     }
 }

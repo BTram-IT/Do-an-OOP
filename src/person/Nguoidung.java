@@ -25,12 +25,12 @@ public abstract class Nguoidung {
 
     // Constructor đầy đủ tham số
     public Nguoidung(String maND, String tenND, String taiKhoan, String matKhau, String soDienThoai, String vaiTro, boolean daXoa) {
-        this.maND = maND;
-        this.tenND = tenND;
-        this.taiKhoan = taiKhoan;
-        this.matKhau = matKhau;
-        this.soDienThoai = soDienThoai;
-        this.vaiTro = vaiTro;
+        setMaND(maND);
+        setTenND(tenND);
+        setTaiKhoan(taiKhoan);
+        setMatKhau(matKhau);
+        setSoDienThoai(soDienThoai);
+        setVaiTro(vaiTro);
         this.daXoa = daXoa;
     }
 
@@ -129,7 +129,7 @@ public abstract class Nguoidung {
     }
 
     public void setTaiKhoan(String taiKhoan) {
-        if (taiKhoan == null || taiKhoan.trim().isEmpty()) {
+        if (taiKhoan == null || taiKhoan.contains(";") || taiKhoan.trim().isEmpty()) {
             throw new IllegalArgumentException("[Lỗi] Tài khoản đăng nhập không được để trống!");
         }
         if (taiKhoan.trim().contains(" ")) {
@@ -143,7 +143,7 @@ public abstract class Nguoidung {
     }
 
     public void setMatKhau(String matKhau) {
-        if (matKhau == null || matKhau.trim().length() < 4) {
+        if (matKhau == null || matKhau.contains(";") || matKhau.trim().length() < 4) {
             throw new IllegalArgumentException("[Lỗi] Mật khẩu tối thiểu phải từ 4 ký tự trở lên!");
         }
         this.matKhau = matKhau.trim();
@@ -182,6 +182,7 @@ public abstract class Nguoidung {
     public void setDaXoa(boolean daXoa) {
         this.daXoa = daXoa;
     }
+    public abstract String toFileString();
 
     public abstract String[] getQuyenHan();
     public abstract String thucHienCongViec();

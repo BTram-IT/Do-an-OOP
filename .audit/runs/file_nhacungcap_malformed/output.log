@@ -1,0 +1,24 @@
+?ã ??c thành công 5 tài kho?n t? file: data/nhanvien.txt
+?ã ??c thành công 2 khách hàng t? file: data/khachhang.txt
+?ã ??c thành công 0 nhà cung c?p t? file: data/nhacungcap.txt
+[Thành công] ?ã ??c 3 s?n ph?m t? file: data/sanpham.txt
+?ã n?p thành công 1 ch??ng trình khuy?n mãi t? file: data/khuyenmai.txt
+[Thành công] ??c file s?n ph?m khuy?n mãi! T?ng s?: 0
+[Thành công] ?ã n?p 7 hóa ??n t? file.
+
+==============================================
+=       H? TH?NG QU?N LÝ C?A HÀNG            =
+=          TH?C ?N & N??C U?NG               =
+----------------------------------------------
+=                 ??NG NH?P                  =
+==============================================
+
+TÊN ??NG NH?P : ?ã l?u danh sách tài kho?n vào file: data/nhanvien.txt
+?ã l?u danh sách khách hàng vào file: data/khachhang.txt
+?ã l?u danh sách nhà cung c?p vào file: data/nhacungcap.txt
+?ã l?u danh sách 3 s?n ph?m vào file: data/sanpham.txt
+?ã l?u thành công 1 ch??ng trình khuy?n mãi vào file: data/khuyenmai.txt
+[Thành công] L?u file s?n ph?m khuy?n mãi t?i: data/sanphamkhuyenmai.txt
+[Thành công] ?ã l?u 7 hóa ??n vào file: data/hoadon.txt
+
+C?m ?n b?n ?ã s? d?ng ch??ng trình. T?m bi?t!

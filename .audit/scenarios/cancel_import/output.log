@@ -1,0 +1,97 @@
+Đã lưu danh sách tài khoản vào file: data/nhanvien.txt
+Đã thêm [NhanVien] [NV001] Nguyễn Văn An vào hệ thống.
+Đã lưu danh sách tài khoản vào file: data/nhanvien.txt
+Đã thêm [Quản lý] [QL001] Trần Thị Mai vào hệ thống.
+Đã lưu danh sách tài khoản vào file: data/nhanvien.txt
+Đã thêm [Giám đốc] [GD001] Lê Hoàng Long vào hệ thống.
+Đã lưu danh sách tài khoản vào file: data/nhanvien.txt
+Đã tạo và lưu 3 tài khoản ban đầu!
+Đã đọc thành công 2 nhà cung cấp từ file: data/nhacungcap.txt
+[Thông báo] Chưa tìm thấy file sản phẩm: data/sanpham.txt
+Chưa có file dữ liệu khuyến mãi tại: data/khuyenmai.txt (sẽ khởi tạo khi lưu).
+[Thông báo] Chưa có file dữ liệu sản phẩm khuyến mãi tại: data/sanphamkhuyenmai.txt
+[Thông báo] Chưa có file dữ liệu hóa đơn tại: data/hoadon.txt
+
+==============================================
+=       HỆ THỐNG QUẢN LÝ CỬA HÀNG            =
+=          THỨC ĂN & NƯỚC UỐNG               =
+----------------------------------------------
+=                 ĐĂNG NHẬP                  =
+==============================================
+
+TÊN ĐĂNG NHẬP : MẬT KHẨU       : 
+----------------------------------------------
+=           ĐĂNG NHẬP THÀNH CÔNG!              =
+  Xin chào: NhanVien - Nguyễn Văn An
+----------------------------------------------
+
+========== MENU NHÂN VIÊN ==========
+1. Quản lý kho hàng
+2. Thu ngân - Tiếp nhận khách hàng
+3. Đăng xuất
+===================================
+Chọn chức năng (1-3): 
+========== QUẢN LÝ KHO HÀNG ==========
+1. Tạo hóa đơn nhập
+2. Xem danh sách hóa đơn nhập
+3. Tra cứu hóa đơn nhập
+4. Xem danh sách sản phẩm
+5. Tìm kiếm sản phẩm
+6. Xem danh sách nhà cung cấp
+7. Thêm nhà cung cấp
+8. Tìm kiếm nhà cung cấp
+0. Quay lại menu nhân viên
+=====================================
+Chọn chức năng (0-8): 
+--- TẠO HÓA ĐƠN MỚI ---
+Nhập mã hóa đơn (Nhấn / để tự tạo mã): -> Mã tự tạo: HDN001
+Nhân viên lập đơn: [NV001] Nguyễn Văn An
+Ngày lập hóa đơn: 14/11/2026
+Nhập ghi chú hóa đơn (Enter để bỏ qua): 
+--- THÔNG TIN ĐỐI TÁC NHÀ CUNG CẤP ---
+Nhập mã nhà cung cấp (Ví dụ NCC001): -> Đã chọn NCC: NCC001
+
+========== NHẬP CHI TIẾT HÀNG NHẬP ==========
+Nhập mã sản phẩm (Ví dụ: TA001, DU001 - Nhập 0 để hủy): [Thông báo] Đã hủy thao tác nhập chi tiết hàng nhập!
+[Thông báo] Đã hủy thao tác lập phiếu nhập!
+[Thành công] Đã lưu hóa đơn [HDN001] (Hóa đơn nhập) vào hệ thống.
+[Thành công] Đã lưu 1 hóa đơn vào file: data/hoadon.txt
+Đã lưu danh sách 0 sản phẩm vào file: data/sanpham.txt
+Đã lưu danh sách nhà cung cấp vào file: data/nhacungcap.txt
+[Thành công] Đã lưu hóa đơn nhập!
+
+========== QUẢN LÝ KHO HÀNG ==========
+1. Tạo hóa đơn nhập
+2. Xem danh sách hóa đơn nhập
+3. Tra cứu hóa đơn nhập
+4. Xem danh sách sản phẩm
+5. Tìm kiếm sản phẩm
+6. Xem danh sách nhà cung cấp
+7. Thêm nhà cung cấp
+8. Tìm kiếm nhà cung cấp
+0. Quay lại menu nhân viên
+=====================================
+Chọn chức năng (0-8): 
+========== MENU NHÂN VIÊN ==========
+1. Quản lý kho hàng
+2. Thu ngân - Tiếp nhận khách hàng
+3. Đăng xuất
+===================================
+Chọn chức năng (1-3): >> Đã đăng xuất khỏi tài khoản nhân viên.
+
+==============================================
+=       HỆ THỐNG QUẢN LÝ CỬA HÀNG            =
+=          THỨC ĂN & NƯỚC UỐNG               =
+----------------------------------------------
+=                 ĐĂNG NHẬP                  =
+==============================================
+
+TÊN ĐĂNG NHẬP : Đã lưu danh sách tài khoản vào file: data/nhanvien.txt
+Đã lưu danh sách khách hàng vào file: data/khachhang.txt
+Đã lưu danh sách nhà cung cấp vào file: data/nhacungcap.txt
+Đã lưu danh sách 0 sản phẩm vào file: data/sanpham.txt
+Đã lưu thành công 0 chương trình khuyến mãi vào file: data/khuyenmai.txt
+[Thành công] Lưu file sản phẩm khuyến mãi tại: data/sanphamkhuyenmai.txt
+[Thành công] Đã lưu 1 hóa đơn vào file: data/hoadon.txt
+
+Cảm ơn bạn đã sử dụng chương trình. Tạm biệt!

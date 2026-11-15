@@ -10,6 +10,8 @@ public interface IHoaDon {
 
     void xacNhanXuLy();
 
+    String toFileString();
+
     double tinhTongTien();
 
     String inHoaDon();

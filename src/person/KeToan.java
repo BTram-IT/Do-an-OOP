@@ -21,7 +21,6 @@
 //    private DSHoadon HoaDon;
 //    private QuanlyKho quanLyKho;
 //
-//    private Scanner sc = new Scanner(System.in);
 //
 //    public KeToan() {
 //        super();

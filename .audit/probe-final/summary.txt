@@ -1,0 +1,32 @@
+PASS integer invalid retry
+PASS double nonfinite retry
+PASS strict shared date
+PASS cash insufficient retry
+FAIL loyalty points overflow rejected without mutation
+PASS percentage discount boundary
+PASS direct discount clamped
+PASS buy gift normal and overflow
+PASS sales cash checkout and no double debit
+FAIL product stock overflow rejected without mutation
+FAIL product reject price NaN
+FAIL product reject tax NaN
+FAIL product reject price Infinity
+PASS product reject tax Infinity
+PASS product reject price -Infinity
+PASS product reject tax -Infinity
+FAIL product impossible date rejected
+FAIL invalid expiry fails closed
+FAIL import parser rejects negative quantity
+FAIL import parser rejects NaN price
+FAIL import parser rejects invalid tax
+FAIL import parser rejects impossible date
+FAIL import detail locale roundtrip
+FAIL sales total finite for finite input
+PASS sales detail overflow guarded
+FAIL invoice payment persistence
+FAIL corrupt invoice file preserved
+FAIL report impossible date rejected
+BENCH products=100 insert_ms=1716.223 lookup_10000_ms=43.863
+BENCH products=1000 insert_ms=8540.375 lookup_10000_ms=132.260
+BENCH products=2000 insert_ms=54910.695 lookup_10000_ms=688.941
+SUMMARY checks=10028 failures=16

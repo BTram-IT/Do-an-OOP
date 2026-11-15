@@ -1,0 +1,17 @@
+?ã ??c thành công 5 tài kho?n t? file: data/nhanvien.txt
+?ã ??c thành công 2 khách hàng t? file: data/khachhang.txt
+?ã ??c thành công 2 nhà cung c?p t? file: data/nhacungcap.txt
+[Thành công] ?ã ??c 3 s?n ph?m t? file: data/sanpham.txt
+?ã n?p thành công 1 ch??ng trình khuy?n mãi t? file: data/khuyenmai.txt
+[Thành công] ??c file s?n ph?m khuy?n mãi! T?ng s?: 0
+[Thành công] ?ã n?p 7 hóa ??n t? file.
+
+--- 5. QU?N LÝ NHÂN VIÊN ---
+1. Xem danh sách nhân viên
+2. Tìm ki?m nhân viên
+3. Thêm nhân viên
+4. C?p nh?t thông tin nhân viên
+5. ?? xu?t sa th?i nhân viên (G?i ?? xu?t lên Giám ??c)
+6. Tính l??ng nhân viên
+0. Quay l?i
+Ch?n (0-6): Nh?p mã nhân viên tính l??ng: AUDIT_EOF

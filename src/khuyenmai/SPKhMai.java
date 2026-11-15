@@ -1,3 +1,4 @@
+
 package khuyenmai;
 
 import java.util.Scanner;
@@ -8,101 +9,138 @@ public class SPKhMai {
     private String maSP;
     private String maKM;
 
-
     public SPKhMai() {
         this.maSP = "";
         this.maKM = "";
     }
 
-
     public SPKhMai(String maSP, String maKM) {
-        this.maSP = maSP;
-        this.maKM = maKM;
+        setLienKet(maSP, maKM);
     }
 
+    // Kiểm tra mã sản phẩm
+    private String kiemTraMaSP(String maSP) {
+
+        if (maSP == null || maSP.trim().isEmpty()) {
+            throw new IllegalArgumentException(
+                    "Mã sản phẩm không được để trống!");
+        }
+
+        String maChuan = Ktradulieu.chuanHoaMa(maSP);
+
+        if (!maChuan.startsWith("TA")
+                && !maChuan.startsWith("DU")
+                && !maChuan.startsWith("SP")) {
+
+            throw new IllegalArgumentException(
+                    "Mã sản phẩm phải bắt đầu bằng TA, DU hoặc SP!");
+        }
+
+        return maChuan;
+    }
+
+    // Kiểm tra mã khuyến mãi
+    private String kiemTraMaKM(String maKM) {
+
+        if (maKM == null || maKM.trim().isEmpty()) {
+            throw new IllegalArgumentException(
+                    "Mã khuyến mãi không được để trống!");
+        }
+
+        String maChuan = Ktradulieu.chuanHoaMa(maKM);
+
+        if (!maChuan.startsWith("KM")) {
+            throw new IllegalArgumentException(
+                    "Mã khuyến mãi phải bắt đầu bằng KM!");
+        }
+
+        return maChuan;
+    }
+
+    // Cập nhật đồng thời hai mã
+    public void setLienKet(String maSP, String maKM) {
+
+        String spMoi = kiemTraMaSP(maSP);
+        String kmMoi = kiemTraMaKM(maKM);
+
+        this.maSP = spMoi;
+        this.maKM = kmMoi;
+    }
 
     public void nhap(Scanner sc) {
-        if (sc == null) sc = new Scanner(System.in);
+
+        if (sc == null) {
+            throw new IllegalArgumentException(
+                    "Scanner không được null!");
+        }
+
+        String maSPMoi;
+        String maKMMoi;
 
         while (true) {
-            System.out.print("Nhập mã sản phẩm (Ví dụ: TA001, DU001 - Nhấn / để tự tạo mã): ");
-            String input = sc.nextLine().trim();
 
-            if (input.equals("/")) {
-                this.setMaSP("TA001");
-                System.out.println("-> Ma san pham tu dong tao: " + this.maSP);
-                break;
-            }
+            System.out.print("Nhập mã sản phẩm: ");
+            maSPMoi = sc.nextLine().trim();
 
             try {
-                String maChuan = Ktradulieu.chuanHoaMa(input);
-                if (!maChuan.startsWith("TA") && !maChuan.startsWith("DU") && !maChuan.startsWith("SP")) {
-                    System.out.println("[Lỗi Định Dạng] Mã sản phẩm phải bắt đầu bằng 'TA' (Thức ăn) hoặc 'DU' (Đồ uống)! Hoặc nhấn / để tự tạo.");
-                    continue;
-                }
-                this.setMaSP(maChuan);
+                maSPMoi = kiemTraMaSP(maSPMoi);
                 break;
+
             } catch (IllegalArgumentException e) {
                 System.out.println(e.getMessage());
             }
         }
 
-
         while (true) {
-            System.out.print("Nhập mã khuyến mãi (Ví dụ: KM001 - Nhấn / để tự tạo mã): ");
-            String input = sc.nextLine().trim();
 
-            if (input.equals("/")) {
-                this.setMaKM("KM001");
-                System.out.println("-> Ma khuyen mai tu dong tao: " + this.maKM);
-                break;
-            }
+            System.out.print("Nhập mã khuyến mãi: ");
+            maKMMoi = sc.nextLine().trim();
 
             try {
-                String maChuan = Ktradulieu.chuanHoaMa(input);
-                if (!maChuan.startsWith("KM")) {
-                    System.out.println("[Lỗi Định Dạng] Mã khuyến mãi phải bắt đầu bằng 'KM' (Ví dụ: KM001, KM_TET)! Hoặc nhấn / để tự tạo.");
-                    continue;
-                }
-                this.setMaKM(maChuan);
+                maKMMoi = kiemTraMaKM(maKMMoi);
                 break;
+
             } catch (IllegalArgumentException e) {
                 System.out.println(e.getMessage());
             }
         }
+
+        setLienKet(maSPMoi, maKMMoi);
     }
 
-
     public String toDongFile() {
-        return this.maSP + ";" + this.maKM;
+
+        // Không cho ghi liên kết rỗng
+        String sp = kiemTraMaSP(this.maSP);
+        String km = kiemTraMaKM(this.maKM);
+
+        return sp + ";" + km;
     }
 
     public static SPKhMai tuDongFile(String dong) {
+
         if (dong == null || dong.trim().isEmpty()) {
             return null;
         }
 
-        String[] parts = dong.split("[;|]");
-        if (parts.length >= 2) {
-            String sp = parts[0].trim();
-            String km = parts[1].trim();
-            if (!sp.isEmpty() && !km.isEmpty()) {
-                return new SPKhMai(sp, km);
-            }
-        }
-        return null;
-    }
+        String[] parts = dong.split(";", -1);
 
+        if (parts.length != 2) {
+            throw new IllegalArgumentException(
+                    "Dòng liên kết phải có đúng 2 trường!");
+        }
+
+        return new SPKhMai(
+                parts[0].trim(),
+                parts[1].trim());
+    }
 
     public String getMaSP() {
         return maSP;
     }
 
     public void setMaSP(String maSP) {
-        if (maSP == null || maSP.trim().isEmpty()) {
-            throw new IllegalArgumentException("[Lỗi] Mã sản phẩm không được để trống!");
-        }
-        this.maSP = Ktradulieu.chuanHoaMa(maSP);
+        this.maSP = kiemTraMaSP(maSP);
     }
 
     public String getMaKM() {
@@ -110,14 +148,12 @@ public class SPKhMai {
     }
 
     public void setMaKM(String maKM) {
-        if (maKM == null || maKM.trim().isEmpty()) {
-            throw new IllegalArgumentException("[Lỗi] Mã khuyến mãi không được để trống!");
-        }
-        this.maKM = Ktradulieu.chuanHoaMa(maKM);
+        this.maKM = kiemTraMaKM(maKM);
     }
 
     @Override
     public String toString() {
-        return "San pham: " + maSP + " <---> Khuyen mai: " + maKM;
+        return "Sản phẩm: " + maSP
+                + " <--> Khuyến mãi: " + maKM;
     }
 }

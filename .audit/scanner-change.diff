@@ -1,0 +1,840 @@
+--- .audit\scanner-before\src\giaodien\Giaodien.java
++++ src\giaodien\Giaodien.java
+@@ -45,7 +45,6 @@
+     private DSHoadon dsHoaDon;
+ 
+     private Nguoidung nguoiDangNhap;
+-    private Scanner sc;
+ 
+     // =========================================================
+     // CONSTRUCTOR
+@@ -60,7 +59,6 @@
+         this.dsHoaDon = new DSHoadon();
+ 
+         this.nguoiDangNhap = null;
+-        this.sc = new Scanner(System.in);
+ 
+         docDuLieu();
+     }
+@@ -97,7 +95,7 @@
+         return Ktradulieu.nhapNgay(sc, thongBao);
+     }
+     // HÀM CHỌN KỲ BÁO CÁO DÙNG CHUNG
+-    private LocalDate[] chonKyBaoCao() {
++    private LocalDate[] chonKyBaoCao(Scanner sc) {
+ 
+         while (true) {
+             System.out.println("\n========== CHỌN KỲ BÁO CÁO ==========");
+@@ -174,21 +172,22 @@
+         }
+     }
+ 
+-    public void batDau() {
++    public void batDau(Scanner sc) {
++        if (sc == null) throw new IllegalArgumentException("Scanner không được null!");
+         while (true) {
+             try {
+-                hienThiManHinhDangNhap();
++                hienThiManHinhDangNhap(sc);
+                 if (this.nguoiDangNhap == null) {
+                     System.out.println("\nCảm ơn bạn đã sử dụng chương trình. Tạm biệt!");
+                     break;
+                 }
+ 
+                 if (this.nguoiDangNhap instanceof Giamdoc) {
+-                    menuGiamDoc();
++                    menuGiamDoc(sc);
+                 } else if (this.nguoiDangNhap instanceof QuanLyCuaHang) {
+-                    menuQuanLyCuaHang();
++                    menuQuanLyCuaHang(sc);
+                 } else if (this.nguoiDangNhap instanceof NhanVien) {
+-                    menuNhanVien();
++                    menuNhanVien(sc);
+                 }
+             } catch (NoSuchElementException e) {
+                 // Luồng nhập bị đóng (Ctrl+D / Ctrl+Z): lưu dữ liệu rồi thoát êm
+@@ -203,7 +202,7 @@
+         }
+     }
+ 
+-    public void hienThiManHinhDangNhap() {
++    public void hienThiManHinhDangNhap(Scanner sc) {
+ 
+         System.out.println();
+         System.out.println("==============================================");
+@@ -260,7 +259,7 @@
+     }
+ 
+     // 1. MENU NHÂN VIÊN
+-    public void menuNhanVien() {
++    public void menuNhanVien(Scanner sc) {
+         while (true) {
+             System.out.println("\n========== MENU NHÂN VIÊN ==========");
+             System.out.println("1. Quản lý kho hàng");
+@@ -270,8 +269,8 @@
+ 
+             int chon = Ktradulieu.luaChon(sc, "Chọn chức năng (1-3): ", 1, 3);
+             switch (chon) {
+-                case 1: menuQuanLyKhoHang(); break;
+-                case 2: menuThuNganTiepNhanKhachHang(); break;
++                case 1: menuQuanLyKhoHang(sc); break;
++                case 2: menuThuNganTiepNhanKhachHang(sc); break;
+                 case 3:
+                     System.out.println(">> Đã đăng xuất khỏi tài khoản nhân viên.");
+                     this.nguoiDangNhap = null;
+@@ -280,7 +279,7 @@
+         }
+     }
+ 
+-    public void menuQuanLyKhoHang() {
++    public void menuQuanLyKhoHang(Scanner sc) {
+         while (true) {
+             System.out.println("\n========== QUẢN LÝ KHO HÀNG ==========");
+             System.out.println("1. Tạo hóa đơn nhập");
+@@ -296,13 +295,13 @@
+ 
+             int chon = Ktradulieu.luaChon(sc, "Chọn chức năng (0-8): ", 0, 8);
+             switch (chon) {
+-                case 1: taoHoaDonNhap(); break;
++                case 1: taoHoaDonNhap(sc); break;
+                 case 2:
+                     dsHoaDon.xuatDanhSachHoaDonNhap();
+                     break;
+-                case 3: traCuuHoaDonNhap(); break;
++                case 3: traCuuHoaDonNhap(sc); break;
+                 case 4: dsSanPham.xuatDanhSach(); break;
+-                case 5: timKiemSanPham(); break;
++                case 5: timKiemSanPham(sc); break;
+                 case 6: dsNhaCungCap.xuatDanhSach(); break;
+                 case 7: {
+                     NhaCungCap ncc = new NhaCungCap();
+@@ -310,7 +309,7 @@
+                     dsNhaCungCap.them(ncc);
+                     break;
+                 }
+-                case 8: timKiemNhaCungCap(); break;
++                case 8: timKiemNhaCungCap(sc); break;
+                 case 0: return;
+                 default:
+                     System.out.println("Lựa chọn không hợp lệ");
+@@ -318,7 +317,7 @@
+         }
+     }
+ 
+-    public void menuThuNganTiepNhanKhachHang() {
++    public void menuThuNganTiepNhanKhachHang(Scanner sc) {
+         while (true) {
+             System.out.println("\n========== THU NGÂN ==========");
+             System.out.println("1. Tiếp nhận khách hàng");
+@@ -332,19 +331,19 @@
+ 
+             switch (chon) {
+                 case 1:
+-                    menuTiepNhanKhachHang();
++                    menuTiepNhanKhachHang(sc);
+                     break;
+ 
+                 case 2:
+-                    taoHoaDonBan();
++                    taoHoaDonBan(sc);
+                     break;
+ 
+                 case 3:
+-                    menuQuanLyHoaDonBan();
++                    menuQuanLyHoaDonBan(sc);
+                     break;
+ 
+                 case 4:
+-                    menuXemVaTimKiemKhuyenMai();
++                    menuXemVaTimKiemKhuyenMai(sc);
+                     break;
+ 
+                 case 0:
+@@ -353,7 +352,7 @@
+         }
+     }
+ 
+-    public void menuKiemTraHoaDonBan(Hoadonban hdb) {
++    public void menuKiemTraHoaDonBan(Scanner sc, Hoadonban hdb) {
+         while (true) {
+             System.out.println("\n========== KIỂM TRA HÓA ĐƠN ==========");
+             System.out.println("1. Thêm sản phẩm");
+@@ -391,7 +390,7 @@
+         }
+     }
+ 
+-    public void menuTiepNhanKhachHang() {
++    public void menuTiepNhanKhachHang(Scanner sc) {
+         while (true) {
+             System.out.println("\n--- TIẾP NHẬN KHÁCH HÀNG ---");
+             System.out.println("1. Tìm kiếm khách hàng");
+@@ -404,10 +403,10 @@
+ 
+             int chon = Ktradulieu.luaChon(sc, "Chọn (0-6): ", 0, 6);
+             switch (chon) {
+-                case 1: timKiemKhachHang(); break;
++                case 1: timKiemKhachHang(sc); break;
+                 case 2: dsKhachHang.xuatDanhSach(); break;
+                 case 3: dsKhachHang.themTuBanPhim(sc); break;
+-                case 4: xemLichSuMuaHangKhach(); break;
++                case 4: xemLichSuMuaHangKhach(sc); break;
+                 case 5: {
+                     String ma = Ktradulieu.nhapChuoiKhongRong(sc, "Nhập mã hoặc SĐT khách hàng cần sửa: ");
+                     dsKhachHang.sua(sc, nguoiDangNhap, ma);
+@@ -435,7 +434,7 @@
+         }
+     }
+ 
+-    public void menuXemVaTimKiemKhuyenMai() {
++    public void menuXemVaTimKiemKhuyenMai(Scanner sc) {
+         while (true) {
+             System.out.println("\n--- XEM & TÌM KIẾM KHUYẾN MÃI ---");
+             System.out.println("1. Xem danh sách khuyến mãi");
+@@ -453,7 +452,7 @@
+         }
+     }
+ 
+-    public void menuQuanLyHoaDonBan() {
++    public void menuQuanLyHoaDonBan(Scanner sc) {
+         while (true) {
+             System.out.println("\n--- QUẢN LÝ HÓA ĐƠN BÁN ---");
+             System.out.println("1. Xem danh sách hóa đơn bán");
+@@ -468,14 +467,14 @@
+                         if (hd instanceof Hoadonban) System.out.println(hd);
+                     }
+                     break;
+-                case 2: xemChiTietHoaDonBan(); break;
++                case 2: xemChiTietHoaDonBan(sc); break;
+                 case 0: return;
+             }
+         }
+     }
+ 
+     // 2. MENU QUẢN LÝ CỬA HÀNG
+-    public void menuQuanLyCuaHang() {
++    public void menuQuanLyCuaHang(Scanner sc) {
+         while (true) {
+             System.out.println("\n========== MENU QUẢN LÝ CỬA HÀNG ==========");
+             System.out.println("1. Quản lý sản phẩm");
+@@ -490,13 +489,13 @@
+ 
+             int chon = Ktradulieu.luaChon(sc, "Chọn phân hệ quản lý (0-7): ", 0, 7);
+             switch (chon) {
+-                case 1: menuQuanLySanPham(); break;
+-                case 2: menuQuanLyKhuyenMai(); break;
+-                case 3: menuQuanLyNhapKhoQuyTrinh(); break;
+-                case 4: menuQuanLyNhaCungCap(); break;
+-                case 5: menuQuanLyNhanVien(); break;
+-                case 6: menuThongKeBaoCao(); break;
+-                case 7: menuTiepNhanKhachHang(); break;
++                case 1: menuQuanLySanPham(sc); break;
++                case 2: menuQuanLyKhuyenMai(sc); break;
++                case 3: menuQuanLyNhapKhoQuyTrinh(sc); break;
++                case 4: menuQuanLyNhaCungCap(sc); break;
++                case 5: menuQuanLyNhanVien(sc); break;
++                case 6: menuThongKeBaoCao(sc); break;
++                case 7: menuTiepNhanKhachHang(sc); break;
+                 case 0:
+                     System.out.println("Đã đăng xuất.");
+                     this.nguoiDangNhap = null;
+@@ -505,7 +504,7 @@
+         }
+     }
+ 
+-    public void menuQuanLySanPham() {
++    public void menuQuanLySanPham(Scanner sc) {
+         while (true) {
+             System.out.println("\n--- 2.1. QUẢN LÝ SẢN PHẨM ---");
+             System.out.println("1. Thêm sản phẩm");
+@@ -520,7 +519,7 @@
+             switch (chon) {
+                 case 1: dsSanPham.themSanPhamTuBanPhim(sc); break;
+                 case 2: dsSanPham.xuatDanhSach(); break;
+-                case 3: timKiemSanPham(); break;
++                case 3: timKiemSanPham(sc); break;
+                 case 4: {
+                     String ma = Ktradulieu.nhapChuoiKhongRong(sc, "Nhập mã sản phẩm cần sửa: ");
+                     dsSanPham.suaSP(sc, ma, nguoiDangNhap);
+@@ -553,7 +552,7 @@
+         }
+     }
+ 
+-    public void menuQuanLyKhuyenMai() {
++    public void menuQuanLyKhuyenMai(Scanner sc) {
+         while (true) {
+             System.out.println("\n--- 2.2. QUẢN LÝ KHUYẾN MÃI ---");
+             System.out.println("1. Thêm chương trình khuyến mãi");
+@@ -618,7 +617,7 @@
+         }
+     }
+ 
+-    public void menuQuanLyNhapKhoQuyTrinh() {
++    public void menuQuanLyNhapKhoQuyTrinh(Scanner sc) {
+         while (true) {
+             System.out.println("\n--- 3. QUẢN LÝ NHẬP KHO ---");
+             System.out.println("1. Xem danh sách hóa đơn nhập kho chờ duyệt");
+@@ -644,13 +643,13 @@
+                 case 3:
+                     dsHoaDon.xuatDanhSachHoaDonNhap();
+                     break;
+-                case 4: traCuuHoaDonNhap(); break;
++                case 4: traCuuHoaDonNhap(sc); break;
+                 case 0: return;
+             }
+         }
+     }
+ 
+-    public void menuQuanLyNhaCungCap() {
++    public void menuQuanLyNhaCungCap(Scanner sc) {
+         while (true) {
+             System.out.println("\n--- 4. QUẢN LÝ NHÀ CUNG CẤP ---");
+             System.out.println("1. Thêm nhà cung cấp");
+@@ -669,7 +668,7 @@
+                     break;
+                 }
+                 case 2: dsNhaCungCap.xuatDanhSach(); break;
+-                case 3: timKiemNhaCungCap(); break;
++                case 3: timKiemNhaCungCap(sc); break;
+                 case 4: {
+                     String ma = Ktradulieu.nhapChuoiKhongRong(sc, "Nhập mã NCC: ");
+                     dsNhaCungCap.sua(sc, nguoiDangNhap, ma);
+@@ -693,7 +692,7 @@
+         }
+     }
+ 
+-    public void menuQuanLyNhanVien() {
++    public void menuQuanLyNhanVien(Scanner sc) {
+         while (true) {
+             System.out.println("\n--- 5. QUẢN LÝ NHÂN VIÊN ---");
+             System.out.println("1. Xem danh sách nhân viên");
+@@ -727,7 +726,7 @@
+                 }
+ 
+                 case 3:
+-                    themNhanVien();
++                    themNhanVien(sc);
+                     break;
+ 
+                 case 4: {
+@@ -762,7 +761,7 @@
+         }
+     }
+ 
+-    public void menuThongKeBaoCao() {
++    public void menuThongKeBaoCao(Scanner sc) {
+         while (true) {
+             System.out.println("\n================ MENU BÁO CÁO ================");
+             System.out.println("1. Báo cáo tổng quan hóa đơn");
+@@ -778,7 +777,7 @@
+             switch (chon) {
+                 case 1: {
+                     if (nguoiDangNhap instanceof QuanLyCuaHang) {
+-                        LocalDate[] ky = chonKyBaoCao();
++                        LocalDate[] ky = chonKyBaoCao(sc);
+                         if (ky != null) {
+                             ((QuanLyCuaHang) nguoiDangNhap)
+                                     .thongKeTongQuanHoaDon(
+@@ -789,7 +788,7 @@
+                 }
+                 case 2: {
+                     if (nguoiDangNhap instanceof QuanLyCuaHang) {
+-                        LocalDate[] ky = chonKyBaoCao();
++                        LocalDate[] ky = chonKyBaoCao(sc);
+ 
+                         if (ky != null) {
+                             ((QuanLyCuaHang) nguoiDangNhap).thongKeDoanhThuLoiNhuan(dsHoaDon, ky[0], ky[1]);
+@@ -799,7 +798,7 @@
+                 }
+                 case 3: {
+                     if (nguoiDangNhap instanceof QuanLyCuaHang) {
+-                        LocalDate[] ky = chonKyBaoCao();
++                        LocalDate[] ky = chonKyBaoCao(sc);
+ 
+                         if (ky != null) {
+                             ((QuanLyCuaHang) nguoiDangNhap)
+@@ -810,7 +809,7 @@
+                 }
+                 case 4: {
+                     if (nguoiDangNhap instanceof QuanLyCuaHang) {
+-                        LocalDate[] ky = chonKyBaoCao();
++                        LocalDate[] ky = chonKyBaoCao(sc);
+ 
+                         if (ky != null) {
+                             ((QuanLyCuaHang) nguoiDangNhap)
+@@ -847,7 +846,7 @@
+             }
+         }
+     }
+-    public void menuQuanLyNhanSuGiamDoc() {
++    public void menuQuanLyNhanSuGiamDoc(Scanner sc) {
+         while (true) {
+             System.out.println("\n========== QUẢN LÝ NHÂN SỰ ==========");
+             System.out.println("1. Xem danh sách nhân sự");
+@@ -876,11 +875,11 @@
+                     break;
+ 
+                 case 3:
+-                    themNhanVien();
++                    themNhanVien(sc);
+                     break;
+ 
+                 case 4:
+-                    themQuanLy();
++                    themQuanLy(sc);
+                     break;
+ 
+                 case 0:
+@@ -890,7 +889,7 @@
+     }
+ 
+     // MENU BÁO CÁO - THỐNG KÊ CỦA GIÁM ĐỐC
+-    public void menuBaoCaoThongKeGiamDoc() {
++    public void menuBaoCaoThongKeGiamDoc(Scanner sc) {
+         while (true) {
+             System.out.println("\n========== BÁO CÁO - THỐNG KÊ ==========");
+             System.out.println("1. Báo cáo tổng quan hóa đơn");
+@@ -930,7 +929,7 @@
+ 
+             switch (chon) {
+                 case 1: {
+-                    LocalDate[] ky = chonKyBaoCao();
++                    LocalDate[] ky = chonKyBaoCao(sc);
+ 
+                     if (ky != null) {
+                         baoCao.thongKeTongQuanHoaDon(
+@@ -940,7 +939,7 @@
+                 }
+ 
+                 case 2: {
+-                    LocalDate[] ky = chonKyBaoCao();
++                    LocalDate[] ky = chonKyBaoCao(sc);
+ 
+                     if (ky != null) {
+                         baoCao.thongKeDoanhThuLoiNhuan(
+@@ -950,7 +949,7 @@
+                 }
+ 
+                 case 3: {
+-                    LocalDate[] ky = chonKyBaoCao();
++                    LocalDate[] ky = chonKyBaoCao(sc);
+ 
+                     if (ky != null) {
+                         baoCao.thongKeThue(
+@@ -960,7 +959,7 @@
+                 }
+ 
+                 case 4: {
+-                    LocalDate[] ky = chonKyBaoCao();
++                    LocalDate[] ky = chonKyBaoCao(sc);
+ 
+                     if (ky != null) {
+                         baoCao.thongKeSanPhamBanDuoc(
+@@ -984,7 +983,7 @@
+     }
+ 
+     // 3. MENU GIÁM ĐỐC
+-    public void menuGiamDoc() {
++    public void menuGiamDoc(Scanner sc) {
+         while (true) {
+             System.out.println("\n========== MENU GIÁM ĐỐC ==========");
+             System.out.println("1. Quản lý nhân sự");
+@@ -997,11 +996,11 @@
+ 
+             switch (chon) {
+                 case 1:
+-                    menuQuanLyNhanSuGiamDoc();
++                    menuQuanLyNhanSuGiamDoc(sc);
+                     break;
+ 
+                 case 2:
+-                    menuBaoCaoThongKeGiamDoc();
++                    menuBaoCaoThongKeGiamDoc(sc);
+                     break;
+                 case 3:
+                     if (nguoiDangNhap instanceof Giamdoc) {
+@@ -1030,7 +1029,7 @@
+         return null;
+     }
+ 
+-    public void taoHoaDonNhap() {
++    public void taoHoaDonNhap(Scanner sc) {
+         NhanVien nvLap = layNhanVienThaoTac();
+ 
+         if (nvLap == null) {
+@@ -1051,7 +1050,7 @@
+         }
+     }
+ 
+-    public void taoHoaDonBan() {
++    public void taoHoaDonBan(Scanner sc) {
+         NhanVien nvLap = layNhanVienThaoTac();
+ 
+         if (nvLap == null) {
+@@ -1105,7 +1104,7 @@
+                     break;
+ 
+                 case 2:
+-                    menuKiemTraHoaDonBan(hdb);
++                    menuKiemTraHoaDonBan(sc, hdb);
+                     break;
+ 
+                 case 3:
+@@ -1133,7 +1132,7 @@
+         }
+     }
+ 
+-    public void timKiemSanPham() {
++    public void timKiemSanPham(Scanner sc) {
+         String key = Ktradulieu.nhapChuoiKhongRong(sc, "Nhập mã hoặc tên sản phẩm: ").toLowerCase();
+         int dem = 0;
+         System.out.println("\n============ KẾT QUẢ TÌM KIẾM SẢN PHẨM ============");
+@@ -1148,19 +1147,19 @@
+         System.out.println("==================================================");
+     }
+ 
+-    public void timKiemNhaCungCap() {
++    public void timKiemNhaCungCap(Scanner sc) {
+         String key = Ktradulieu.nhapChuoiKhongRong(sc, "Nhập mã hoặc tên NCC: ");
+         NhaCungCap ncc = dsNhaCungCap.timKiem(key);
+         System.out.println(ncc != null ? "\nKết quả: " + ncc.toString() : "Không tìm thấy nhà cung cấp: " + key);
+     }
+ 
+-    public void timKiemKhachHang() {
++    public void timKiemKhachHang(Scanner sc) {
+         String key = Ktradulieu.nhapChuoiKhongRong(sc, "Nhập mã hoặc SĐT: ");
+         Khachhang kh = dsKhachHang.timKiem(key);
+         System.out.println(kh != null ? "\nThông tin: " + kh.toString() : "Không tìm thấy khách hàng: " + key);
+     }
+ 
+-    public void xemLichSuMuaHangKhach() {
++    public void xemLichSuMuaHangKhach(Scanner sc) {
+         String key = Ktradulieu.nhapChuoiKhongRong(sc, "Nhập mã hoặc SĐT: ");
+         Khachhang kh = dsKhachHang.timKiem(key);
+         if (kh == null) {
+@@ -1180,7 +1179,7 @@
+         if (dem == 0) System.out.println("Khách hàng này chưa có đơn mua hàng nào.");
+     }
+ 
+-    public void traCuuHoaDonNhap() {
++    public void traCuuHoaDonNhap(Scanner sc) {
+         String ma = Ktradulieu.nhapChuoiKhongRong(sc, "Nhập mã hóa đơn nhập: ");
+         HoaDon hd = dsHoaDon.timKiem(ma);
+         if (hd instanceof HoadonNhap) {
+@@ -1191,7 +1190,7 @@
+         }
+     }
+ 
+-    public void xemChiTietHoaDonBan() {
++    public void xemChiTietHoaDonBan(Scanner sc) {
+         String ma = Ktradulieu.nhapChuoiKhongRong(sc, "Nhập mã hóa đơn bán: ");
+         HoaDon hd = dsHoaDon.timKiem(ma);
+         if (hd instanceof Hoadonban) {
+@@ -1229,7 +1228,7 @@
+             }
+         }
+     }
+-    private void themNhanVien() {
++    private void themNhanVien(Scanner sc) {
+ 
+         if (!(nguoiDangNhap instanceof Giamdoc)
+                 && !(nguoiDangNhap instanceof QuanLyCuaHang)) {
+@@ -1248,7 +1247,7 @@
+     }
+ 
+     // Thêm quản lý cửa hàng - Chỉ Giám đốc được phép
+-    private void themQuanLy() {
++    private void themQuanLy(Scanner sc) {
+ 
+         if (!(nguoiDangNhap instanceof Giamdoc)) {
+             System.out.println("[Lỗi] Chỉ Giám đốc mới có quyền thêm quản lý!");
+--- .audit\scanner-before\src\giaodien\Main.java
++++ src\giaodien\Main.java
+@@ -1,9 +1,12 @@
+ package giaodien;
+ 
++import java.util.Scanner;
+ 
+ public class Main {
+     public static void main(String[] args) {
+-        Giaodien giaoDien = new Giaodien();
+-        giaoDien.batDau();
++        try (Scanner sc = new Scanner(System.in)) {
++            Giaodien giaoDien = new Giaodien();
++            giaoDien.batDau(sc);
++        }
+     }
+-}+}
+--- .audit\scanner-before\src\hoadon\CTHDBan.java
++++ src\hoadon\CTHDBan.java
+@@ -54,7 +54,7 @@
+     // ================= NHẬP THÔNG TIN =================
+ 
+     public boolean nhapThongTin(Scanner sc, String maHoaDon, DSSanPham dsSP, DSKhuyenMai dsKM, DSSanPhamKhuyenMai dsSPKM) {
+-        if (sc == null) sc = new Scanner(System.in);
++        if (sc == null) throw new IllegalArgumentException("Scanner không được null!");
+         if (dsSP == null) {
+             System.out.println("[Lỗi] Danh mục sản phẩm không tồn tại!");
+             return false;
+--- .audit\scanner-before\src\hoadon\CTHDonNhap.java
++++ src\hoadon\CTHDonNhap.java
+@@ -98,7 +98,7 @@
+     }
+ 
+     public boolean nhapThongTin(Scanner sc, String maHoaDon, DSSanPham dsSP, Nguoidung nguoiDungDangNhap) {
+-        if (sc == null) sc = new Scanner(System.in);
++        if (sc == null) throw new IllegalArgumentException("Scanner không được null!");
+         if (maHoaDon == null || maHoaDon.trim().isEmpty()) {
+             System.out.println("[Lỗi] Dữ liệu nhập hàng không hợp lệ!");
+             return false;
+--- .audit\scanner-before\src\hoadon\Hoadonban.java
++++ src\hoadon\Hoadonban.java
+@@ -387,7 +387,7 @@
+                                 DSHoadon dsHD, DsKhachHang dsKH, DSSanPham dsSP,
+                                 DSKhuyenMai dsKM, DSSanPhamKhuyenMai dsSPKM) {
+ 
+-        if (sc == null) sc = new Scanner(System.in);
++        if (sc == null) throw new IllegalArgumentException("Scanner không được null!");
+ 
+         // Chỉ khởi tạo thông tin hóa đơn
+         super.nhapThongTin(sc, nhanVienDangNhap, dsHD);
+--- .audit\scanner-before\src\hoadon\HoadonNhap.java
++++ src\hoadon\HoadonNhap.java
+@@ -192,7 +192,7 @@
+     public String getLoaiHD() { return "Hóa đơn nhập"; }
+ 
+     public boolean nhapThongTin(Scanner sc, NhanVien nhanVienDangNhap, DSHoadon dsHD, DSNhaCungCap dsNCC, DSSanPham dsSP, Nguoidung nguoiDungDangNhap) {
+-        if (sc == null) sc = new Scanner(System.in);
++        if (sc == null) throw new IllegalArgumentException("Scanner không được null!");
+         super.nhapThongTin(sc, nhanVienDangNhap, dsHD);
+ 
+         System.out.println("\n--- THÔNG TIN ĐỐI TÁC NHÀ CUNG CẤP ---");
+--- .audit\scanner-before\src\person\KeToan.java
++++ src\person\KeToan.java
+@@ -21,7 +21,6 @@
+ //    private DSHoadon HoaDon;
+ //    private QuanlyKho quanLyKho;
+ //
+-//    private Scanner sc = new Scanner(System.in);
+ //
+ //    public KeToan() {
+ //        super();
+@@ -838,4 +837,4 @@
+ //            }
+ //        } while (chon != 0);
+ //    }
+-//}+//}
+--- .audit\scanner-before\src\sanpham\DoUong.java
++++ src\sanpham\DoUong.java
+@@ -10,7 +10,6 @@
+     private String thuongHieu;
+     private String huongVi;
+     private String loaiDoUong;
+-    Scanner sc = new Scanner(System.in);
+ 
+     // Constructor đầy đủ
+     public DoUong(String maSP, String tenSP, double donGiaNhap, double donGiaBan, int soLuongTon,
+--- .audit\scanner-before\src\sanpham\SanPham.java
++++ src\sanpham\SanPham.java
+@@ -21,7 +21,6 @@
+     protected int soLuongHetHan;
+     protected boolean daXoa;
+     protected double phanTramThue;
+-    private Scanner sc=new Scanner(System.in);
+ 
+     public SanPham(String maSP, String tenSP, double donGiaNhap, double donGiaBan, int soLuongTon,
+                    String donViTinh, LocalDate nsx, LocalDate hsd, double phanTramThue, String trangThaiDuyet, boolean daXoa) {
+@@ -191,7 +190,7 @@
+ 
+     public boolean kiemTraHanSuDung() {
+         if (this.hsd == null) {
+-            return true;
++            return false;
+         }
+ 
+         if (LocalDate.now().isAfter(this.hsd)) {
+--- .audit\scanner-before\src\sanpham\ThucAn.java
++++ src\sanpham\ThucAn.java
+@@ -10,7 +10,6 @@
+     private String baoQuan;
+     private String xuatXu;
+     private boolean laDoChay;
+-    Scanner sc = new Scanner(System.in);
+ 
+     // Constructor đầy đủ
+     public ThucAn(String maSP, String tenSP, double donGiaNhap, double donGiaBan, int soLuongTon,
+--- .audit\scanner-before\src\thanhtoan\ChuyenKhoan.java
++++ src\thanhtoan\ChuyenKhoan.java
+@@ -32,14 +32,8 @@
+ 
+ 
+     @Override
+-    public void nhap() {
+-        Scanner sc = new Scanner(System.in);
+-        nhap(sc);
+-    }
+-
+-    @Override
+     public void nhap(Scanner sc) {
+-        if (sc == null) sc = new Scanner(System.in);
++        if (sc == null) throw new IllegalArgumentException("Scanner không được null!");
+ 
+         System.out.println("\n========== THANH TOÁN CHUYỂN KHOẢN ==========");
+         System.out.println("• Mã giao dịch       : [" + this.maGD + "]");
+@@ -113,10 +107,6 @@
+         return qTrinhThanhToan();
+     }
+ 
+-    public boolean thanhToan(double tongTien) {
+-        return thanhToan(new Scanner(System.in), tongTien);
+-    }
+-
+ 
+     public String getMaGDNganHang() {
+         return maGDNganHang;
+@@ -171,4 +161,4 @@
+         return super.toString() + " | Ngân hàng: " + tenNganHang + " (STK: " + soTKChuyen + " - " + tenNguoiChuyen + ")"
+                 + " | Mã GD NH: " + maGDNganHang;
+     }
+-}+}
+--- .audit\scanner-before\src\thanhtoan\ThanhToan.java
++++ src\thanhtoan\ThanhToan.java
+@@ -43,8 +43,6 @@
+         this.trangThai = CHO_THANH_TOAN;
+         this.ngayThanhToan = null;
+     }
+-
+-    public abstract void nhap();
+ 
+     public abstract void nhap(Scanner sc);
+ 
+@@ -125,4 +123,4 @@
+         return String.format("[%s] Mã GD: %s | Số tiền: %s | Trạng thái: %s | Thu ngân: %s | Lúc: %s",
+                 loaiThanhToan, maGD, Ktradulieu.dinhDangTien(soTien), trangThai, maNV, ngay);
+     }
+-}+}
+--- .audit\scanner-before\src\thanhtoan\TienMat.java
++++ src\thanhtoan\TienMat.java
+@@ -23,14 +23,8 @@
+     }
+ 
+     @Override
+-    public void nhap() {
+-        Scanner sc = new Scanner(System.in);
+-        nhap(sc);
+-    }
+-
+-    @Override
+     public void nhap(Scanner sc) {
+-        if (sc == null) sc = new Scanner(System.in);
++        if (sc == null) throw new IllegalArgumentException("Scanner không được null!");
+ 
+         System.out.println("\n========== THANH TOÁN TIỀN MẶT ==========");
+         System.out.println("• Mã giao dịch       : [" + this.maGD + "]");
+@@ -76,10 +70,6 @@
+         return isThanhCong();
+     }
+ 
+-    public boolean thanhToan(double tongTien) {
+-        return thanhToan(new Scanner(System.in), tongTien);
+-    }
+-
+     public double getTienKhachDua() {
+         return tienKhachDua;
+     }
+@@ -108,4 +98,4 @@
+                 + " | Khách đưa: " + Ktradulieu.dinhDangTien(tienKhachDua)
+                 + " | Tiền thối: " + Ktradulieu.dinhDangTien(tienThoi);
+     }
+-}+}
+--- .audit\scanner-before\src\util\Ktradulieu.java
++++ src\util\Ktradulieu.java
+@@ -32,6 +32,7 @@
+     // 1. NHẬP CHUỖI BẮT BUỘC THEO REGEX (HÀM GỐC 1)
+     // =========================================================================
+     public static String nhapChuoi(Scanner sc, String thongBao, String regex, String thongBaoLoi) {
++        if (sc == null) throw new IllegalArgumentException("Scanner không được null!");
+         while (true) {
+             System.out.print(thongBao);
+             String input = sc.nextLine().trim();
+@@ -50,7 +51,7 @@
+     // 2. NHẬP CHUỖI TÙY CHỌN (HÀM GỐC 2 - ENTER = RỖNG)
+     // =========================================================================
+     public static String nhapChuoiTuyChon(Scanner sc, String thongBao, String regex, String thongBaoLoi) {
+-        if (sc == null) sc = new Scanner(System.in);
++        if (sc == null) throw new IllegalArgumentException("Scanner không được null!");
+         while (true) {
+             System.out.print(thongBao);
+             String input = sc.nextLine().trim();
+@@ -69,7 +70,7 @@
+     // 3. NHẬP SỐ NGUYÊN DƯƠNG (> 0) (HÀM GỐC 3)
+     // =========================================================================
+     public static int nhapSoNguyen(Scanner sc, String thongBao) {
+-        if (sc == null) sc = new Scanner(System.in);
++        if (sc == null) throw new IllegalArgumentException("Scanner không được null!");
+         while (true) {
+             System.out.print(thongBao);
+             String input = sc.nextLine().trim();
+@@ -89,7 +90,7 @@
+     // 4. NHẬP SỐ THỰC (HÀM GỐC 4)
+     // =========================================================================
+     public static double nhapSoThuc(Scanner sc, String thongBao) {
+-        if (sc == null) sc = new Scanner(System.in);
++        if (sc == null) throw new IllegalArgumentException("Scanner không được null!");
+         while (true) {
+             System.out.print(thongBao);
+             String input = sc.nextLine().trim();
+@@ -107,7 +108,7 @@
+     // 5. NHẬP SỐ THỰC KHÔNG ÂM (>= 0) (HÀM GỐC 5)
+     // =========================================================================
+     public static double nhapSoThucKhongAm(Scanner sc, String thongBao) {
+-        if (sc == null) sc = new Scanner(System.in);
++        if (sc == null) throw new IllegalArgumentException("Scanner không được null!");
+         while (true) {
+             System.out.print(thongBao);
+             String input = sc.nextLine().trim();
+@@ -127,6 +128,7 @@
+     // 6. NHẬP LỰA CHỌN MENU TỪ MIN ĐẾN MAX (HÀM GỐC 6)
+     // =========================================================================
+     public static int luaChon(Scanner sc, String thongBao, int min, int max) {
++        if (sc == null) throw new IllegalArgumentException("Scanner không được null!");
+         if ( min > max )
+         {
+             int tam = min;
+@@ -152,7 +154,7 @@
+     // 7. NHẬP NGÀY SINH (yyyy-MM-dd) (HÀM GỐC 7)
+     // =========================================================================
+     public static LocalDate nhapNgaySinh(Scanner sc, String thongBao) {
+-        if (sc == null) sc = new Scanner(System.in);
++        if (sc == null) throw new IllegalArgumentException("Scanner không được null!");
+         while (true) {
+             System.out.print(thongBao);
+             String input = sc.nextLine().trim();
+@@ -172,7 +174,7 @@
+     // 8. NHẬP NGÀY THÔNG DỤNG (dd/MM/yyyy) (HÀM GỐC 8)
+     // =========================================================================
+     public static LocalDate nhapNgay(Scanner sc, String thongBao, boolean batBuoc) {
+-        if (sc == null) sc = new Scanner(System.in);
++        if (sc == null) throw new IllegalArgumentException("Scanner không được null!");
+         while (true) {
+             System.out.print(thongBao);
+             String input = sc.nextLine().trim();
+@@ -228,7 +230,7 @@
+ 
+     /** Xác nhận Có/Không (y/n) */
+     public static boolean nhapXacNhan(Scanner sc, String thongBao) {
+-        if (sc == null) sc = new Scanner(System.in);
++        if (sc == null) throw new IllegalArgumentException("Scanner không được null!");
+         while (true) {
+             System.out.print(thongBao + " (y/n): ");
+             String input = sc.nextLine().trim().toLowerCase();
+--- .audit\scanner-before\audit\AuditProbe.java
++++ audit\AuditProbe.java
+@@ -41,7 +41,7 @@
+             Field f = Giaodien.class.getDeclaredField("nguoiDangNhap"); f.setAccessible(true);
+             f.set(g, args[2].equals("director") ? new Giamdoc() : args[2].equals("manager") ? new QuanLyCuaHang() : new NhanVien());
+             try {
+-                Giaodien.class.getMethod(args[1]).invoke(g);
++                Giaodien.class.getMethod(args[1], Scanner.class).invoke(g, new Scanner(System.in));
+                 System.out.println("AUDIT_RETURN");
+             } catch (InvocationTargetException e) {
+                 if (e.getCause() instanceof NoSuchElementException) System.out.println("AUDIT_EOF");

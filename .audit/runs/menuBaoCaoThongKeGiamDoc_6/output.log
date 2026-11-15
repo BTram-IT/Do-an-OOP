@@ -1,0 +1,48 @@
+?ã ??c thành công 5 tài kho?n t? file: data/nhanvien.txt
+?ã ??c thành công 2 khách hàng t? file: data/khachhang.txt
+?ã ??c thành công 2 nhà cung c?p t? file: data/nhacungcap.txt
+[Thành công] ?ã ??c 3 s?n ph?m t? file: data/sanpham.txt
+?ã n?p thành công 1 ch??ng trình khuy?n mãi t? file: data/khuyenmai.txt
+[Thành công] ??c file s?n ph?m khuy?n mãi! T?ng s?: 0
+[Thành công] ?ã n?p 7 hóa ??n t? file.
+
+========== BÁO CÁO - TH?NG KÊ ==========
+1. Báo cáo t?ng quan hóa ??n
+2. Th?ng kê doanh thu và chi phí nh?p hàng
+3. Báo cáo thu? VAT
+4. Th?ng kê s?n ph?m bán ???c và không bán ???c
+5. Báo cáo nhân viên và b?ng l??ng
+6. Báo cáo t?n kho
+0. Quay l?i
+========================================
+Ch?n ch?c n?ng (0-6): 
+---------------- BÁO CÁO T?N KHO & C?NH BÁO HÀNG HÓA ----------------
+
+========== DANH SÁCH S?N PH?M AN TOÀN ==========
+STT   | MÃ SP        | TÊN S?N PH?M              | T?N KHO      | ??N V?      
+--------------------------------------------------------------------------
+1     | TA001        | Gà Rán                    | 25           | cái         
+2     | DU001        | Trà S?a Khoai Môn         | 27           | chai        
+3     | TA002        | Bánh G?o                  | 20           | h?p         
+
+========== DANH SÁCH S?N PH?M C?N NH?P B? SUNG ==========
+STT   | MÃ SP        | TÊN S?N PH?M              | T?N KHO      | ??N V?      
+--------------------------------------------------------------------------
+Không có s?n ph?m nào c?n nh?p b? sung.
+
+======================= T?NG K?T =======================
+- T?ng s? m?t hàng qu?n lý: 3
+- S? m?t hàng an toàn: 3
+- S? m?t hàng c?n nh?p b? sung ngay (<= 10): 0
+========================================================
+
+========== BÁO CÁO - TH?NG KÊ ==========
+1. Báo cáo t?ng quan hóa ??n
+2. Th?ng kê doanh thu và chi phí nh?p hàng
+3. Báo cáo thu? VAT
+4. Th?ng kê s?n ph?m bán ???c và không bán ???c
+5. Báo cáo nhân viên và b?ng l??ng
+6. Báo cáo t?n kho
+0. Quay l?i
+========================================
+Ch?n ch?c n?ng (0-6): AUDIT_EOF

@@ -1,24 +1,40 @@
 package person;
 
-import sanpham.DSSanPham;
+import java.time.LocalDate;
+
 import hoadon.DSHoadon;
+import sanpham.DSSanPham;
 
 public interface Thongke {
 
-    // 1. THỐNG KÊ DOANH THU & LỢI NHUẬN
-    void thongKeDoanhThuLoiNhuan(DSHoadon dsHD);
+    void thongKeDoanhThuLoiNhuan(
+            DSHoadon dsHD, LocalDate tuNgay, LocalDate denNgay);
 
-    // 2. THỐNG KÊ THUẾ
-    void thongKeThue(DSHoadon dsHD);
+    void thongKeThue(
+            DSHoadon dsHD, LocalDate tuNgay, LocalDate denNgay);
 
-    // 3. THỐNG KÊ SẢN PHẨM BÁN ĐƯỢC
-    void thongKeSanPhamBanDuoc(DSHoadon dsHD);
+    void thongKeSanPhamBanDuoc(
+            DSHoadon dsHD, DSSanPham dsSP,
+            LocalDate tuNgay, LocalDate denNgay);
 
-    // 4. THỐNG KÊ TỒN KHO & CẢNH BÁO HẾT HẠN
-    String thongKeTonKho(DSSanPham dsSP);
+    void thongKeTonKho(DSSanPham dsSP);
 
-    // 5. BÁO CÁO TOÀN DIỆN THEO THÁNG, QUÝ, NĂM
     void baoCaoTheoThang(DSHoadon dsHD, int thang, int nam);
+
     void baoCaoTheoQuy(DSHoadon dsHD, int quy, int nam);
+
     void baoCaoTheoNam(DSHoadon dsHD, int nam);
+
+    void thongKeKhachHang(
+            DSHoadon dsHD, DsKhachHang dsKH,
+            LocalDate tuNgay, LocalDate denNgay);
+
+    // Thống kê nhân viên
+    void thongKeNhanVien(DSNhanVien dsNV);
+
+    // Thống kê bảng lương
+    void thongKeBangLuong(DSNhanVien dsNV);
+
+    // Gộp thống kê nhân viên và bảng lương
+    void thongKeNhanVienVaBangLuong(DSNhanVien dsNV);
 }

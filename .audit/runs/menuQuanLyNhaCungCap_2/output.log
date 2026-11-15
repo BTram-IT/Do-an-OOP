@@ -1,0 +1,29 @@
+?ã ??c thành công 5 tài kho?n t? file: data/nhanvien.txt
+?ã ??c thành công 2 khách hàng t? file: data/khachhang.txt
+?ã ??c thành công 2 nhà cung c?p t? file: data/nhacungcap.txt
+[Thành công] ?ã ??c 3 s?n ph?m t? file: data/sanpham.txt
+?ã n?p thành công 1 ch??ng trình khuy?n mãi t? file: data/khuyenmai.txt
+[Thành công] ??c file s?n ph?m khuy?n mãi! T?ng s?: 0
+[Thành công] ?ã n?p 7 hóa ??n t? file.
+
+--- 4. QU?N LÝ NHÀ CUNG C?P ---
+1. Thêm nhà cung c?p
+2. Xem danh sách nhà cung c?p
+3. Tìm ki?m nhà cung c?p
+4. C?p nh?t thông tin nhà cung c?p
+5. Xóa nhà cung c?p
+0. Quay l?i menu qu?n lý
+Ch?n (0-5): 
+================ DANH SÁCH NHÀ CUNG C?P ================
+[NCC001] Dong Khoi - S?T: 0847834958 - Email: ekrfjfj@gmail.com - ?C: hcm [?ANG GIAO D?CH]
+[NCC002] Viet Tin - S?T: 0348485894 - Email: dlksjdf@gmail.com - ?C: hcm [?ANG GIAO D?CH]
+T?ng s? nhà cung c?p: 2
+
+--- 4. QU?N LÝ NHÀ CUNG C?P ---
+1. Thêm nhà cung c?p
+2. Xem danh sách nhà cung c?p
+3. Tìm ki?m nhà cung c?p
+4. C?p nh?t thông tin nhà cung c?p
+5. Xóa nhà cung c?p
+0. Quay l?i menu qu?n lý
+Ch?n (0-5): AUDIT_EOF

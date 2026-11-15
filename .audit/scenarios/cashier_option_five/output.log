@@ -1,0 +1,56 @@
+Đã lưu danh sách tài khoản vào file: data/nhanvien.txt
+Đã thêm [NhanVien] [NV001] Nguyễn Văn An vào hệ thống.
+Đã lưu danh sách tài khoản vào file: data/nhanvien.txt
+Đã thêm [Quản lý] [QL001] Trần Thị Mai vào hệ thống.
+Đã lưu danh sách tài khoản vào file: data/nhanvien.txt
+Đã thêm [Giám đốc] [GD001] Lê Hoàng Long vào hệ thống.
+Đã lưu danh sách tài khoản vào file: data/nhanvien.txt
+Đã tạo và lưu 3 tài khoản ban đầu!
+[Thông báo] Chưa tìm thấy file sản phẩm: data/sanpham.txt
+Chưa có file dữ liệu khuyến mãi tại: data/khuyenmai.txt (sẽ khởi tạo khi lưu).
+[Thông báo] Chưa có file dữ liệu sản phẩm khuyến mãi tại: data/sanphamkhuyenmai.txt
+[Thông báo] Chưa có file dữ liệu hóa đơn tại: data/hoadon.txt
+
+==============================================
+=       HỆ THỐNG QUẢN LÝ CỬA HÀNG            =
+=          THỨC ĂN & NƯỚC UỐNG               =
+----------------------------------------------
+=                 ĐĂNG NHẬP                  =
+==============================================
+
+TÊN ĐĂNG NHẬP : MẬT KHẨU       : 
+----------------------------------------------
+=           ĐĂNG NHẬP THÀNH CÔNG!              =
+  Xin chào: NhanVien - Nguyễn Văn An
+----------------------------------------------
+
+========== MENU NHÂN VIÊN ==========
+1. Quản lý kho hàng
+2. Thu ngân - Tiếp nhận khách hàng
+3. Đăng xuất
+===================================
+Chọn chức năng (1-3): 
+========== THU NGÂN ==========
+1. Tiếp nhận khách hàng
+2. Lập hóa đơn bán
+3. Quản lý hóa đơn bán
+4. Tra cứu khuyến mãi
+0. Quay lại menu nhân viên
+==============================
+Chọn chức năng (1-5): 
+========== THU NGÂN ==========
+1. Tiếp nhận khách hàng
+2. Lập hóa đơn bán
+3. Quản lý hóa đơn bán
+4. Tra cứu khuyến mãi
+0. Quay lại menu nhân viên
+==============================
+Chọn chức năng (1-5): 
+[Thông báo] Luồng nhập dữ liệu đã đóng. Đang lưu dữ liệu và thoát...
+Đã lưu danh sách tài khoản vào file: data/nhanvien.txt
+Đã lưu danh sách khách hàng vào file: data/khachhang.txt
+Đã lưu danh sách nhà cung cấp vào file: data/nhacungcap.txt
+Đã lưu danh sách 0 sản phẩm vào file: data/sanpham.txt
+Đã lưu thành công 0 chương trình khuyến mãi vào file: data/khuyenmai.txt
+[Thành công] Lưu file sản phẩm khuyến mãi tại: data/sanphamkhuyenmai.txt
+[Thành công] Đã lưu 0 hóa đơn vào file: data/hoadon.txt

@@ -55,7 +55,7 @@ public class NhanVien extends Nguoidung {
     }
 
     public void setLuongCoBan(double luongCoBan) {
-        if (luongCoBan < 0) {
+        if (!Double.isFinite(luongCoBan) || luongCoBan < 0) {
             throw new IllegalArgumentException("[Lỗi] Lương cơ bản không được âm! Nhận: " + luongCoBan);
         }
         this.luongCoBan = luongCoBan;

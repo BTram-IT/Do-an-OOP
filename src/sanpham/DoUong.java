@@ -2,6 +2,7 @@ package sanpham;
 
 import util.Ktradulieu;
 
+import java.time.LocalDate;
 import java.util.Scanner;
 
 public class DoUong extends SanPham {
@@ -9,11 +10,10 @@ public class DoUong extends SanPham {
     private String thuongHieu;
     private String huongVi;
     private String loaiDoUong;
-    Scanner sc = new Scanner(System.in);
 
     // Constructor đầy đủ
     public DoUong(String maSP, String tenSP, double donGiaNhap, double donGiaBan, int soLuongTon,
-                  String donViTinh, String nsx, String hsd, double phanTramThue,
+                  String donViTinh, LocalDate nsx, LocalDate hsd, double phanTramThue,
                   double dungTich, String thuongHieu, String huongVi, String loaiDoUong,
                   String trangThaiDuyet, boolean daXoa) {
         super(maSP, tenSP, donGiaNhap, donGiaBan, soLuongTon, donViTinh, nsx, hsd, phanTramThue, trangThaiDuyet, daXoa);
@@ -101,7 +101,7 @@ public class DoUong extends SanPham {
     public String toFileString() {
         return String.format("DOUONG;%s;%s;%.0f;%.0f;%d;%s;%s;%s;%.1f;%.1f;%s;%s;%s;%s;%b",
                 this.maSP, this.tenSP, this.donGiaNhap, this.donGiaBan,
-                this.soLuongTon, this.donViTinh, this.nsx, this.hsd,
+                this.soLuongTon, this.donViTinh, Ktradulieu.dinhDangNgay(this.nsx), Ktradulieu.dinhDangNgay(this.hsd),
                 this.phanTramThue, this.dungTich, this.thuongHieu,
                 this.huongVi, this.loaiDoUong, this.trangThaiDuyet, this.daXoa);
     }

@@ -1,0 +1,25 @@
+?ã ??c thành công 5 tài kho?n t? file: data/nhanvien.txt
+?ã ??c thành công 2 khách hàng t? file: data/khachhang.txt
+?ã ??c thành công 2 nhà cung c?p t? file: data/nhacungcap.txt
+[Thành công] ?ã ??c 3 s?n ph?m t? file: data/sanpham.txt
+?ã n?p thành công 1 ch??ng trình khuy?n mãi t? file: data/khuyenmai.txt
+[Thành công] ??c file s?n ph?m khuy?n mãi! T?ng s?: 0
+[Thành công] ?ã n?p 7 hóa ??n t? file.
+
+========== THU NGÂN ==========
+1. Ti?p nh?n khách hàng
+2. L?p hóa ??n bán
+3. Qu?n lý hóa ??n bán
+4. Tra c?u khuy?n mãi
+0. Quay l?i menu nhân viên
+==============================
+Ch?n ch?c n?ng (1-5): 
+--- TI?P NH?N KHÁCH HÀNG ---
+1. Tìm ki?m khách hàng
+2. Xem danh sách khách hàng
+3. Thêm khách hàng m?i
+4. Xem l?ch s? mua hàng c?a khách
+5. S?a thông tin khách hàng
+6. Xóa khách hàng (ch? Qu?n lý/Giám ??c)
+0. Quay l?i
+Ch?n (0-6): AUDIT_EOF

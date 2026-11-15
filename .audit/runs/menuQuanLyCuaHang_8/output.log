@@ -1,0 +1,20 @@
+?ã ??c thành công 5 tài kho?n t? file: data/nhanvien.txt
+?ã ??c thành công 2 khách hàng t? file: data/khachhang.txt
+?ã ??c thành công 2 nhà cung c?p t? file: data/nhacungcap.txt
+[Thành công] ?ã ??c 3 s?n ph?m t? file: data/sanpham.txt
+?ã n?p thành công 1 ch??ng trình khuy?n mãi t? file: data/khuyenmai.txt
+[Thành công] ??c file s?n ph?m khuy?n mãi! T?ng s?: 0
+[Thành công] ?ã n?p 7 hóa ??n t? file.
+
+========== MENU QU?N LÝ C?A HÀNG ==========
+1. Qu?n lý s?n ph?m
+2. Qu?n lý khuy?n mãi
+3. Qu?n lý nh?p kho 
+4. Qu?n lý nhà cung c?p
+5. Qu?n lý nhân viên
+6. Báo cáo 
+7. Qu?n lý khách hàng
+0. ??ng xu?t
+===========================================
+Ch?n phân h? qu?n lý (0-7): Vui lòng ch?n trong kho?ng t? 0 ??n 7!
+Ch?n phân h? qu?n lý (0-7): AUDIT_EOF
