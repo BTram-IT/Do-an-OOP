@@ -202,15 +202,29 @@ public class Giaodien {
         }
     }
 
-       public void hienThiManHinhDangNhap(Scanner sc) {
+      private static final int WIDTH = 56; 
+
+    private static String vienTren() {
+        return "╔" + "═".repeat(WIDTH - 2) + "╗";
+    }
+
+    private static String vienDuoi() {
+        return "╚" + "═".repeat(WIDTH - 2) + "╝";
+    }
+
+    private static String ngan() {
+        return "╟" + "─".repeat(WIDTH - 2) + "╢";
+    }
+
+     public void hienThiManHinhDangNhap(Scanner sc) {
 
         System.out.println();
-        System.out.println("==============================================");
-        System.out.println("=       HỆ THỐNG QUẢN LÝ CỬA HÀNG            =");
-        System.out.println("=          THỨC ĂN & NƯỚC UỐNG               =");
-        System.out.println("----------------------------------------------");
-        System.out.println("=                 ĐĂNG NHẬP                  =");
-        System.out.println("==============================================");
+        System.out.println(vienTren());
+        System.out.println("║" + " ".repeat(14) + "HỆ THỐNG QUẢN LÝ CỬA HÀNG" + " ".repeat(15) + "║");
+        System.out.println("║" + " ".repeat(17) + "THỨC ĂN & NƯỚC UỐNG" + " ".repeat(18) + "║");
+        System.out.println(ngan());
+        System.out.println("║" + " ".repeat(22) + "ĐĂNG NHẬP" + " ".repeat(23) + "║");
+        System.out.println(vienDuoi());
         System.out.println();
 
         int soLanSai = 0;
@@ -241,11 +255,12 @@ public class Giaodien {
 
                 this.nguoiDangNhap = nd;
 
-                System.out.println("\n----------------------------------------------");
-                System.out.println("=           ĐĂNG NHẬP THÀNH CÔNG!              =");
+                System.out.println();
+                System.out.println(vienTren());
+                System.out.println("║" + " ".repeat(16) + "ĐĂNG NHẬP THÀNH CÔNG!" + " ".repeat(17) + "║");
+                System.out.println(vienDuoi());
                 System.out.println("  Xin chào: " + nd.getVaiTro()
                         + " - " + nd.getTenND());
-                System.out.println("----------------------------------------------");
 
                 return;
             }
