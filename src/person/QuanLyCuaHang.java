@@ -1,7 +1,5 @@
 package person;
 
-
-import java.util.Locale;
 import java.time.DateTimeException;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
@@ -16,7 +14,6 @@ import util.Ktradulieu;
 import java.time.format.DateTimeFormatter;
 import hoadon.CTHDBan;
 import java.util.LinkedHashMap;
-import java.time.format.DateTimeParseException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -91,32 +88,12 @@ public class QuanLyCuaHang extends Nguoidung implements Thongke {
         return false;
     }
 
-    public boolean duyetSanPhamMoi(DSSanPham dsSP, SanPham spMoi) {
+    public void duyetSanPhamMoi(DSSanPham dsSP, SanPham spMoi) {
         if (this.isDaXoa()) { throw new IllegalStateException("[TỪ CHỐI TRUY CẬP] Tài khoản quản lý đã bị vô hiệu hóa!"); }
         if (dsSP == null || spMoi == null) { throw new IllegalArgumentException("[Lỗi] Dữ liệu sản phẩm duyệt không được null!"); }
-
-        String trangThaiCu = spMoi.getTrangThaiDuyet();
         spMoi.setTrangThaiDuyet("Đã duyệt");
-
-        boolean themDuoc;
-        try {
-            themDuoc = dsSP.themSP(spMoi);
-        } catch (RuntimeException e) {
-            System.out.println("[Lỗi] " + e.getMessage());
-            themDuoc = false;
-        }
-
-        if (!themDuoc) {
-            if (trangThaiCu != null && !trangThaiCu.trim().isEmpty()) {
-                spMoi.setTrangThaiDuyet(trangThaiCu);
-            }
-            System.out.println("[Thất bại] Không thể thêm sản phẩm [" + spMoi.getMaSP() + "] vào danh mục, sản phẩm chưa được duyệt.");
-            return false;
-        }
-
-        System.out.println("[Thành công] Quản lý [" + this.tenND + "] đã duyệt thêm sản phẩm mới vào danh mục: "
-                + spMoi.getTenSP() + " [" + spMoi.getMaSP() + "].");
-        return true;
+        dsSP.themSP(spMoi);
+        System.out.println("[Thành công] Quản lý [" + this.tenND + "] đã xem xét và duyệt thêm sản phẩm mới vào danh mục: " + spMoi.getTenSP() + " [" + spMoi.getMaSP() + "].");
     }
 
     public boolean duyetHoaDon(Scanner sc, DSHoadon dsHD, DSSanPham dsSP) {
@@ -154,12 +131,7 @@ public class QuanLyCuaHang extends Nguoidung implements Thongke {
                 continue;
             }
 
-            LocalDate ngayLap;
-            try {
-                ngayLap = LocalDate.parse(hd.getNgayLap(), dtf);
-            } catch (DateTimeParseException e) {
-                continue;
-            }
+            LocalDate ngayLap = hd.getNgayLap();
 
             if (ngayLap.isBefore(tuNgay) || ngayLap.isAfter(denNgay)) {
                 continue;
@@ -187,122 +159,52 @@ public class QuanLyCuaHang extends Nguoidung implements Thongke {
     }
 
     @Override
-    public void thongKeSanPhamBanDuoc(DSHoadon dsHD, DSSanPham dsSP, LocalDate tuNgay, LocalDate denNgay) {
-        if (dsHD == null || dsSP == null || tuNgay == null || denNgay == null) {
-            System.out.println("[Lỗi] Dữ liệu thống kê không hợp lệ!");
-            return;
-        }
-        if (tuNgay.isAfter(denNgay)) {
-            System.out.println("[Lỗi] Ngày bắt đầu không được sau ngày kết thúc!");
-            return;
-        }
-
-        DateTimeFormatter dtfIn = DateTimeFormatter.ofPattern("dd/MM/uuuu")
-                .withResolverStyle(java.time.format.ResolverStyle.STRICT);
-        DateTimeFormatter dtfOut = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-
-        Map<String, Integer> soLuongBan = new HashMap<>();
-        Map<String, Integer> soLuongTang = new HashMap<>();
-        Map<String, Double> tienHang = new HashMap<>();
+    public void thongKeSanPhamBanDuoc(DSHoadon dsHD,DSSanPham dsSP, LocalDate tuNgay, LocalDate denNgay) {
+        if (dsHD == null) { System.out.println("[Lỗi] Danh sách hóa đơn không hợp lệ!"); return; }
+        Map<String, Integer> soLuongBan = new LinkedHashMap<>();
+        Map<String, Integer> soLuongTang = new LinkedHashMap<>();
+        Map<String, String> tenSanPham = new LinkedHashMap<>();
+        double tongTienHang = 0;
         int tongSoHoaDon = 0;
 
-        // 1. Cộng dồn từ hóa đơn bán thành công trong kỳ
         for (int i = 0; i < dsHD.getSoLuong(); i++) {
             HoaDon hd = dsHD.get(i);
-            if (!(hd instanceof Hoadonban) || !hd.isDaXuLyThanhCong() || hd.getNgayLap() == null) {
-                continue;
-            }
-
-            LocalDate ngayLap;
-            try {
-                ngayLap = LocalDate.parse(hd.getNgayLap().trim(), dtfIn);
-            } catch (DateTimeParseException e) {
-                continue;
-            }
-            if (ngayLap.isBefore(tuNgay) || ngayLap.isAfter(denNgay)) {
-                continue;
-            }
-
+            if (!(hd instanceof Hoadonban) || !hd.isDaXuLyThanhCong()) { continue; }
+            if (tuNgay == null || denNgay == null || hd.getNgayLap().isBefore(tuNgay) || hd.getNgayLap().isAfter(denNgay)) continue;
             CTHDBan[] dsCT = ((Hoadonban) hd).getDsChiTiet();
-            if (dsCT == null || dsCT.length == 0) {
-                continue;
-            }
+            if (dsCT == null) { continue; }
             tongSoHoaDon++;
-
             for (CTHDBan ct : dsCT) {
-                if (ct == null || ct.getMaSP() == null || ct.getMaSP().trim().isEmpty()) {
-                    continue;
-                }
-                String ma = ct.getMaSP().trim().toUpperCase();
-                soLuongBan.merge(ma, ct.getSoLuongBan(), Integer::sum);
-                soLuongTang.merge(ma, ct.getSoLuongTang(), Integer::sum);
-                tienHang.merge(ma, ct.tinhTienHang(), Double::sum);
+                if (ct == null) { continue; }
+                String maSP = ct.getMaSP();
+                if (maSP == null || maSP.trim().isEmpty()) { continue; }
+                maSP = maSP.trim();
+                soLuongBan.put(maSP, soLuongBan.getOrDefault(maSP, 0) + ct.getSoLuongBan());
+                soLuongTang.put(maSP, soLuongTang.getOrDefault(maSP, 0) + ct.getSoLuongTang());
+                tenSanPham.put(maSP, ct.getTenSP());
+                tongTienHang += ct.tinhTienHang();
             }
         }
 
-        System.out.println("\n========== BÁO CÁO SẢN PHẨM BÁN ĐƯỢC VÀ KHÔNG BÁN ĐƯỢC ==========");
-        System.out.println("Thời gian: " + tuNgay.format(dtfOut) + " - " + denNgay.format(dtfOut));
+        System.out.println("\n========== BÁO CÁO SẢN PHẨM BÁN ĐƯỢC ==========");
+        if (soLuongBan.isEmpty()) { System.out.println("[Thông báo] Chưa có sản phẩm nào được bán thành công."); return; }
+        System.out.printf("%-5s | %-12s | %-25s | %-12s | %-12s%n", "STT", "MÃ SP", "TÊN SẢN PHẨM", "SL BÁN", "SL TẶNG");
+        System.out.println("--------------------------------------------------------------------------");
 
-        // 2. Sản phẩm bán được: duyệt theo danh mục sản phẩm
-        System.out.println("\n--- SẢN PHẨM BÁN ĐƯỢC ---");
-        System.out.printf("%-5s | %-12s | %-25s | %-10s | %-10s%n",
-                "STT", "MÃ SP", "TÊN SẢN PHẨM", "SL BÁN", "SL TẶNG");
-        System.out.println("--------------------------------------------------------------------");
-
-        int sttBan = 0, tongSLBan = 0, tongSLTang = 0;
-        double tongTienHang = 0;
-
-        for (int i = 0; i < dsSP.getSoLuong(); i++) {
-            SanPham sp = dsSP.get(i);
-            if (sp == null) continue;
-
-            String ma = sp.getMaSP().trim().toUpperCase();
-            int slBan = soLuongBan.getOrDefault(ma, 0);
-            if (slBan <= 0) continue;
-
-            int slTang = soLuongTang.getOrDefault(ma, 0);
-            sttBan++;
-            tongSLBan += slBan;
-            tongSLTang += slTang;
-            tongTienHang += tienHang.getOrDefault(ma, 0.0);
-
-            System.out.printf("%-5d | %-12s | %-25s | %-10d | %-10d%n",
-                    sttBan, sp.getMaSP(), sp.getTenSP(), slBan, slTang);
+        int stt = 1, tongSoLuongBan = 0, tongSoLuongTang = 0;
+        for (String maSP : soLuongBan.keySet()) {
+            int slBan = soLuongBan.get(maSP);
+            int slTang = soLuongTang.getOrDefault(maSP, 0);
+            tongSoLuongBan += slBan;
+            tongSoLuongTang += slTang;
+            System.out.printf("%-5d | %-12s | %-25s | %-12d | %-12d%n", stt++, maSP, tenSanPham.get(maSP), slBan, slTang);
         }
-        if (sttBan == 0) {
-            System.out.println("Không có sản phẩm nào được bán trong kỳ này.");
-        }
-
-        // 3. Sản phẩm không bán được: còn trong danh mục, không bị xóa, không có giao dịch trong kỳ
-        System.out.println("\n--- SẢN PHẨM KHÔNG BÁN ĐƯỢC ---");
-        System.out.printf("%-5s | %-12s | %-25s | %-10s%n", "STT", "MÃ SP", "TÊN SẢN PHẨM", "TỒN KHO");
-        System.out.println("--------------------------------------------------------------------");
-
-        int sttKhongBan = 0;
-        for (int i = 0; i < dsSP.getSoLuong(); i++) {
-            SanPham sp = dsSP.get(i);
-            if (sp == null || sp.isDaXoa()) continue;
-
-            String ma = sp.getMaSP().trim().toUpperCase();
-            if (soLuongBan.getOrDefault(ma, 0) > 0) continue;
-
-            sttKhongBan++;
-            System.out.printf("%-5d | %-12s | %-25s | %-10d%n",
-                    sttKhongBan, sp.getMaSP(), sp.getTenSP(), sp.getSoLuongTon());
-        }
-        if (sttKhongBan == 0) {
-            System.out.println("Tất cả sản phẩm đều có bán trong kỳ này.");
-        }
-
-        // 4. Tổng kết
-        System.out.println("\n--------------------------------------------------------------------");
-        System.out.println("- Số hóa đơn bán thành công trong kỳ: " + tongSoHoaDon);
-        System.out.println("- Số loại sản phẩm bán được: " + sttBan);
-        System.out.println("- Số loại sản phẩm không bán được: " + sttKhongBan);
-        System.out.println("- Tổng số lượng bán: " + tongSLBan);
-        System.out.println("- Tổng số lượng tặng: " + tongSLTang);
+        System.out.println("--------------------------------------------------------------------------");
+        System.out.println("- Số hóa đơn bán thành công: " + tongSoHoaDon);
+        System.out.println("- Tổng số lượng sản phẩm bán: " + tongSoLuongBan);
+        System.out.println("- Tổng số lượng sản phẩm tặng: " + tongSoLuongTang);
         System.out.printf("- Tổng tiền hàng trước giảm giá và thuế: %,.0f VND%n", tongTienHang);
-        System.out.println("====================================================================");
+        System.out.println("================================================");
     }
 
     public void thongKeKhachHang(DSHoadon dsHD, DsKhachHang dsKH, LocalDate tuNgay, LocalDate denNgay) {
@@ -330,8 +232,8 @@ public class QuanLyCuaHang extends Nguoidung implements Thongke {
             Khachhang kh = dsKH.timKiem(maKH);
             if (kh == null || kh.isDaXoa()) { continue; }
 
-            LocalDate ngayLap;
-            try { ngayLap = LocalDate.parse(hd.getNgayLap(), dinhDangNgay); } catch (DateTimeParseException e) { continue; }
+            LocalDate ngayLap = hd.getNgayLap();
+            if (ngayLap == null) { continue; }
             String maChuan = kh.getMaKH();
             if (!lanMuaDauTien.containsKey(maChuan) || ngayLap.isBefore(lanMuaDauTien.get(maChuan))) {
                 lanMuaDauTien.put(maChuan, ngayLap);
@@ -403,7 +305,8 @@ public class QuanLyCuaHang extends Nguoidung implements Thongke {
             }
 
             NhanVien nv = (NhanVien) obj;
-            if (nv.isDaXoa()) continue;
+
+            if (nv == null) continue;
 
             tongNhanVien++;
 
@@ -439,7 +342,8 @@ public class QuanLyCuaHang extends Nguoidung implements Thongke {
             }
 
             NhanVien nv = (NhanVien) obj;
-            if (nv.isDaXoa()) continue;
+
+            if (nv == null) continue;
 
             soNhanVien++;
             tongQuyLuong += tinhLuongNhanVien(nv);
@@ -465,34 +369,23 @@ public class QuanLyCuaHang extends Nguoidung implements Thongke {
         for (int i = 0; i < dsHD.getSoLuong(); i++) {
             HoaDon hd = dsHD.get(i);
             if (hd == null || !hd.isDaXuLyThanhCong()) { continue; }
-            if (hd.getNgayLap() == null || hd.getNgayLap().trim().isEmpty()) { continue; }
-            LocalDate ngayLap;
-            try { ngayLap = LocalDate.parse(hd.getNgayLap(), dtf); } catch (DateTimeParseException e) { continue; }
+            LocalDate ngayLap = hd.getNgayLap();
+            if (ngayLap == null) { continue; }
             if (ngayLap.isBefore(tuNgay) || ngayLap.isAfter(denNgay)) { continue; }
-
-            if (hd instanceof Hoadonban) {
-                tongDoanhThuBan += ((Hoadonban) hd).tinhDoanhThuThuan();
-                donBanThanhCong++;
-            } else if (hd instanceof HoadonNhap) {
-                tongChiPhiNhap += hd.tinhTongTien();
-                donNhapThanhCong++;
-            }
+            if (hd instanceof Hoadonban) { tongDoanhThuBan += hd.tinhThanhTien() - ((Hoadonban) hd).tinhTienThue(); donBanThanhCong++; }
+            else if (hd instanceof HoadonNhap) { tongChiPhiNhap += hd.tinhTongTien(); donNhapThanhCong++; }
         }
-
-        double loiNhuan = tongDoanhThuBan - tongChiPhiNhap;
 
         System.out.println("\n========== BÁO CÁO DOANH THU & CHI PHÍ ==========");
-        System.out.println("Thời gian: " + tuNgay.format(dtf) + " - " + denNgay.format(dtf));
-        System.out.printf("- Doanh thu thuần bán hàng (%d đơn, sau giảm giá, chưa VAT): %,.0f VND%n",
+        System.out.println("Thời gian: " + tuNgay.format(dtf)
+                + " - " + denNgay.format(dtf));
+
+        System.out.printf("- Tổng doanh thu bán hàng (%d đơn thành công): %,.0f VND%n",
                 donBanThanhCong, tongDoanhThuBan);
-        System.out.printf("- Chi phí nhập hàng (%d đơn thành công): %,.0f VND%n",
+
+        System.out.printf("- Tổng chi phí nhập hàng (%d đơn thành công): %,.0f VND%n",
                 donNhapThanhCong, tongChiPhiNhap);
-        System.out.println("--------------------------------------------------");
-        if (loiNhuan >= 0) {
-            System.out.printf("- Chênh lệch thu - chi: +%,.0f VND (có lãi)%n", loiNhuan);
-        } else {
-            System.out.printf("- Chênh lệch thu - chi: -%,.0f VND (đang lỗ)%n", Math.abs(loiNhuan));
-        }
+
         System.out.println("======================================================");
     }
 
@@ -504,8 +397,7 @@ public class QuanLyCuaHang extends Nguoidung implements Thongke {
 
         for (HoaDon hd : dsHD.getDanhSach()) {
             if (hd == null || hd.getNgayLap() == null) { continue; }
-            LocalDate ngayLap;
-            try { ngayLap = LocalDate.parse(hd.getNgayLap(), dinhDangNgay); } catch (DateTimeParseException e) { continue; }
+            LocalDate ngayLap = hd.getNgayLap();
             if (ngayLap.isBefore(tuNgay) || ngayLap.isAfter(denNgay)) { continue; }
             tongHD++;
             if (hd.isDaHuy()) { tongHDHuy++; continue; }
@@ -654,7 +546,7 @@ public class QuanLyCuaHang extends Nguoidung implements Thongke {
     }
 
     public String toFileString() {
-        return String.format(Locale.ROOT, "QUANLY;%s;%s;%s;%s;%s;%s;%b;%s;%.2f",
+        return String.format("QUANLY;%s;%s;%s;%s;%s;%s;%b;%s;%.2f",
                 getMaND(), getTenND(), getTaiKhoan(), getMatKhau(), getSoDienThoai(), getVaiTro(), isDaXoa(), khuVucQuanLy, heSoTrachNhiem);
     }
 }

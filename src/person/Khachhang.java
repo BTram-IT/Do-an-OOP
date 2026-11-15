@@ -1,7 +1,5 @@
 package person;
 
-
-import java.util.Locale;
 import java.util.Scanner;
 import util.Ktradulieu;
 
@@ -144,7 +142,7 @@ public class Khachhang {
     }
 
     public void congDiem(int diem) {
-        if (diem > 0) this.diemTichLuy += diem;
+        if (diem > 0) this.diemTichLuy = Math.addExact(this.diemTichLuy, diem);
     }
 
     public boolean truDiem(int diem) {
@@ -158,7 +156,7 @@ public class Khachhang {
 
     // Hàm xuất định dạng lưu file
     public String toFileString() {
-        return String.format(Locale.ROOT, "%s;%s;%s;%s;%d;%b",
+        return String.format("%s;%s;%s;%s;%d;%b",
                 this.maKH, this.tenKH, this.sdt, this.diaChi, this.diemTichLuy, this.daXoa);
     }
 

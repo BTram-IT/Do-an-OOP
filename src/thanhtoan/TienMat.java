@@ -1,8 +1,8 @@
 package thanhtoan;
 
 import java.util.Scanner;
+import person.NhanVien;
 import util.Ktradulieu;
-import person.Nguoidung;
 
 public class TienMat extends ThanhToan {
 
@@ -16,34 +16,21 @@ public class TienMat extends ThanhToan {
         this.tienThoi = 0.0;
     }
 
-    public TienMat(String maHD, double soTien, Nguoidung nvDangDangNhap) {
+    public TienMat(String maHD, double soTien, NhanVien nvDangDangNhap) {
         super(maHD, "TienMat", soTien, nvDangDangNhap);
         this.tienKhachDua = 0.0;
         this.tienThoi = 0.0;
     }
 
     @Override
-    public void nhap() {
-        Scanner sc = new Scanner(System.in);
-        nhap(sc);
-    }
-
-    @Override
     public void nhap(Scanner sc) {
-        if (sc == null) sc = new Scanner(System.in);
+        if (sc == null) throw new IllegalArgumentException("Scanner không được null!");
 
         System.out.println("\n========== THANH TOÁN TIỀN MẶT ==========");
         System.out.println("• Mã giao dịch       : [" + this.maGD + "]");
         System.out.println("• Thu ngân phụ trách : [" + this.maNV + "]");
         System.out.println("• Tổng tiền cần thu  : " + Ktradulieu.dinhDangTien(this.soTien));
 
-        if (this.soTien <= 0) {
-            this.tienKhachDua = 0.0;
-            this.tienThoi = 0.0;
-            System.out.println("Hóa đơn đã được thanh toán đủ bằng điểm thưởng, không cần thu thêm tiền.");
-            qTrinhThanhToan();
-            return;
-        }
         while (true) {
             try {
                 double tienDua = Ktradulieu.nhapSoThucKhongAm(sc, "Nhập số tiền khách đưa: ");
@@ -67,8 +54,7 @@ public class TienMat extends ThanhToan {
     }
     @Override
     public boolean qTrinhThanhToan() {
-        // soTien == 0 (đã trả đủ bằng điểm) vẫn là thanh toán hợp lệ
-        if (this.soTien >= 0 && this.tienKhachDua >= this.soTien) {
+        if (this.tienKhachDua >= this.soTien && this.soTien >= 0) {
             ketThuc(true);
             System.out.println("ĐÃ HOÀN TẤT THANH TOÁN TIỀN MẶT THÀNH CÔNG.");
             return true;
@@ -82,10 +68,6 @@ public class TienMat extends ThanhToan {
         this.soTien = tongTien;
         nhap(sc);
         return isThanhCong();
-    }
-
-    public boolean thanhToan(double tongTien) {
-        return thanhToan(new Scanner(System.in), tongTien);
     }
 
     public double getTienKhachDua() {

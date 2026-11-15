@@ -54,7 +54,7 @@ public class CTHDBan extends CTHoaDon {
     // ================= NHẬP THÔNG TIN =================
 
     public boolean nhapThongTin(Scanner sc, String maHoaDon, DSSanPham dsSP, DSKhuyenMai dsKM, DSSanPhamKhuyenMai dsSPKM) {
-        if (sc == null) sc = new Scanner(System.in);
+        if (sc == null) throw new IllegalArgumentException("Scanner không được null!");
         if (dsSP == null) {
             System.out.println("[Lỗi] Danh mục sản phẩm không tồn tại!");
             return false;
@@ -160,6 +160,7 @@ public class CTHDBan extends CTHoaDon {
             long tienGiamUngVien = 0;
             int soLuongTangUngVien = 0;
 
+            try {
             if (km instanceof KhuyenmaiMuatang) {
                 KhuyenmaiMuatang kmMuaTang = (KhuyenmaiMuatang) km;
                 int soLuongTangLyThuyet = Math.max(0, kmMuaTang.tinhSoLuongTang(soLuongMua));
@@ -174,6 +175,10 @@ public class CTHDBan extends CTHoaDon {
                 giaTriUuDai = tienGiamUngVien;
             } else {
                 continue;
+            }
+
+            } catch (IllegalArgumentException | ArithmeticException e) {
+                continue; // Ignore a promotion whose arithmetic exceeds supported limits.
             }
 
             if (giaTriUuDai > giaTriTotNhat) {
@@ -250,9 +255,9 @@ public class CTHDBan extends CTHoaDon {
             return new CTHDBan(
                     p[0].trim(), p[1].trim(), p[2].trim(),
                     Integer.parseInt(p[3].trim()),
-                    Ktradulieu.docSoThuc(p[4]),
-                    Ktradulieu.docSoThuc(p[5]),
-                    Ktradulieu.docSoThuc(p[6]),
+                    Double.parseDouble(p[4].trim()),
+                    Double.parseDouble(p[5].trim()),
+                    Double.parseDouble(p[6].trim()),
                     Integer.parseInt(p[7].trim()),
                     p[8].trim()
             );

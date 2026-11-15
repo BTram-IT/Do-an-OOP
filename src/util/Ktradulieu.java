@@ -1,11 +1,7 @@
 package util;
 
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -16,7 +12,6 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.time.format.ResolverStyle;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Scanner;
 import java.util.Set;
 
@@ -37,6 +32,7 @@ public class Ktradulieu {
     // 1. NHẬP CHUỖI BẮT BUỘC THEO REGEX (HÀM GỐC 1)
     // =========================================================================
     public static String nhapChuoi(Scanner sc, String thongBao, String regex, String thongBaoLoi) {
+        if (sc == null) throw new IllegalArgumentException("Scanner không được null!");
         while (true) {
             System.out.print(thongBao);
             String input = sc.nextLine().trim();
@@ -55,7 +51,7 @@ public class Ktradulieu {
     // 2. NHẬP CHUỖI TÙY CHỌN (HÀM GỐC 2 - ENTER = RỖNG)
     // =========================================================================
     public static String nhapChuoiTuyChon(Scanner sc, String thongBao, String regex, String thongBaoLoi) {
-        if (sc == null) sc = new Scanner(System.in);
+        if (sc == null) throw new IllegalArgumentException("Scanner không được null!");
         while (true) {
             System.out.print(thongBao);
             String input = sc.nextLine().trim();
@@ -74,7 +70,7 @@ public class Ktradulieu {
     // 3. NHẬP SỐ NGUYÊN DƯƠNG (> 0) (HÀM GỐC 3)
     // =========================================================================
     public static int nhapSoNguyen(Scanner sc, String thongBao) {
-        if (sc == null) sc = new Scanner(System.in);
+        if (sc == null) throw new IllegalArgumentException("Scanner không được null!");
         while (true) {
             System.out.print(thongBao);
             String input = sc.nextLine().trim();
@@ -94,65 +90,36 @@ public class Ktradulieu {
     // 4. NHẬP SỐ THỰC (HÀM GỐC 4)
     // =========================================================================
     public static double nhapSoThuc(Scanner sc, String thongBao) {
-        if (sc == null) sc = new Scanner(System.in);
+        if (sc == null) throw new IllegalArgumentException("Scanner không được null!");
+        while (true) {
+            System.out.print(thongBao);
+            String input = sc.nextLine().trim();
+            try {
+                double val =  Double.parseDouble(input);
+                if( Double.isFinite(val))
+                    return val ;
+            } catch (NumberFormatException e) {
+                System.out.println("Giá trị không hợp lệ! Vui lòng nhập số thực.");
+            }
+        }
+    }
+
+    // =========================================================================
+    // 5. NHẬP SỐ THỰC KHÔNG ÂM (>= 0) (HÀM GỐC 5)
+    // =========================================================================
+    public static double nhapSoThucKhongAm(Scanner sc, String thongBao) {
+        if (sc == null) throw new IllegalArgumentException("Scanner không được null!");
         while (true) {
             System.out.print(thongBao);
             String input = sc.nextLine().trim();
             try {
                 double val = Double.parseDouble(input);
-                if (Double.isFinite(val)) {
+                if (val >= 0 && Double.isFinite(val)) {
                     return val;
                 }
-                System.out.println("Giá trị không hợp lệ!");
+                System.out.println("Vui lòng nhập số không âm (>= 0)!");
             } catch (NumberFormatException e) {
                 System.out.println("Giá trị không hợp lệ! Vui lòng nhập số thực.");
-            }
-        }
-    }// Số thực >= 0
-    public static double nhapSoThucKhongAm(Scanner sc, String thongBao) {
-        while (true) {
-            double val = nhapSoThuc(sc, thongBao);
-            if (val >= 0) return val;
-            System.out.println("Vui lòng nhập số không âm (>= 0)!");
-        }
-    }
-
-    // Số thực > 0
-    public static double nhapSoThucDuong(Scanner sc, String thongBao) {
-        while (true) {
-            double val = nhapSoThuc(sc, thongBao);
-            if (val > 0) return val;
-            System.out.println("Vui lòng nhập số lớn hơn 0!");
-        }
-    }
-
-    // Số thực trong khoảng [min, max]
-    public static double nhapSoThucTrongKhoang(Scanner sc, String thongBao, double min, double max) {
-        while (true) {
-            double val = nhapSoThuc(sc, thongBao);
-            if (val >= min && val <= max) return val;
-            System.out.println("Vui lòng nhập số trong khoảng từ " + min + " đến " + max + "!");
-        }
-    }
-
-
-
-    // =========================================================================
-    // 5. NHẬP SỐ THỰC KHÔNG ÂM (>= 0) (HÀM GỐC 5)
-    // =========================================================================
-    public static int nhapSoNguyenKhongAm(Scanner sc, String thongBao) {
-        if (sc == null) sc = new Scanner(System.in);
-        while (true) {
-            System.out.print(thongBao);
-            String input = sc.nextLine().trim();
-            try {
-                int val = Integer.parseInt(input);
-                if (val >= 0) {
-                    return val;
-                }
-                System.out.println("Vui lòng nhập số nguyên không âm (>= 0)!");
-            } catch (NumberFormatException e) {
-                System.out.println("Giá trị không hợp lệ! Vui lòng nhập số nguyên.");
             }
         }
     }
@@ -161,6 +128,7 @@ public class Ktradulieu {
     // 6. NHẬP LỰA CHỌN MENU TỪ MIN ĐẾN MAX (HÀM GỐC 6)
     // =========================================================================
     public static int luaChon(Scanner sc, String thongBao, int min, int max) {
+        if (sc == null) throw new IllegalArgumentException("Scanner không được null!");
         if ( min > max )
         {
             int tam = min;
@@ -186,7 +154,7 @@ public class Ktradulieu {
     // 7. NHẬP NGÀY SINH (yyyy-MM-dd) (HÀM GỐC 7)
     // =========================================================================
     public static LocalDate nhapNgaySinh(Scanner sc, String thongBao) {
-        if (sc == null) sc = new Scanner(System.in);
+        if (sc == null) throw new IllegalArgumentException("Scanner không được null!");
         while (true) {
             System.out.print(thongBao);
             String input = sc.nextLine().trim();
@@ -206,7 +174,7 @@ public class Ktradulieu {
     // 8. NHẬP NGÀY THÔNG DỤNG (dd/MM/yyyy) (HÀM GỐC 8)
     // =========================================================================
     public static LocalDate nhapNgay(Scanner sc, String thongBao, boolean batBuoc) {
-        if (sc == null) sc = new Scanner(System.in);
+        if (sc == null) throw new IllegalArgumentException("Scanner không được null!");
         while (true) {
             System.out.print(thongBao);
             String input = sc.nextLine().trim();
@@ -214,22 +182,24 @@ public class Ktradulieu {
                 return null;
             }
             try {
-                return LocalDate.parse(input, DINH_DANG_NGAY);
+                return chuyenChuoiThanhNgay(input);
             } catch (DateTimeParseException e) {
                 System.out.println("Ngày không hợp lệ! Nhập theo định dạng dd/MM/yyyy (ví dụ: 25/10/2026).");
             }
         }
     }
 
-    /** true nếu chuỗi là ngày dd/MM/yyyy thật sự tồn tại (vd: 31/02/2026 -> false) */
-    public static boolean laNgayHopLe(String s) {
-        if (s == null) return false;
-        try {
-            LocalDate.parse(s.trim(), DINH_DANG_NGAY);
-            return true;
-        } catch (DateTimeParseException e) {
-            return false;
+    /** Đọc ngày dd/MM/yyyy tại ranh giới nhập liệu hoặc đọc file. */
+    public static LocalDate chuyenChuoiThanhNgay(String giaTri) {
+        if (giaTri == null) {
+            throw new IllegalArgumentException("Ngày không được để trống!");
         }
+        return LocalDate.parse(giaTri.trim(), DINH_DANG_NGAY);
+    }
+
+    /** Chuyển ngày sang chuỗi chỉ khi hiển thị hoặc ghi file. */
+    public static String dinhDangNgay(LocalDate ngay) {
+        return ngay == null ? "" : ngay.format(DINH_DANG_NGAY);
     }
 
     // =========================================================================
@@ -260,7 +230,7 @@ public class Ktradulieu {
 
     /** Xác nhận Có/Không (y/n) */
     public static boolean nhapXacNhan(Scanner sc, String thongBao) {
-        if (sc == null) sc = new Scanner(System.in);
+        if (sc == null) throw new IllegalArgumentException("Scanner không được null!");
         while (true) {
             System.out.print(thongBao + " (y/n): ");
             String input = sc.nextLine().trim().toLowerCase();
@@ -379,42 +349,5 @@ public class Ktradulieu {
         if (tam != null && tam.exists()) {
             tam.delete();
         }
-    }
-
-    // Ghi toàn bộ các dòng ra file tạm (UTF-8) rồi thay file thật. Trả về đường dẫn thực sự đã ghi
-    // (là <file>.moi nếu file gốc đang được bảo vệ vì đọc lỗi). Ném IOException nếu ghi thất bại;
-    // khi đó file gốc giữ nguyên.
-    public static String ghiDongAnToan(String duongDan, List<String> cacDong) throws IOException {
-        String dich = duongDanGhi(duongDan);
-        File tam = chuanBiFileTam(dich);
-        try {
-            try (BufferedWriter bw = new BufferedWriter(
-                    new OutputStreamWriter(new FileOutputStream(tam), StandardCharsets.UTF_8))) {
-                for (String dong : cacDong) {
-                    bw.write(dong);
-                    bw.newLine();
-                }
-            }
-            hoanTatGhi(tam, dich);
-            return dich;
-        } catch (IOException | RuntimeException e) {
-            huyFileTam(tam);
-            throw e;
-        }
-    }
-
-    // Đọc số thực từ file, không phụ thuộc Locale: chấp nhận "8.0" và cả "8,0" (file cũ ghi theo Locale khác).
-    // Chỉ chấp nhận số hữu hạn.
-    public static double docSoThuc(String s) {
-        if (s == null) throw new NumberFormatException("Giá trị số rỗng");
-        String t = s.trim();
-        if (t.indexOf('.') < 0 && t.indexOf(',') >= 0 && t.indexOf(',') == t.lastIndexOf(',')) {
-            t = t.replace(',', '.');
-        }
-        double v = Double.parseDouble(t);
-        if (Double.isNaN(v) || Double.isInfinite(v)) {
-            throw new NumberFormatException("Giá trị không hữu hạn: " + s);
-        }
-        return v;
     }
 }

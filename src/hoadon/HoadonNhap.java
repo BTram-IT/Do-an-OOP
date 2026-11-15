@@ -1,7 +1,7 @@
 package hoadon;
 
-
-import java.util.Locale;
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.Scanner;
 import java.util.Objects;
 
@@ -34,7 +34,7 @@ public class HoadonNhap extends HoaDon implements IHoaDon {
         this.phuongThucThanhToan = null;
     }
 
-    public HoadonNhap(String maHD, NhanVien nguoiLap, String ngayLap, String trangThai, String ghiChu, String maNCC) {
+    public HoadonNhap(String maHD, NhanVien nguoiLap, LocalDate ngayLap, String trangThai, String ghiChu, String maNCC) {
         super(maHD, nguoiLap, ngayLap, trangThai, ghiChu);
         if (maNCC == null || maNCC.trim().isEmpty()) {
             throw new IllegalArgumentException("[Lỗi] Mã nhà cung cấp không được để trống!");
@@ -54,56 +54,81 @@ public class HoadonNhap extends HoaDon implements IHoaDon {
         this.dsChiTiet = mangMoi;
     }
 
-    private boolean kiemTraDuocChinhSua() {
-        if (this.isDaXuLyThanhCong()) {
-            System.out.println("[Lỗi] Hóa đơn đã hoàn tất, không thể chỉnh sửa!");
-            return false;
-        }
-
-        if (this.isDaHuy()) {
-            System.out.println("[Lỗi] Hóa đơn đã hủy, không thể chỉnh sửa!");
-            return false;
-        }
-
-        return true;
-    }
-
     public boolean themCTHD(CTHDonNhap ct) {
-        if (!kiemTraDuocChinhSua()) {
+        if (this.isDaXuLyThanhCong() || isDaHuy()) {
+            System.out.println("[Lỗi] Hóa đơn đã hoàn tất, không thể thêm chi tiết!");
             return false;
         }
-
-        if (ct == null
-                || ct.getMaSP() == null
-                || ct.getMaSP().trim().isEmpty()
-                || ct.getSoLuongNhap() <= 0
-                || ct.getDonGiaNhap() <= 0) {
+        if (ct == null || ct.getMaSP() == null || ct.getMaSP().trim().isEmpty() || ct.getSoLuongNhap() <= 0 || !Double.isFinite(ct.getDonGiaNhap()) || ct.getDonGiaNhap() <= 0) {
             System.out.println("[Lỗi] Chi tiết nhập hàng không hợp lệ!");
             return false;
         }
 
         for (int i = 0; i < this.soLuongCT; i++) {
             CTHDonNhap ctCu = this.dsChiTiet[i];
+            boolean cungMaSP = ctCu.getMaSP().equalsIgnoreCase(ct.getMaSP());
+            boolean cungDonGia = Double.compare(ctCu.getDonGiaNhap(), ct.getDonGiaNhap()) == 0;
+            boolean cungHSD = Objects.equals(ctCu.getHanSuDung(), ct.getHanSuDung());
 
-            if (ctCu.getMaSP().equalsIgnoreCase(ct.getMaSP())) {
-                System.out.println(
-                        "[Lỗi] Sản phẩm này đã có trong hóa đơn. "
-                                + "Bạn hãy sửa số lượng ở dòng sản phẩm hiện có!"
-                );
-                return false;
+            // Nếu cùng mã sản phẩm
+            if (cungMaSP) {
+
+                SanPham spCu = ctCu.getSanPhamMoi();
+                SanPham spMoi = ct.getSanPhamMoi();
+
+                // Không cho hai hồ sơ sản phẩm mới trùng mã
+                if (spCu != null && spMoi != null) {
+                    System.out.println(
+                            "[Lỗi] Sản phẩm mới đã tồn tại trong phiếu nhập!"
+                    );
+                    return false;
+                }
+
+                // Chỉ gộp khi đơn giá và hạn sử dụng giống nhau
+                if (cungDonGia && cungHSD) {
+
+                    // Không gộp sản phẩm đã tồn tại với sản phẩm mới
+                    if ((spCu == null) != (spMoi == null)) {
+                        System.out.println(
+                                "[Lỗi] Không thể gộp sản phẩm đã tồn tại với hồ sơ sản phẩm mới!"
+                        );
+                        return false;
+                    }
+                    // Kiểm tra mã hồ sơ sản phẩm mới
+                    if (spCu != null && spMoi != null
+                            && !spCu.getMaSP().equalsIgnoreCase(spMoi.getMaSP())) {
+                        System.out.println("[Lỗi] Hồ sơ sản phẩm mới không khớp!");
+                        return false;
+                    }
+
+                    long slMoi = (long) ctCu.getSoLuongNhap()
+                            + ct.getSoLuongNhap();
+
+                    if (slMoi > Integer.MAX_VALUE) {
+                        System.out.println(
+                                "[Lỗi] Tổng số lượng nhập vượt giới hạn!"
+                        );
+                        return false;
+                    }
+
+                    ctCu.setSoLuongNhap((int) slMoi);
+
+                    System.out.println(
+                            "[Thông báo] Đã cộng dồn sản phẩm ["
+                                    + ct.getMaSP() + "]. Số lượng mới: " + slMoi
+                    );
+
+                    return true;
+                }
             }
         }
 
         if (this.soLuongCT >= this.dsChiTiet.length) {
             moRongBoNho();
         }
-
         this.dsChiTiet[this.soLuongCT++] = new CTHDonNhap(ct);
-
-        System.out.println("[Thành công] Đã thêm sản phẩm vào hóa đơn!");
         return true;
     }
-
 
     public CTHDonNhap[] getDsChiTiet() {
         CTHDonNhap[] ketQua = new CTHDonNhap[this.soLuongCT];
@@ -125,73 +150,6 @@ public class HoadonNhap extends HoaDon implements IHoaDon {
         }
 
         this.dsChiTiet[this.soLuongCT++] = new CTHDonNhap(ct);
-        return true;
-    }
-
-    public boolean xoaCTHD(int stt) {
-        if (!kiemTraDuocChinhSua()) {
-            return false;
-        }
-
-        if (stt < 1 || stt > this.soLuongCT) {
-            System.out.println("[Lỗi] STT sản phẩm không hợp lệ!");
-            return false;
-        }
-
-        if (this.soLuongCT <= 1) {
-            System.out.println("[Lỗi] Hóa đơn nhập phải có ít nhất 1 sản phẩm!");
-            return false;
-        }
-
-        int viTri = stt - 1;
-
-        for (int i = viTri; i < this.soLuongCT - 1; i++) {
-            this.dsChiTiet[i] = this.dsChiTiet[i + 1];
-        }
-
-        this.dsChiTiet[this.soLuongCT - 1] = null;
-        this.soLuongCT--;
-
-        System.out.println("[Thành công] Đã xóa sản phẩm khỏi hóa đơn!");
-        return true;
-    }
-
-    public boolean suaCTHD(int stt, CTHDonNhap ctMoi) {
-        if (!kiemTraDuocChinhSua()) {
-            return false;
-        }
-
-        if (stt < 1 || stt > this.soLuongCT) {
-            System.out.println("[Lỗi] STT sản phẩm không hợp lệ!");
-            return false;
-        }
-
-        if (ctMoi == null
-                || ctMoi.getMaSP() == null
-                || ctMoi.getMaSP().trim().isEmpty()
-                || ctMoi.getSoLuongNhap() <= 0
-                || ctMoi.getDonGiaNhap() <= 0) {
-
-            System.out.println("[Lỗi] Thông tin sản phẩm không hợp lệ!");
-            return false;
-        }
-
-        for (int i = 0; i < this.soLuongCT; i++) {
-            if (i == stt - 1) {
-                continue;
-            }
-
-            if (this.dsChiTiet[i].getMaSP()
-                    .equalsIgnoreCase(ctMoi.getMaSP())) {
-
-                System.out.println("[Lỗi] Mã sản phẩm đã tồn tại ở dòng khác!");
-                return false;
-            }
-        }
-
-        this.dsChiTiet[stt - 1] = new CTHDonNhap(ctMoi);
-
-        System.out.println("[Thành công] Đã sửa chi tiết hóa đơn!");
         return true;
     }
     @Override
@@ -234,7 +192,7 @@ public class HoadonNhap extends HoaDon implements IHoaDon {
     public String getLoaiHD() { return "Hóa đơn nhập"; }
 
     public boolean nhapThongTin(Scanner sc, NhanVien nhanVienDangNhap, DSHoadon dsHD, DSNhaCungCap dsNCC, DSSanPham dsSP, Nguoidung nguoiDungDangNhap) {
-        if (sc == null) sc = new Scanner(System.in);
+        if (sc == null) throw new IllegalArgumentException("Scanner không được null!");
         super.nhapThongTin(sc, nhanVienDangNhap, dsHD);
 
         System.out.println("\n--- THÔNG TIN ĐỐI TÁC NHÀ CUNG CẤP ---");
@@ -312,31 +270,80 @@ public class HoadonNhap extends HoaDon implements IHoaDon {
 
             break;
         }
-        this.phuongThucThanhToan = null;
+
+        double tongTien = this.tinhThanhTien();
+
+        System.out.println("\n========== THANH TOÁN CHO NHÀ CUNG CẤP ==========");
+        System.out.println("• Mã hóa đơn nhập       : [" + this.maHD + "]");
+        System.out.println("• Mã nhà cung cấp       : [" + this.maNCC + "]");
+        System.out.println("• Nhân viên phụ trách   : [" + nhanVienDangNhap.getMaND() + "]" +nhanVienDangNhap.getTenND());
+        System.out.println("• Tổng tiền cửa hàng phải trả: "
+                + Ktradulieu.dinhDangTien(tongTien));
+
+        System.out.println("\nChọn hình thức thanh toán:");
+        System.out.println("1. Tiền mặt");
+        System.out.println("2. Chuyển khoản");
+
+        int chonTT;
+
+        while (true) {
+            chonTT = Ktradulieu.luaChon(sc, "Nhập lựa chọn (1-2): ", 1, 2);
+
+            if (chonTT == 1 || chonTT == 2) {
+                break;
+            }
+
+            System.out.println("[Lỗi] Chỉ được chọn 1 hoặc 2!");
+        }
+
+        if (chonTT == 1) {
+
+            // Cửa hàng chi tiền mặt cho nhà cung cấp
+            System.out.println("\n========== CHI TIỀN MẶT ==========");
+            System.out.println("Cửa hàng chi tiền cho nhà cung cấp.");
+            System.out.println("Số tiền chi: "
+                    + Ktradulieu.dinhDangTien(tongTien));
+
+            System.out.print("Xác nhận đã chi tiền? (1: Có / 0: Không): ");
+            int xacNhan = Ktradulieu.luaChon(sc, "Nhập lựa chọn: ", 0, 1);
+
+            if (xacNhan != 1) {
+                System.out.println("[Thông báo] Chưa xác nhận thanh toán.");
+                return false;
+            }
+
+            TienMat tm = new TienMat(this.maHD, tongTien, nhanVienDangNhap);
+
+            // Ghi nhận số tiền cửa hàng đã chi
+            tm.setTienKhachDua(tongTien);
+
+            if (tm.qTrinhThanhToan()) {
+                this.phuongThucThanhToan = tm;
+            } else {
+                System.out.println("[Lỗi] Không thể ghi nhận thanh toán!");
+                return false;
+            }
+
+        } else {
+
+            // Cửa hàng chuyển khoản cho nhà cung cấp
+            System.out.println("\n========== CHUYỂN KHOẢN CHO NHÀ CUNG CẤP ==========");
+
+            ChuyenKhoan ck = new ChuyenKhoan(
+                    this.maHD,
+                    tongTien,
+                    nhanVienDangNhap
+            );
+
+            ck.nhap(sc);
+
+            this.phuongThucThanhToan = ck;
+        }
 
         this.setTrangThai("DangXuLy");
 
-        System.out.println("\n========== LẬP HÓA ĐƠN NHẬP ==========");
-        System.out.println("• Mã hóa đơn nhập: [" + this.maHD + "]");
-        System.out.println("• Mã nhà cung cấp: [" + this.maNCC + "]");
-        System.out.println("• Nhân viên phụ trách: ["
-                + nhanVienDangNhap.getMaND() + "] "
-                + nhanVienDangNhap.getTenND());
-
-        System.out.println("• Tổng tiền hàng: "
-                + Ktradulieu.dinhDangTien(tinhTongTien()));
-
-        System.out.println("• Tiền thuế: "
-                + Ktradulieu.dinhDangTien(tinhTienThue()));
-
-        System.out.println("• Tổng tiền phải trả: "
-                + Ktradulieu.dinhDangTien(tinhThanhTien()));
-
-        System.out.println("\n[Thành công] Đã lập hóa đơn nhập ["
-                + this.maHD + "].");
-
-        System.out.println("Trạng thái: Đang chờ quản lý duyệt.");
-        System.out.println("Chưa thực hiện thanh toán.");
+        System.out.println("[Thành công] Đã lập phiếu nhập kho [" + this.maHD
+                + "] (Trạng thái: Đang xử lý).");
 
         return true;
     }
@@ -352,74 +359,10 @@ public class HoadonNhap extends HoaDon implements IHoaDon {
         return false;
     }
 
-    private boolean thucHienThanhToan(Scanner sc, Nguoidung nguoiDuyet) {
-        if (nguoiDuyet == null || nguoiDuyet.isDaXoa()) {
-            System.out.println("[Lỗi] Người duyệt không hợp lệ!");
-            return false;
-        }
-
-        // Đã chi tiền ở lần duyệt trước (các bước sau đó lỗi): không chi lần hai
-        if (this.phuongThucThanhToan != null && this.phuongThucThanhToan.isThanhCong()) {
-            System.out.println("[Thông báo] Hóa đơn đã được thanh toán trước đó, bỏ qua bước thanh toán.");
-            return true;
-        }
-
-        double tongTien = tinhThanhTien();
-        if (tongTien <= 0) {
-            System.out.println("[Lỗi] Tổng tiền thanh toán không hợp lệ!");
-            return false;
-        }
-
-        System.out.println("\n========== THANH TOÁN HÓA ĐƠN NHẬP ==========");
-        System.out.println("Mã hóa đơn: " + this.maHD);
-        System.out.println("Mã nhà cung cấp: " + this.maNCC);
-        System.out.println("Tổng tiền hàng: " + Ktradulieu.dinhDangTien(tinhTongTien()));
-        System.out.println("Tiền thuế: " + Ktradulieu.dinhDangTien(tinhTienThue()));
-        System.out.println("Tổng tiền phải trả: " + Ktradulieu.dinhDangTien(tongTien));
-        System.out.println("\n1. Tiền mặt");
-        System.out.println("2. Chuyển khoản");
-        System.out.println("0. Hủy thanh toán");
-
-        int chon = Ktradulieu.luaChon(sc, "Nhập lựa chọn (0-2): ", 0, 2);
-        if (chon == 0) {
-            System.out.println("[Thông báo] Đã hủy thanh toán. Hóa đơn vẫn chờ duyệt, kho chưa thay đổi.");
-            return false;
-        }
-
-        ThanhToan tt;
-        if (chon == 1) {
-            System.out.println("Cửa hàng chi tiền mặt cho nhà cung cấp: " + Ktradulieu.dinhDangTien(tongTien));
-            if (!Ktradulieu.nhapXacNhan(sc, "Xác nhận đã chi tiền?")) {
-                System.out.println("[Thông báo] Chưa xác nhận. Hóa đơn vẫn chờ duyệt, kho chưa thay đổi.");
-                return false;
-            }
-            TienMat tm = new TienMat(this.maHD, tongTien, nguoiDuyet);
-            tm.setTienKhachDua(tongTien);
-            if (!tm.qTrinhThanhToan()) {
-                System.out.println("[Lỗi] Thanh toán tiền mặt thất bại!");
-                return false;
-            }
-            tt = tm;
-        } else {
-            System.out.println("\n========== CHUYỂN KHOẢN CHO NHÀ CUNG CẤP ==========");
-            ChuyenKhoan ck = new ChuyenKhoan(this.maHD, tongTien, nguoiDuyet);
-            ck.nhap(sc);
-            if (!ck.isThanhCong()) {
-                System.out.println("[Lỗi] Thanh toán chuyển khoản thất bại! Hóa đơn vẫn chờ duyệt, kho chưa thay đổi.");
-                return false;
-            }
-            tt = ck;
-        }
-
-        this.phuongThucThanhToan = tt;
-        System.out.println("[Thành công] Thanh toán hóa đơn nhập thành công!");
-        return true;
-    }
-
     private void hienThiChiTietChoDuyet(DSSanPham dsSP) {
         System.out.println("\n========== CHI TIẾT HÓA ĐƠN " + this.maHD + " ==========");
         System.out.println("Nhà cung cấp: " + this.maNCC);
-        System.out.println("Ngày lập: " + this.ngayLap);
+        System.out.println("Ngày lập: " + Ktradulieu.dinhDangNgay(this.ngayLap));
         System.out.println("----------------------------------------");
 
         for (int i = 0; i < this.soLuongCT; i++) {
@@ -453,7 +396,6 @@ public class HoadonNhap extends HoaDon implements IHoaDon {
         if (nguoiDuyet == null || nguoiDuyet.isDaXoa()
                 || (!(nguoiDuyet instanceof QuanLyCuaHang)
                 && !(nguoiDuyet instanceof Giamdoc))) {
-
             System.out.println("[Lỗi] Chỉ Quản lý cửa hàng hoặc Giám đốc mới được duyệt hóa đơn nhập!");
             return false;
         }
@@ -463,14 +405,9 @@ public class HoadonNhap extends HoaDon implements IHoaDon {
             return false;
         }
 
-        // 3. Kiểm tra trạng thái hóa đơn
-        if (this.isDaXuLyThanhCong()) {
+        // 3. Không cho duyệt hóa đơn đã hoàn tất
+        if (this.isDaXuLyThanhCong() || isDaHuy()) {
             System.out.println("[Thông báo] Hóa đơn nhập [" + this.maHD + "] đã được duyệt trước đó!");
-            return false;
-        }
-
-        if (this.isDaHuy()) {
-            System.out.println("[Lỗi] Hóa đơn đã bị hủy, không thể duyệt!");
             return false;
         }
 
@@ -481,7 +418,7 @@ public class HoadonNhap extends HoaDon implements IHoaDon {
 
         hienThiChiTietChoDuyet(dsSP);
 
-        // 4. Kiểm tra toàn bộ chi tiết hóa đơn
+        // 4. Kiểm tra toàn bộ chi tiết trước khi cập nhật kho
         boolean coSanPhamMoi = false;
 
         for (int i = 0; i < this.soLuongCT; i++) {
@@ -492,17 +429,9 @@ public class HoadonNhap extends HoaDon implements IHoaDon {
                     || ct.getMaSP() == null
                     || ct.getMaSP().trim().isEmpty()
                     || ct.getSoLuongNhap() <= 0
-                    || ct.getDonGiaNhap() <= 0) {
+                    || !Double.isFinite(ct.getDonGiaNhap()) || ct.getDonGiaNhap() <= 0) {
 
                 System.out.println("[Lỗi] Chi tiết nhập hàng thứ " + (i + 1) + " không hợp lệ!");
-                return false;
-            }
-
-            // Hàng nhập đã quá hạn ngay tại thời điểm duyệt thì không được nhập kho
-            if (ct.getHanSuDung() != null && ct.getHanSuDung().isBefore(java.time.LocalDate.now())) {
-                System.out.println("[Lỗi] Sản phẩm " + ct.getMaSP() + " có hạn sử dụng ("
-                        + ct.getHanSuDung().format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy"))
-                        + ") đã qua, không thể duyệt nhập kho!");
                 return false;
             }
 
@@ -551,7 +480,10 @@ public class HoadonNhap extends HoaDon implements IHoaDon {
                 }
             }
 
-            // Kiểm tra tổng số lượng để tránh vượt giới hạn int
+            /*
+             * Kiểm tra tổng số lượng của các dòng cùng mã sản phẩm.
+             * Tránh trường hợp cộng tồn kho vượt giới hạn int.
+             */
             long tongSoLuong = 0;
 
             for (int j = 0; j < this.soLuongCT; j++) {
@@ -594,15 +526,15 @@ public class HoadonNhap extends HoaDon implements IHoaDon {
             System.out.println("Giá nhập: " + Ktradulieu.dinhDangTien(ct.getDonGiaNhap()));
             System.out.println("Giá bán: " + Ktradulieu.dinhDangTien(spMoi.getDonGiaBan()));
             System.out.println("Đơn vị tính: " + spMoi.getDonViTinh());
-            System.out.println("Nhà sản xuất: " + spMoi.getNsx());
-            System.out.println("Hạn sử dụng: " + spMoi.getHsd());
+            System.out.println("Ngày sản xuất: " + Ktradulieu.dinhDangNgay(spMoi.getNsx()));
+            System.out.println("Hạn sử dụng: " + Ktradulieu.dinhDangNgay(spMoi.getHsd()));
             System.out.println("Thuế VAT: " + spMoi.getPhanTramThue() + "%");
             System.out.println("Số lượng nhập: " + ct.getSoLuongNhap());
 
             System.out.println("1. Duyệt sản phẩm");
             System.out.println("0. Từ chối sản phẩm");
 
-            int chon = (int) Ktradulieu.nhapSoNguyen(sc, "Lựa chọn: ");
+            int chon = Ktradulieu.luaChon(sc, "Lựa chọn: ", 0, 1);
 
             if (chon != 1) {
                 System.out.println("[Từ chối] Sản phẩm "
@@ -613,33 +545,35 @@ public class HoadonNhap extends HoaDon implements IHoaDon {
             }
         }
 
-        // 7. Kiểm tra lại danh sách sản phẩm trước khi thanh toán
+        // 7. Kiểm tra lại danh sách trước khi thêm sản phẩm mới
         for (int i = 0; i < this.soLuongCT; i++) {
 
             CTHDonNhap ct = this.dsChiTiet[i];
+
             SanPham spTrongKho = dsSP.timKiem(ct.getMaSP());
 
             if (ct.getSanPhamMoi() == null && spTrongKho == null) {
                 System.out.println("[Lỗi] Sản phẩm "
                         + ct.getMaSP() + " không còn tồn tại trong danh sách!");
+
                 return false;
             }
 
             if (ct.getSanPhamMoi() != null && spTrongKho != null) {
                 System.out.println("[Lỗi] Mã sản phẩm mới "
                         + ct.getMaSP() + " vừa bị trùng trong danh sách!");
+
                 return false;
             }
         }
-        // thanh toán
-        if (!thucHienThanhToan(sc, nguoiDuyet)) {
-            return false;
+
+        for (int i = 0; i < soLuongCT; i++) {
+            CTHDonNhap ct = dsChiTiet[i];
+            SanPham sp = ct.getSanPhamMoi() != null ? ct.getSanPhamMoi() : dsSP.timKiem(ct.getMaSP());
+            if (sp == null || sp.getNsx() == null || sp.getHsd() == null || ct.getHanSuDung() == null
+                    || ct.getHanSuDung().isBefore(sp.getNsx()) || ct.getHanSuDung().isBefore(LocalDate.now())) return false;
         }
-
-        // =====================================================
-        // 9. THANH TOÁN THÀNH CÔNG - THÊM SẢN PHẨM MỚI
-        // =====================================================
-
+        // 8. Thêm toàn bộ sản phẩm mới vào danh sách
         for (int i = 0; i < this.soLuongCT; i++) {
 
             CTHDonNhap ct = this.dsChiTiet[i];
@@ -662,39 +596,43 @@ public class HoadonNhap extends HoaDon implements IHoaDon {
                     + spMoi.getMaSP() + " vào danh sách sản phẩm.");
         }
 
-        // =====================================================
-        // 10. CẬP NHẬT SỐ LƯỢNG TỒN KHO VÀ GIÁ NHẬP
-        // =====================================================
-
+        // 9. Chỉ sau khi thêm sản phẩm mới thành công mới cập nhật tồn kho
         for (int i = 0; i < this.soLuongCT; i++) {
 
             CTHDonNhap ct = this.dsChiTiet[i];
+
             SanPham sp = dsSP.timKiem(ct.getMaSP());
 
             if (sp == null) {
                 System.out.println("[Lỗi] Không tìm thấy sản phẩm "
                         + ct.getMaSP() + " trong danh sách!");
+
                 return false;
             }
+        }
 
-            // Sản phẩm đã có trong kho: cập nhật HSD theo lần nhập này TRƯỚC khi cộng tồn,
-            // để hàng mới nhập không bị đánh giá theo HSD cũ (sản phẩm mới đã mang sẵn HSD từ hồ sơ).
-            if (ct.getSanPhamMoi() == null) {
-                String thongBaoHSD = sp.capNhatHanSuDungKhiNhap(ct.getHanSuDung());
-                if (thongBaoHSD != null) {
-                    System.out.println("[HSD] " + thongBaoHSD);
-                }
-            }
+        // 10. Cộng tồn kho và cập nhật giá nhập
+        for (int i = 0; i < this.soLuongCT; i++) {
+
+            CTHDonNhap ct = this.dsChiTiet[i];
+
+            SanPham sp = dsSP.timKiem(ct.getMaSP());
 
             sp.congTonKho(ct.getSoLuongNhap());
             sp.setDonGiaNhap(ct.getDonGiaNhap());
+            LocalDate hanMoi = ct.getHanSuDung();
+            if (sp.getSoLuongTon() > ct.getSoLuongNhap() && sp.getHsd().isBefore(hanMoi)) hanMoi = sp.getHsd();
+            sp.setHSD(sp.getNsx(), hanMoi);
         }
 
-        // =====================================================
-        // 11. XÁC NHẬN HÓA ĐƠN ĐÃ XỬ LÝ
-        // =====================================================
-
+        // 11. Xác nhận hóa đơn đã xử lý
         this.xacNhanXuLy();
+
+        System.out.println("\n[Thành công] Đã duyệt nhập kho hóa đơn ["
+                + this.maHD + "]!");
+
+        System.out.println("[Thông báo] Tất cả sản phẩm đã được cập nhật vào kho.");
+
         return true;
     }
 
@@ -702,16 +640,10 @@ public class HoadonNhap extends HoaDon implements IHoaDon {
 
     public String getMaNCC() { return maNCC; }
     public void setMaNCC(String maNCC) {
-        if (!kiemTraDuocChinhSua()) {
-            return;
-        }
-
+        kiemTraQuyenChinhSua();
         if (maNCC == null || maNCC.trim().isEmpty()) {
-            throw new IllegalArgumentException(
-                    "[Lỗi] Mã nhà cung cấp không được để trống!"
-            );
+            throw new IllegalArgumentException("[Lỗi] Mã nhà cung cấp không được để trống!");
         }
-
         this.maNCC = Ktradulieu.chuanHoaMa(maNCC);
     }
 
@@ -741,8 +673,8 @@ public class HoadonNhap extends HoaDon implements IHoaDon {
     @Override
     public String toFileString() {
         String pt = (this.phuongThucThanhToan != null) ? this.phuongThucThanhToan.getLoaiThanhToan() : "CHUA_TT";
-        return String.format(Locale.ROOT, "HDNHAP;%s;%s;%s;%s;%s;%.0f;%.0f;%.0f;%s;%s",
-                this.maHD, this.ngayLap, this.getMaNV(), this.maNCC, this.trangThai,
+        return String.format("HDNHAP;%s;%s;%s;%s;%s;%.0f;%.0f;%.0f;%s;%s",
+                this.maHD, Ktradulieu.dinhDangNgay(this.ngayLap), this.getMaNV(), this.maNCC, this.trangThai,
                 this.tinhTongTien(), this.tinhTienThue(), this.tinhThanhTien(), pt, (this.ghiChu != null ? this.ghiChu : ""));
     }
 
@@ -751,7 +683,7 @@ public class HoadonNhap extends HoaDon implements IHoaDon {
         StringBuilder sb = new StringBuilder();
         sb.append("\n========================== PHIẾU NHẬP KHO ==========================\n");
         sb.append("Mã hóa đơn nhập : ").append(this.maHD).append("\n");
-        sb.append("Ngày lập        : ").append(this.ngayLap).append("\n");
+        sb.append("Ngày lập        : ").append(Ktradulieu.dinhDangNgay(this.ngayLap)).append("\n");
         sb.append("Nhân viên lập   : [").append(this.getMaNV()).append("] ").append(this.nguoiLap != null ? this.nguoiLap.getTenND() : "").append("\n");
         sb.append("Nhà cung cấp    : ").append(this.maNCC).append("\n");
         sb.append("Trạng thái      : ").append(this.trangThai).append("\n");

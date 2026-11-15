@@ -2,7 +2,6 @@
 package hoadon;
 
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.Scanner;
 
 import person.NhanVien;
@@ -11,29 +10,28 @@ import util.Ktradulieu;
 public abstract class HoaDon implements IHoaDon {
 
     protected String maHD;
-    protected String ngayLap;
+    protected LocalDate ngayLap;
     protected NhanVien nguoiLap;
     protected String trangThai;
     protected String ghiChu;
 
     public HoaDon() {
         this.maHD = "";
-        this.ngayLap = LocalDate.now().format(
-                DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+        this.ngayLap = LocalDate.now();
         this.trangThai = "DangXuLy";
         this.ghiChu = "";
         this.nguoiLap = null;
     }
 
     public HoaDon(String maHD, NhanVien nguoiLap,
-                  String ngayLap, String trangThai, String ghiChu) {
+                  LocalDate ngayLap, String trangThai, String ghiChu) {
 
         if (maHD == null || maHD.trim().isEmpty()) {
             throw new IllegalArgumentException("Mã hóa đơn không được để trống!");
         }
 
-        if (!Ktradulieu.laNgayHopLe(ngayLap)) {
-            throw new IllegalArgumentException("Ngày lập không hợp lệ: " + ngayLap);
+        if (ngayLap == null) {
+            throw new IllegalArgumentException("Ngày lập không hợp lệ!");
         }
 
         if (trangThai == null || trangThai.trim().isEmpty()) {
@@ -43,7 +41,7 @@ public abstract class HoaDon implements IHoaDon {
         // Gán trực tiếp để khôi phục được hóa đơn đã hoàn tất.
         this.maHD = Ktradulieu.chuanHoaMa(maHD);
         this.nguoiLap = nguoiLap;
-        this.ngayLap = ngayLap.trim();
+        this.ngayLap = ngayLap;
         this.trangThai = trangThai.trim();
         this.ghiChu = ghiChu != null ? ghiChu.trim() : "";
     }
@@ -107,12 +105,9 @@ public abstract class HoaDon implements IHoaDon {
                 + this.nguoiLap.getMaND() + "] "
                 + this.nguoiLap.getTenND());
 
-        if (!Ktradulieu.laNgayHopLe(ngayLap)) {
-            throw new IllegalArgumentException(
-                    "Ngày lập không tồn tại hoặc sai định dạng dd/MM/yyyy!");
-        }
+        this.setNgayLap(LocalDate.now());
 
-        System.out.println("Ngày lập hóa đơn: " + this.ngayLap);
+        System.out.println("Ngày lập hóa đơn: " + Ktradulieu.dinhDangNgay(this.ngayLap));
 
         this.setTrangThai("DangXuLy");
 
@@ -150,20 +145,19 @@ public abstract class HoaDon implements IHoaDon {
         this.nguoiLap = nguoiLap;
     }
 
-    public String getNgayLap() {
+    public LocalDate getNgayLap() {
         return ngayLap;
     }
 
-    public void setNgayLap(String ngayLap) {
+    public void setNgayLap(LocalDate ngayLap) {
         kiemTraQuyenChinhSua();
 
-        if (ngayLap == null
-                || !ngayLap.trim().matches(Ktradulieu.ngayRegex)) {
+        if (ngayLap == null) {
             throw new IllegalArgumentException(
-                    "Ngày lập phải đúng định dạng dd/MM/yyyy!");
+                    "Ngày lập không được để trống!");
         }
 
-        this.ngayLap = ngayLap.trim();
+        this.ngayLap = ngayLap;
     }
 
     // Kiểm tra hóa đơn đã bị hủy chưa
@@ -242,6 +236,7 @@ public abstract class HoaDon implements IHoaDon {
             return;
         }
 
+        if (isDaHuy()) throw new IllegalStateException("H?a ??n ?? h?y!");
         this.trangThai = "DaXuLyThanhCong";
     }
 

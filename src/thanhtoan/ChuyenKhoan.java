@@ -1,7 +1,7 @@
 package thanhtoan;
 
 import java.util.Scanner;
-import person.Nguoidung;
+import person.NhanVien;
 import util.Ktradulieu;
 
 public class ChuyenKhoan extends ThanhToan {
@@ -22,7 +22,7 @@ public class ChuyenKhoan extends ThanhToan {
     }
 
 
-    public ChuyenKhoan(String maHD, double soTien, Nguoidung nvDangDangNhap) {
+    public ChuyenKhoan(String maHD, double soTien, NhanVien nvDangDangNhap) {
         super(maHD, "ChuyenKhoan", soTien, nvDangDangNhap);
         this.maGDNganHang = "";
         this.tenNguoiChuyen = "";
@@ -32,18 +32,12 @@ public class ChuyenKhoan extends ThanhToan {
 
 
     @Override
-    public void nhap() {
-        Scanner sc = new Scanner(System.in);
-        nhap(sc);
-    }
-
-    @Override
     public void nhap(Scanner sc) {
-        if (sc == null) sc = new Scanner(System.in);
+        if (sc == null) throw new IllegalArgumentException("Scanner không được null!");
 
         System.out.println("\n========== THANH TOÁN CHUYỂN KHOẢN ==========");
         System.out.println("• Mã giao dịch       : [" + this.maGD + "]");
-        System.out.println("• Người thực hiện  : [" + this.maNV + "]");
+        System.out.println("• Thu ngân phụ trách : [" + this.maNV + "]");
         System.out.println("• Số tiền cần chuyển : " + Ktradulieu.dinhDangTien(this.soTien));
 
         while (true) {
@@ -94,7 +88,7 @@ public class ChuyenKhoan extends ThanhToan {
         // Hợp lệ khi đã nhập đầy đủ mã giao dịch ngân hàng và số tài khoản
         boolean hopLe = (this.maGDNganHang != null && !this.maGDNganHang.isEmpty())
                 && (this.soTKChuyen != null && !this.soTKChuyen.isEmpty())
-                && (this.soTien > 0);
+                && (this.soTien >= 0);
 
         if (hopLe) {
             ketThuc(true);
@@ -110,11 +104,7 @@ public class ChuyenKhoan extends ThanhToan {
     public boolean thanhToan(Scanner sc, double tongTien) {
         this.soTien = tongTien;
         nhap(sc);
-        return isThanhCong();
-    }
-
-    public boolean thanhToan(double tongTien) {
-        return thanhToan(new Scanner(System.in), tongTien);
+        return qTrinhThanhToan();
     }
 
 

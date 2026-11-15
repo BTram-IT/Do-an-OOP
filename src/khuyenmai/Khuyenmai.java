@@ -1,7 +1,5 @@
 package khuyenmai;
 
-
-import java.util.Locale;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Scanner;
@@ -281,7 +279,7 @@ public abstract class Khuyenmai {
     public String toDongFile() {
         kiemTraDuLieuGhiFile();
 
-        return String.format(Locale.ROOT, "%s;%s;%s;%s",
+        return String.format("%s;%s;%s;%s",
                 maKM,
                 loaiKM,
                 ngayBatDau.format(DINH_DANG_NGAY),

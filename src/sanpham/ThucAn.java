@@ -1,9 +1,8 @@
 package sanpham;
 
-
-import java.util.Locale;
 import util.Ktradulieu;
 
+import java.time.LocalDate;
 import java.util.Scanner;
 
 public class ThucAn extends SanPham {
@@ -12,10 +11,9 @@ public class ThucAn extends SanPham {
     private String xuatXu;
     private boolean laDoChay;
 
-
     // Constructor đầy đủ
     public ThucAn(String maSP, String tenSP, double donGiaNhap, double donGiaBan, int soLuongTon,
-                  String donViTinh, String nsx, String hsd, double phanTramThue,
+                  String donViTinh, LocalDate nsx, LocalDate hsd, double phanTramThue,
                   String thanhPhan, String baoQuan, String xuatXu, boolean laDoChay,
                   String trangThaiDuyet, boolean daXoa) {
         super(maSP, tenSP, donGiaNhap, donGiaBan, soLuongTon, donViTinh, nsx, hsd, phanTramThue, trangThaiDuyet, daXoa);
@@ -93,11 +91,11 @@ public class ThucAn extends SanPham {
     }
 
     public String toFileString() {
-        return String.format(Locale.ROOT, "THUCAN;%s;%s;%.0f;%.0f;%d;%s;%s;%s;%.1f;%s;%s;%s;%b;%s;%b;%d",
+        return String.format("THUCAN;%s;%s;%.0f;%.0f;%d;%s;%s;%s;%.1f;%s;%s;%s;%b;%s;%b",
                 this.maSP, this.tenSP, this.donGiaNhap, this.donGiaBan,
-                this.soLuongTon, this.donViTinh, this.nsx, this.hsd,
+                this.soLuongTon, this.donViTinh, Ktradulieu.dinhDangNgay(this.nsx), Ktradulieu.dinhDangNgay(this.hsd),
                 this.phanTramThue, this.thanhPhan, this.baoQuan,
-                this.xuatXu, this.laDoChay, this.trangThaiDuyet, this.daXoa, this.soLuongHetHan);
+                this.xuatXu, this.laDoChay, this.trangThaiDuyet, this.daXoa);
     }
 
     @Override

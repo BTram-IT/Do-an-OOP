@@ -2,8 +2,6 @@ package sanpham;
 
 
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
 import java.util.Scanner;
 
 import util.Ktradulieu;
@@ -17,26 +15,22 @@ public abstract class SanPham {
     protected double donGiaBan;
     protected int soLuongTon;
     protected String donViTinh;
-    protected String nsx;
-    protected String hsd;
+    protected LocalDate nsx;
+    protected LocalDate hsd;
     protected String trangThaiDuyet;
     protected int soLuongHetHan;
     protected boolean daXoa;
     protected double phanTramThue;
 
-
-    private static final DateTimeFormatter DINH_DANG_NGAY = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-
     public SanPham(String maSP, String tenSP, double donGiaNhap, double donGiaBan, int soLuongTon,
-                   String donViTinh, String nsx, String hsd, double phanTramThue, String trangThaiDuyet, boolean daXoa) {
+                   String donViTinh, LocalDate nsx, LocalDate hsd, double phanTramThue, String trangThaiDuyet, boolean daXoa) {
         this.maSP = maSP;
         this.tenSP = tenSP;
         this.donGiaNhap = donGiaNhap;
         this.donGiaBan = donGiaBan;
         this.soLuongTon = soLuongTon;
         this.donViTinh = donViTinh;
-        this.nsx = nsx;
-        this.hsd = hsd;
+        setHSD(nsx, hsd);
         this.phanTramThue = phanTramThue;
         this.trangThaiDuyet = (trangThaiDuyet != null && !trangThaiDuyet.trim().isEmpty()) ? trangThaiDuyet : "Đang xử lý";
         this.soLuongHetHan = 0;
@@ -52,8 +46,8 @@ public abstract class SanPham {
         soLuongTon = 0;
         trangThaiDuyet = "";
         phanTramThue = 0;
-        nsx = "";
-        hsd = "";
+        nsx = null;
+        hsd = null;
         trangThaiDuyet = "";
         daXoa = false;
     }
@@ -84,7 +78,7 @@ public abstract class SanPham {
     }
 
     public void setDonGiaNhap(double donGiaNhap) {
-        if (donGiaNhap < 0) {
+        if (!Double.isFinite(donGiaNhap) || donGiaNhap < 0) {
             throw new IllegalArgumentException("[Lỗi] Đơn giá nhập phải >= 0! Nhận: " + donGiaNhap);
         }
         this.donGiaNhap = donGiaNhap;
@@ -95,7 +89,7 @@ public abstract class SanPham {
     }
 
     public void setDonGiaBan(double donGiaBan) {
-        if (donGiaBan <= 0) {
+        if (!Double.isFinite(donGiaBan) || donGiaBan <= 0) {
             throw new IllegalArgumentException("[Lỗi] Đơn giá bán phải > 0! Nhận: " + donGiaBan);
         }
         this.donGiaBan = donGiaBan;
@@ -128,7 +122,7 @@ public abstract class SanPham {
     }
 
     public void setPhanTramThue(double phanTramThue) {
-        if (phanTramThue < 0 || phanTramThue > 100) {
+        if (!Double.isFinite(phanTramThue) || phanTramThue < 0 || phanTramThue > 100) {
             throw new IllegalArgumentException("[Lỗi Thuế] Thuế suất phải từ 0% đến 100%! Nhận: " + phanTramThue);
         }
         this.phanTramThue = phanTramThue;
@@ -148,33 +142,22 @@ public abstract class SanPham {
     }
 
 
-    public String getNsx() {
+    public LocalDate getNsx() {
         return nsx;
     }
 
-    public String getHsd() {
+    public LocalDate getHsd() {
         return hsd;
     }
 
-    public void setHSD(String nsx, String hsd) {
-        if (nsx != null && !nsx.trim().isEmpty() && hsd != null && !hsd.trim().isEmpty()) {
-            nsx = nsx.trim();
-            hsd = hsd.trim();
-
-            if (!nsx.matches(Ktradulieu.ngayRegex) || !hsd.matches(Ktradulieu.ngayRegex)) {
-                throw new IllegalArgumentException("[Lỗi Ngày] NSX và HSD phải đúng định dạng dd/MM/yyyy (VD: 15/05/2025)!");
-            }
-
-            try {
-                LocalDate dNsx = LocalDate.parse(nsx, DINH_DANG_NGAY);
-                LocalDate dHsd = LocalDate.parse(hsd, DINH_DANG_NGAY);
-
-                if (dHsd.isBefore(dNsx)) {
-                    throw new IllegalArgumentException("[Lỗi HSD] Hạn sử dụng (" + hsd + ") không thể trước ngày sản xuất (" + nsx + ")!");
-                }
-            } catch (DateTimeParseException e) {
-                throw new IllegalArgumentException("[Lỗi Ngày] Ngày tháng không tồn tại trong thực tế!");
-            }
+    public void setHSD(LocalDate nsx, LocalDate hsd) {
+        if (nsx == null || hsd == null) {
+            throw new IllegalArgumentException("[Lỗi Ngày] Ngày sản xuất và hạn sử dụng không được để trống!");
+        }
+        if (hsd.isBefore(nsx)) {
+            throw new IllegalArgumentException("[Lỗi HSD] Hạn sử dụng ("
+                    + Ktradulieu.dinhDangNgay(hsd) + ") không thể trước ngày sản xuất ("
+                    + Ktradulieu.dinhDangNgay(nsx) + ")!");
         }
         this.nsx = nsx;
         this.hsd = hsd;
@@ -203,89 +186,33 @@ public abstract class SanPham {
         this.daXoa = daXoa;
     }
 
-    // ===== HẠN SỬ DỤNG =====
-    // Đọc HSD của sản phẩm; trả về null nếu chưa có hoặc không đọc được.
-    public LocalDate layNgayHetHan() {
-        if (this.hsd == null || this.hsd.trim().isEmpty()) {
-            return null;
-        }
-        String hsdStr = this.hsd.trim();
-        try {
-            if (hsdStr.matches(Ktradulieu.ngayRegex)) {
-                return LocalDate.parse(hsdStr, DINH_DANG_NGAY);
-            }
-            return LocalDate.parse(hsdStr);
-        } catch (DateTimeParseException e) {
-            return null;
-        }
-    }
+    // kiểm tra hạn sử dụng và cập nhật kho
 
-    // Chỉ KIỂM TRA, không thay đổi dữ liệu: true nếu sản phẩm đã quá hạn sử dụng.
-    public boolean isHetHan() {
-        LocalDate han = layNgayHetHan();
-        return han != null && LocalDate.now().isAfter(han);
-    }
-
-    // Chỉ KIỂM TRA, không thay đổi dữ liệu: true nếu còn hạn (hoặc không có HSD để kiểm tra).
     public boolean kiemTraHanSuDung() {
-        return !isHetHan();
-    }
+        if (this.hsd == null) {
+            return false;
+        }
 
-    // Thao tác nghiệp vụ có chủ đích: chuyển toàn bộ tồn của sản phẩm đã quá hạn sang số lượng hết hạn.
-    // Trả về số lượng đã chuyển (0 nếu còn hạn hoặc không còn tồn).
-    public int xuLyHetHan() {
-        if (!isHetHan() || this.soLuongTon <= 0) {
-            return 0;
-        }
-        int tonCu = this.soLuongTon;
-        this.soLuongHetHan += tonCu;
-        this.soLuongTon = 0;
-        return tonCu;
-    }
+        if (LocalDate.now().isAfter(this.hsd)) {
+            if (this.soLuongTon > 0) {
+                this.soLuongHetHan += this.soLuongTon;
+                int tonCu = this.soLuongTon;
+                this.soLuongTon = 0; // Cập nhật lại số lượng kho về 0
 
-    // Cập nhật HSD khi nhập bổ sung hàng (hệ thống chỉ lưu 1 HSD cho mỗi sản phẩm, không quản lý theo lô).
-    // GỌI TRƯỚC khi cộng tồn kho của lần nhập mới:
-    //  - Hàng cũ đã hết hạn: chuyển vào số lượng hết hạn rồi áp dụng HSD của lần nhập mới.
-    //  - Kho đang trống hoặc chưa có HSD: áp dụng HSD của lần nhập mới.
-    //  - Hàng cũ còn hạn: giữ HSD gần nhất (an toàn thực phẩm, không để hàng cũ bị bán quá hạn).
-    // Trả về thông báo mô tả việc đã làm (để hiển thị cho người duyệt).
-    public String capNhatHanSuDungKhiNhap(LocalDate hsdNhap) {
-        if (hsdNhap == null) {
-            return null;
+                System.out.println("Sản phẩm [" + this.maSP + "] " + this.tenSP
+                        + " ĐÃ HẾT HẠN (HSD: " + Ktradulieu.dinhDangNgay(this.hsd) + ")! Đã chuyển "
+                        + tonCu + " sản phẩm vào danh mục hết hạn (Tồn kho = 0).");
+            }
+            return false;
         }
-        String hsdMoi = hsdNhap.format(DINH_DANG_NGAY);
-        LocalDate hsdCu = layNgayHetHan();
-
-        if (hsdCu == null || this.soLuongTon <= 0) {
-            this.hsd = hsdMoi;
-            return "HSD của sản phẩm " + this.maSP + " được cập nhật theo lần nhập mới: " + hsdMoi;
-        }
-        if (LocalDate.now().isAfter(hsdCu)) {
-            int daChuyen = xuLyHetHan();
-            this.hsd = hsdMoi;
-            return "Đã chuyển " + daChuyen + " " + this.donViTinh + " hàng cũ hết hạn của " + this.maSP
-                    + " sang số lượng hết hạn; HSD mới: " + hsdMoi;
-        }
-        if (hsdNhap.isBefore(hsdCu)) {
-            this.hsd = hsdMoi;
-            return "Lô nhập mới có HSD sớm hơn nên HSD của " + this.maSP + " được đặt về " + hsdMoi;
-        }
-        return "Sản phẩm " + this.maSP + " còn hàng cũ (HSD " + this.hsd
-                + ") nên giữ HSD gần nhất, không kéo dài sang HSD lần nhập mới (" + hsdMoi + ").";
-    }
-
-    public void setSoLuongHetHan(int soLuongHetHan) {
-        if (soLuongHetHan < 0) {
-            throw new IllegalArgumentException("[Lỗi] Số lượng hết hạn phải >= 0! Nhận: " + soLuongHetHan);
-        }
-        this.soLuongHetHan = soLuongHetHan;
+        return true;
     }
 
     public void congTonKho ( int sl){
         if (sl <= 0) {
             throw new IllegalArgumentException("[Lỗi Kho] Số lượng cộng kho phải > 0! Nhận: " + sl);
         }
-        this.soLuongTon += sl;
+        this.soLuongTon = Math.addExact(this.soLuongTon, sl);
     }
 
     public void truTonKho ( int sl){
@@ -335,11 +262,10 @@ public abstract class SanPham {
 
         this.setTenSP(Ktradulieu.nhapChuoiKhongRong(sc, "Nhập tên sản phẩm: "));
         this.setDonGiaNhap(Ktradulieu.nhapSoThucKhongAm(sc, "Nhập đơn giá nhập (đ): "));
-        this.setDonGiaBan(Ktradulieu.nhapSoThucDuong(sc, "Nhập đơn giá bán (đ): "));
+        this.setDonGiaBan(Ktradulieu.nhapSoThuc(sc, "Nhập đơn giá bán (đ): "));
         this.setSoLuongTon(Ktradulieu.nhapSoNguyen(sc, "Nhập số lượng nhập kho: "));
         this.setDonViTinh(Ktradulieu.nhapChuoi(sc, "Nhập đơn vị tính (gói/chai/hộp...): ", ".+", "Không được để trống!"));
-        this.setPhanTramThue(Ktradulieu.nhapSoThucTrongKhoang(sc, "Nhập thuế VAT (%) (0-100): ", 0, 100));
-        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        this.setPhanTramThue(Ktradulieu.nhapSoThuc(sc, "Nhập thuế VAT (%): "));
 
         LocalDate dNsx;
 
@@ -363,7 +289,7 @@ public abstract class SanPham {
             );
 
             try {
-                this.setHSD(dNsx.format(dtf), dHsd.format(dtf));
+                this.setHSD(dNsx, dHsd);
                 break;
 
             } catch (IllegalArgumentException e) {

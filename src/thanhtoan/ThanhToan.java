@@ -3,9 +3,8 @@ package thanhtoan;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Scanner;
-import person.Nguoidung;
+import person.NhanVien;
 import util.Ktradulieu;
-
 
 public abstract class ThanhToan {
 
@@ -31,7 +30,7 @@ public abstract class ThanhToan {
     }
 
 
-    public ThanhToan(String maHD, String loaiThanhToan, double soTien, Nguoidung nvDangDangNhap) {
+    public ThanhToan(String maHD, String loaiThanhToan, double soTien, NhanVien nvDangDangNhap) {
         setMaGD("TT_" + ((maHD != null && !maHD.isEmpty()) ? maHD : "GD001"));
         setLoaiThanhToan(loaiThanhToan);
         setSoTien(soTien);
@@ -44,8 +43,6 @@ public abstract class ThanhToan {
         this.trangThai = CHO_THANH_TOAN;
         this.ngayThanhToan = null;
     }
-
-    public abstract void nhap();
 
     public abstract void nhap(Scanner sc);
 
@@ -91,7 +88,7 @@ public abstract class ThanhToan {
     }
 
     public void setSoTien(double soTien) {
-        if (soTien < 0) {
+        if (!Double.isFinite(soTien) || soTien < 0) {
             throw new IllegalArgumentException("[Lỗi] Số tiền thanh toán không được âm! Nhận: " + soTien);
         }
         this.soTien = soTien;

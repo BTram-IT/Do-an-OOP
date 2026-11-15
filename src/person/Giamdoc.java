@@ -1,7 +1,5 @@
 package person;
 
-
-import java.util.Locale;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Scanner;
@@ -168,37 +166,16 @@ public class Giamdoc extends Nguoidung {
                 return;
         }
     }
-    public boolean duyetSanPhamMoi(DSSanPham dsSP, SanPham spMoi) {
+    public void duyetSanPhamMoi(DSSanPham dsSP, SanPham spMoi) {
         if (this.isDaXoa()) {
             throw new IllegalStateException("[TỪ CHỐI TRUY CẬP] Tài khoản giám đốc đã bị vô hiệu hóa!");
         }
         if (dsSP == null || spMoi == null) {
             throw new IllegalArgumentException("[Lỗi] Dữ liệu sản phẩm duyệt không được để trống!");
         }
-
-        String trangThaiCu = spMoi.getTrangThaiDuyet();
         spMoi.setTrangThaiDuyet("Đã duyệt");
-
-        boolean themDuoc;
-        try {
-            themDuoc = dsSP.themSP(spMoi);
-        } catch (RuntimeException e) {
-            System.out.println("[Lỗi] " + e.getMessage());
-            themDuoc = false;
-        }
-
-        if (!themDuoc) {
-            // Hoàn tác trạng thái để sản phẩm không bị đánh dấu đã duyệt khi chưa vào danh mục
-            if (trangThaiCu != null && !trangThaiCu.trim().isEmpty()) {
-                spMoi.setTrangThaiDuyet(trangThaiCu);
-            }
-            System.out.println("[Thất bại] Không thể thêm sản phẩm [" + spMoi.getMaSP() + "] vào danh mục, sản phẩm chưa được duyệt.");
-            return false;
-        }
-
-        System.out.println("[Thành công] Giám đốc [" + this.tenND + "] đã chính thức phê duyệt sản phẩm mới: "
-                + spMoi.getTenSP() + " [" + spMoi.getMaSP() + "].");
-        return true;
+        dsSP.themSP(spMoi);
+        System.out.println("[Thành công] Giám đốc [" + this.tenND + "] đã chính thức phê duyệt sản phẩm mới: " + spMoi.getTenSP() + " [" + spMoi.getMaSP() + "].");
     }
 
     // Phê duyệt hóa đơn
@@ -230,7 +207,7 @@ public class Giamdoc extends Nguoidung {
             HoaDon hd = dsHD.get(i);
             if (hd != null && hd.isDaXuLyThanhCong()) {
                 if (hd instanceof Hoadonban) {
-                    tongDoanhThu += ((Hoadonban) hd).tinhDoanhThuThuan();
+                    tongDoanhThu += ((Hoadonban) hd).tinhTongTien();
                     donBanThanhCong++;
                 } else if (hd instanceof HoadonNhap) {
                     tongChiPhiNhap += hd.tinhTongTien();
@@ -369,7 +346,7 @@ public class Giamdoc extends Nguoidung {
     }
 
     public String toFileString() {
-        return String.format(Locale.ROOT, "GIAMDOC;%s;%s;%s;%s;%s;%s;%b;%.0f;%.2f",
+        return String.format("GIAMDOC;%s;%s;%s;%s;%s;%s;%b;%.0f;%.2f",
                 getMaND(), getTenND(), getTaiKhoan(), getMatKhau(), getSoDienThoai(), getVaiTro(), isDaXoa(),
                 phuCapChucVu, tyLeCoPhan);
     }
