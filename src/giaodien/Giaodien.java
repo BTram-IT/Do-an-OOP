@@ -202,15 +202,45 @@ public class Giaodien {
         }
     }
 
+    private static final int WIDTH = 56;   
+
+    private static String chuanHoa(String s) {
+        return Normalizer.normalize(s == null ? "" : s, Normalizer.Form.NFC);
+    }
+
+    private static int doDai(String s) {
+        return s.codePointCount(0, s.length());
+    }
+
+    private static String vienTren() {
+        return "╔" + "═".repeat(WIDTH - 2) + "╗";
+    }
+
+    private static String vienDuoi() {
+        return "╚" + "═".repeat(WIDTH - 2) + "╝";
+    }
+
+    private static String ngan() {
+        return "╟" + "─".repeat(WIDTH - 2) + "╢";
+    }
+
+    private static String dongGiua(String text) {
+        String t = chuanHoa(text);
+        int inner = WIDTH - 2;
+        int trai = (inner - doDai(t)) / 2;
+        int phai = inner - doDai(t) - trai;
+        return "║" + " ".repeat(trai) + t + " ".repeat(phai) + "║";
+    }
+    
     public void hienThiManHinhDangNhap(Scanner sc) {
 
         System.out.println();
-        System.out.println("==============================================");
-        System.out.println("=       HỆ THỐNG QUẢN LÝ CỬA HÀNG            =");
-        System.out.println("=          THỨC ĂN & NƯỚC UỐNG               =");
-        System.out.println("----------------------------------------------");
-        System.out.println("=                 ĐĂNG NHẬP                  =");
-        System.out.println("==============================================");
+        System.out.println(vienTren());
+        System.out.println(dongGiua("HỆ THỐNG QUẢN LÝ CỬA HÀNG"));
+        System.out.println(dongGiua("THỨC ĂN & NƯỚC UỐNG"));
+        System.out.println(ngan());
+        System.out.println(dongGiua("ĐĂNG NHẬP"));
+        System.out.println(vienDuoi());
         System.out.println();
 
         int soLanSai = 0;
@@ -241,11 +271,12 @@ public class Giaodien {
 
                 this.nguoiDangNhap = nd;
 
-                System.out.println("\n----------------------------------------------");
-                System.out.println("=           ĐĂNG NHẬP THÀNH CÔNG!              =");
-                System.out.println("  Xin chào: " + nd.getVaiTro()
-                        + " - " + nd.getTenND());
-                System.out.println("----------------------------------------------");
+                System.out.println();
+                System.out.println(vienTren());
+                System.out.println(dongGiua("ĐĂNG NHẬP THÀNH CÔNG!"));
+                System.out.println(dongGiua("Xin chào: " + nd.getVaiTro()
+                        + " - " + nd.getTenND()));
+                System.out.println(vienDuoi());
 
                 return;
             }
