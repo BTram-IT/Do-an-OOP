@@ -10,8 +10,7 @@ public abstract class Nguoidung {
     protected String matKhau;
     protected String soDienThoai;
     protected String vaiTro;
-    protected boolean daXoa; // Soft delete
-
+    protected boolean daXoa;
 
     public Nguoidung() {
         this.maND = "";

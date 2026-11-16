@@ -19,10 +19,6 @@ import java.util.List;
 import java.util.Scanner;
 import util.Ktradulieu;
 
-/**
- * Danh sách tài khoản của hệ thống. Chứa MỌI vai trò (NhanVien, QuanLyCuaHang, Giamdoc)
- * nên mã tự sinh, kiểm tra trùng mã / trùng tài khoản và việc lưu - đọc file đều áp dụng chung.
- */
 public class DSNhanVien {
     private List<Nguoidung> danhSach;
 
@@ -30,12 +26,10 @@ public class DSNhanVien {
         this.danhSach = new ArrayList<>();
     }
 
-    /** Danh sách chỉ đọc của tất cả tài khoản. Muốn thêm / xóa phải đi qua them(), xoa()... */
     public List<Nguoidung> getDanhSach() {
         return Collections.unmodifiableList(danhSach);
     }
 
-    /** Bản sao chỉ gồm các tài khoản nhân viên (NhanVien). */
     public List<NhanVien> getDanhSachNhanVien() {
         List<NhanVien> ketQua = new ArrayList<>();
         for (Nguoidung nd : danhSach) {
