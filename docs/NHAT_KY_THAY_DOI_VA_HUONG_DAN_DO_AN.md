@@ -844,3 +844,30 @@ PDF này có mục lục và bookmark để nhảy nhanh theo phần. Bản Mark
 ```
 
 Log kiểm chứng mới: .audit/documentation-check/review-results.txt và crash-results.txt. Dữ liệu chạy nằm trong .audit/documentation-check/run/data. ReviewProbe/CrashProbe là công cụ kiểm tra bổ sung của cuộc trao đổi; AuditProbe, LocalDateProbe và ScannerProbe đã có khi bắt đầu lượt rà soát này.
+
+
+## Cập nhật vai trò Admin thay Giám đốc
+
+Lớp `Giamdoc` đã được thay bằng `Admin`, kế thừa các nghiệp vụ của `QuanLyCuaHang` và có toàn quyền quản trị. Các mô tả Giám đốc và menu ba mục trong phần ghi chép trước đây là hành vi cũ. Tài khoản mẫu hiện tại là `admin / 123456` (AD001); Quản lý chỉ quản trị nhân viên thường và đề xuất sa thải. Admin có toàn bộ menu nghiệp vụ, tạo/sửa/khóa/mở khóa tài khoản, đặt lại mật khẩu và quyết định sa thải. Người lập hóa đơn/thanh toán đã mở rộng sang `Nguoidung` để ghi nhận đúng tài khoản thực hiện.
+
+Chi tiết ma trận quyền, menu, tương thích file tài khoản cũ và cách chạy kiểm tra nằm trong [PHAN_QUYEN_ADMIN.md](PHAN_QUYEN_ADMIN.md).
+
+
+## Điều chỉnh sản phẩm và tồn kho
+
+Bỏ `tongSoSanPhamKhoiTao`, `soLuongHetHan`, `trangThaiDuyet` cùng các getter/setter và tham số constructor liên quan. Danh mục mới luôn tồn 0; chỉ cộng hàng khi duyệt hóa đơn nhập, không duyệt riêng từng sản phẩm. Hàng hết hạn được xác định theo HSD, loại tồn cũ về 0 khi kiểm tra hoặc nhận lô mới. Các mô tả duyệt riêng sản phẩm trong ghi chép trước là hành vi cũ. File sản phẩm mới có 15 cột; bộ đọc vẫn tương thích file cũ và hồ sơ `SPMOI` của hóa đơn cũ. Xem [SAN_PHAM_VA_TON_KHO.md](SAN_PHAM_VA_TON_KHO.md).
+
+
+## Cập nhật nhập hàng theo NCC
+
+Sản phẩm có thêm `maNCC` và cột hiển thị NCC. Dữ liệu cũ thiếu NCC được chọn một NCC đang hợp tác khi nhập thêm hàng lần đầu. Menu Kho → `1` nay mở nhập hàng theo đề xuất/thêm mới/sửa danh sách rồi gom thành từng phiếu theo NCC; không phải nhập mã phiếu và chọn NCC trước như luồng cũ. Từng phiếu phải thanh toán thành công mới in/lưu hóa đơn, sau đó chờ duyệt để cộng kho. Menu chỉnh sửa có `6` thanh toán và `7` xem danh sách mặt hàng. Xem [NHAP_HANG_THEO_NHA_CUNG_CAP.md](NHAP_HANG_THEO_NHA_CUNG_CAP.md) để dùng luồng hiện tại.
+
+
+## Cập nhật nhập bổ sung không theo lô
+
+Luồng mới chỉ hỏi số lượng và giá nhập. Cùng mã sản phẩm được cộng dồn một dòng, lấy đơn giá/VAT lần nhập cuối. Khi duyệt phiếu, NSX mới bằng ngày duyệt; HSD mới bằng NSX mới cộng số ngày sử dụng đã có (`HSD cũ - NSX cũ`). Ngày áp dụng chung cho sản phẩm; không giữ hạn sớm nhất giữa các lô. Lịch sử hóa đơn cũ vẫn được đọc nguyên các dòng để bảo toàn tiền hàng. Danh sách sản phẩm bổ sung NSX và HSD. Xem [SAN_PHAM_VA_TON_KHO.md](SAN_PHAM_VA_TON_KHO.md).
+
+
+## Thống kê và xử lý hạn sử dụng tại kho
+
+Menu Kho bổ sung `9` thống kê hết hạn, `10` thống kê sắp hết hạn (0-30 ngày), `11` áp dụng giảm giá cận hạn (Admin/Quản lý), `12` loại bỏ lượng tồn hết hạn sau xác nhận. Xem báo cáo hoặc tồn kho không tự loại hàng. Khi duyệt nhập bổ sung: hàng cũ hết hạn thì bỏ lượng cũ, chỉ nhận lượng mới; còn hạn thì cộng cả hai. Xem [QUAN_LY_HAN_SU_DUNG_KHO.md](QUAN_LY_HAN_SU_DUNG_KHO.md).

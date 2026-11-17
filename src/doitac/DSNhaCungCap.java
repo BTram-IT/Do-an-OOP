@@ -1,5 +1,7 @@
 package doitac;
 
+import util.BangConsole;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -11,8 +13,6 @@ import java.util.List;
 import java.util.Scanner;
 
 import person.Nguoidung;
-import person.QuanLyCuaHang;
-import person.Giamdoc;
 import util.Ktradulieu;
 
 public class DSNhaCungCap {
@@ -28,6 +28,37 @@ public class DSNhaCungCap {
 
     public int getSoLuong() {
         return danhSach.size();
+    }
+
+    public NhaCungCap timKiemTheoMa(String maNCC) {
+        if (maNCC == null) return null;
+        for (NhaCungCap ncc : danhSach) {
+            if (ncc.getMaNCC().equalsIgnoreCase(maNCC.trim())) return ncc;
+        }
+        return null;
+    }
+
+    public boolean coNhaCungCapHoatDong() {
+        for (NhaCungCap ncc : danhSach) if (!ncc.isDaXoa()) return true;
+        return false;
+    }
+
+    public NhaCungCap chonNhaCungCap(Scanner sc) {
+        List<NhaCungCap> dangHoatDong = new ArrayList<>();
+        BangConsole bang = new BangConsole("STT", "MÃ NCC", "TÊN NHÀ CUNG CẤP");
+        for (NhaCungCap ncc : danhSach) {
+            if (!ncc.isDaXoa()) {
+                dangHoatDong.add(ncc);
+                bang.themDong(dangHoatDong.size(), ncc.getMaNCC(), ncc.getTenNCC());
+            }
+        }
+        if (dangHoatDong.isEmpty()) {
+            System.out.println("[Thông báo] Vui lòng thêm nhà cung cấp đang hợp tác trước!");
+            return null;
+        }
+        System.out.println(bang);
+        int chon = Ktradulieu.luaChon(sc, "Chọn nhà cung cấp theo STT (0: Hủy): ", 0, dangHoatDong.size());
+        return chon == 0 ? null : dangHoatDong.get(chon - 1);
     }
 
     public NhaCungCap get(int index) {
@@ -78,10 +109,10 @@ public class DSNhaCungCap {
         return null;
     }
 
-    // 4. Xóa nhà cung cấp (Chỉ Quản lý hoặc Giám đốc, dùng Soft Delete để giữ lịch sử phiếu nhập)
+    // 4. Xóa nhà cung cấp (Chỉ Quản lý hoặc Admin, dùng Soft Delete để giữ lịch sử phiếu nhập)
     public boolean xoa(Nguoidung nguoiThucHien, String maNCC) {
-        if (!(nguoiThucHien instanceof QuanLyCuaHang || nguoiThucHien instanceof Giamdoc)) {
-            System.out.println("[TỪ CHỐI TRUY CẬP] Chỉ Quản Lý hoặc Giám Đốc mới có quyền xóa nhà cung cấp!");
+        if (nguoiThucHien == null || !nguoiThucHien.coQuyen("QUAN_LY_NHA_CUNG_CAP")) {
+            System.out.println("[TỪ CHỐI TRUY CẬP] Chỉ Quản Lý hoặc Admin mới có quyền xóa nhà cung cấp!");
             return false;
         }
 
@@ -104,8 +135,8 @@ public class DSNhaCungCap {
 
     // sửa
     public boolean sua(Scanner sc, Nguoidung nguoiThucHien, String maNCC) {
-        if (!(nguoiThucHien instanceof QuanLyCuaHang || nguoiThucHien instanceof Giamdoc)) {
-            System.out.println("[TỪ CHỐI TRUY CẬP] Chỉ Quản Lý hoặc Giám Đốc mới có quyền sửa nhà cung cấp!");
+        if (nguoiThucHien == null || !nguoiThucHien.coQuyen("QUAN_LY_NHA_CUNG_CAP")) {
+            System.out.println("[TỪ CHỐI TRUY CẬP] Chỉ Quản Lý hoặc Admin mới có quyền sửa nhà cung cấp!");
             return false;
         }
 
@@ -162,11 +193,15 @@ public class DSNhaCungCap {
     }
 
     public void xuatDanhSach() {
-        System.out.println("\n================ DANH SÁCH NHÀ CUNG CẤP ================");
-        for (NhaCungCap ncc : danhSach) {
-            System.out.println(ncc.toString());
-        }
-        System.out.println("Tổng số nhà cung cấp: " + danhSach.size());
+        System.out.println(this);
+    }
+
+    @Override
+    public String toString() {
+        String xuongDong = System.lineSeparator();
+        return xuongDong + "===== DANH SÁCH NHÀ CUNG CẤP =====" + xuongDong
+                + BangConsole.tuDanhSach(danhSach) + xuongDong
+                + "Tổng số nhà cung cấp: " + danhSach.size();
     }
 
     // ghi
@@ -188,7 +223,7 @@ public class DSNhaCungCap {
     public void docFile(String duongDan) {
         File file = new File(duongDan);
         if (!file.exists()) return;
-        java.util.List<NhaCungCap> banCu = new java.util.ArrayList<>(danhSach);
+        List<NhaCungCap> banCu = new ArrayList<>(danhSach);
         danhSach.clear();
         try (BufferedReader br = new BufferedReader(new FileReader(file))) {
             String dong;

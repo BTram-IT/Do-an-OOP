@@ -1,5 +1,8 @@
 package khuyenmai;
 
+import util.BangConsole;
+import java.util.Arrays;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -11,9 +14,9 @@ import java.io.OutputStreamWriter;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
 import java.util.Scanner;
+import java.util.ArrayList;
+import java.util.Locale;
 
 import util.Ktradulieu;
 
@@ -26,7 +29,6 @@ public class DSKhuyenMai {
     private int boDemMa;
 
     private static final int SUC_CHUA_MAC_DINH = 50;
-    private static final DateTimeFormatter DINH_DANG_NGAY = DateTimeFormatter.ofPattern("dd/MM/uuuu");
 
     // =========================================================
     // 1. CONSTRUCTOR
@@ -167,16 +169,52 @@ public class DSKhuyenMai {
 
     public void timKiemKhuyenMai(Scanner sc) {
         String maKM = Ktradulieu.nhapChuoi(
-                sc, "Nhập mã khuyến mãi cần tìm: ", ".+", "Mã khuyến mãi không được để trống!");
-        Khuyenmai km = timKiem(maKM);
+                sc, "Nhập mã hoặc loại khuyến mãi cần tìm: ", ".+", "Từ khóa không được để trống!");
+        Khuyenmai[] ketQua = timKiemTheoTuKhoa(maKM);
 
-        if (km == null) {
+        if (ketQua.length == 0) {
             System.out.println("Không tìm thấy chương trình khuyến mãi: " + maKM);
             return;
         }
 
         System.out.println("\n--- THÔNG TIN CHƯƠNG TRÌNH KHUYẾN MÃI ---");
-        System.out.println(km);
+        System.out.println(BangConsole.tuDanhSach(Arrays.asList(ketQua)));
+    }
+
+    public Khuyenmai[] timKiemTheoTuKhoa(String tuKhoa) {
+        ArrayList<Khuyenmai> ketQua = new ArrayList<>();
+        if (tuKhoa == null || tuKhoa.isBlank()) return new Khuyenmai[0];
+        String khoa = tuKhoa.trim().toLowerCase(Locale.ROOT);
+        for (int i = 0; i < soLuong; i++) {
+            Khuyenmai km = danhSach[i];
+            if (km.getMaKM().toLowerCase(Locale.ROOT).contains(khoa)
+                    || km.getLoaiKM().toLowerCase(Locale.ROOT).contains(khoa)) ketQua.add(km);
+        }
+        return ketQua.toArray(new Khuyenmai[0]);
+    }
+
+    // 1: đang áp dụng; 2: hết hạn; 3: chưa bắt đầu. Hai ngày biên đều có hiệu lực.
+    public Khuyenmai[] locTheoTrangThai(int trangThai, LocalDate ngay) {
+        if (ngay == null || trangThai < 1 || trangThai > 3) {
+            throw new IllegalArgumentException("Ngày hoặc trạng thái khuyến mãi không hợp lệ!");
+        }
+        ArrayList<Khuyenmai> ketQua = new ArrayList<>();
+        for (int i = 0; i < soLuong; i++) {
+            Khuyenmai km = danhSach[i];
+            if ((trangThai == 1 && km.kiemTraThoiHan(ngay))
+                    || (trangThai == 2 && km.kiemTraHetHan(ngay))
+                    || (trangThai == 3 && km.chuaBatDau(ngay))) ketQua.add(km);
+        }
+        return ketQua.toArray(new Khuyenmai[0]);
+    }
+
+    public void thongKeTrangThai(Scanner sc) {
+        System.out.println("\n===== THỐNG KÊ TRẠNG THÁI KHUYẾN MÃI =====");
+        int chon = Ktradulieu.luaChon(sc, "1. Đang áp dụng | 2. Hết hạn | 3. Chưa bắt đầu | 0. Quay lại: ", 0, 3);
+        if (chon == 0) return;
+        Khuyenmai[] ketQua = locTheoTrangThai(chon, LocalDate.now());
+        System.out.println(BangConsole.tuDanhSach(Arrays.asList(ketQua)));
+        System.out.println("Tổng số khuyến mãi: " + ketQua.length);
     }
 
     // =========================================================
@@ -298,13 +336,15 @@ public class DSKhuyenMai {
         }
 
         System.out.println("\n========== SỬA THÔNG TIN KHUYẾN MÃI [" + km.getMaKM() + "] ==========");
-        System.out.println("Thông tin hiện tại: " + km);
+        System.out.println("Thông tin hiện tại:\n" + km);
         System.out.println("1. Sửa ngày bắt đầu");
         System.out.println("2. Sửa ngày kết thúc");
         System.out.println("3. Sửa giá trị khuyến mãi chi tiết");
+        System.out.println("4. Sửa mức chi tối thiểu của dòng sản phẩm (0: không yêu cầu)");
+        System.out.println("5. Sửa mức giảm tối đa cho khuyến mãi phần trăm (0: không giới hạn)");
         System.out.println("0. Hủy bỏ");
 
-        int chon = Ktradulieu.luaChon(sc, "Chọn mục cần sửa (0-3): ", 0, 3);
+        int chon = Ktradulieu.luaChon(sc, "Chọn mục cần sửa (0-5): ", 0, 5);
 
         try {
             switch (chon) {
@@ -364,6 +404,16 @@ public class DSKhuyenMai {
                     break;
                 }
 
+                case 4:
+                    km.setMucChiToiThieu(nhapSoTienKhongAm(sc, "Nhập mức chi tối thiểu (VND): "));
+                    break;
+                case 5:
+                    if (!(km instanceof KhuyenmaiPhantram)) {
+                        System.out.println("Chỉ khuyến mãi phần trăm có mức giảm tối đa!");
+                        return false;
+                    }
+                    ((KhuyenmaiPhantram) km).setMucGiamToiDa(nhapSoTienKhongAm(sc, "Nhập mức giảm tối đa (VND): "));
+                    break;
                 case 0:
                     System.out.println("Đã hủy thao tác sửa.");
                     return false;
@@ -436,17 +486,18 @@ public class DSKhuyenMai {
     // 11. XUẤT DANH SÁCH
     // =========================================================
     public void xuatDanhSach() {
-        if (this.soLuong == 0) {
-            System.out.println("Danh sách khuyến mãi hiện đang trống!");
-            return;
-        }
+        System.out.println(this);
+    }
 
-        System.out.println("\n========================== DANH SÁCH CHƯƠNG TRÌNH KHUYẾN MÃI ==========================");
-        for (int i = 0; i < this.soLuong; i++) {
-            System.out.printf("%-3d. %s%n", i + 1, this.danhSach[i]);
-            System.out.println("--------------------------------------------------------------------------------------");
+    @Override
+    public String toString() {
+        if (this.soLuong == 0) {
+            return "Danh sách khuyến mãi hiện đang trống!";
         }
-        System.out.println("Tổng số chương trình khuyến mãi: " + this.soLuong);
+        String xuongDong = System.lineSeparator();
+        return xuongDong + "===== DANH SÁCH CHƯƠNG TRÌNH KHUYẾN MÃI =====" + xuongDong
+                + BangConsole.tuDanhSach(Arrays.asList(getDanhSach())) + xuongDong
+                + "Tổng số chương trình khuyến mãi: " + this.soLuong;
     }
 
     // =========================================================
@@ -519,94 +570,10 @@ public class DSKhuyenMai {
                     continue;
                 }
 
-                String[] p = dong.split(";", -1);
-
-                String loai = p[0].trim();
-                String ma;
-                String tenLoai;
-
-                if (p.length < 6) {
+                Khuyenmai km = Khuyenmai.tuDongFile(dong);
+                if (trungMaTrongMang(danhSachTam, soLuongTam, km.getMaKM())) {
                     throw new IllegalArgumentException(
-                            "Dòng " + soDong + ": Không đủ trường dữ liệu!");
-                }
-
-                ma = Ktradulieu.chuanHoaMa(p[1]);
-                tenLoai = p[2].trim();
-
-                if (ma.isEmpty() || tenLoai.isEmpty()) {
-                    throw new IllegalArgumentException(
-                            "Dòng " + soDong + ": Mã hoặc loại khuyến mãi bị trống!");
-                }
-
-                if (trungMaTrongMang(danhSachTam, soLuongTam, ma)) {
-                    throw new IllegalArgumentException(
-                            "Dòng " + soDong + ": Mã khuyến mãi bị trùng: " + ma);
-                }
-
-                LocalDate ngayBD;
-                LocalDate ngayKT;
-
-                try {
-                    ngayBD = LocalDate.parse(p[3].trim(), DINH_DANG_NGAY);
-                    ngayKT = LocalDate.parse(p[4].trim(), DINH_DANG_NGAY);
-
-                } catch (DateTimeParseException e) {
-                    throw new IllegalArgumentException(
-                            "Dòng " + soDong + ": Ngày không đúng định dạng dd/MM/yyyy!");
-                }
-
-                Khuyenmai km;
-
-                try {
-                    if ("MUATANG".equalsIgnoreCase(loai)) {
-
-                        if (p.length != 7) {
-                            throw new IllegalArgumentException(
-                                    "Khuyến mãi mua tặng phải có 7 trường!");
-                        }
-
-                        int mua = Integer.parseInt(p[5].trim());
-                        int tang = Integer.parseInt(p[6].trim());
-
-                        km = new KhuyenmaiMuatang(
-                                ma, tenLoai, ngayBD, ngayKT, mua, tang);
-
-                    } else if ("PHANTRAM".equalsIgnoreCase(loai)) {
-
-                        if (p.length != 6) {
-                            throw new IllegalArgumentException(
-                                    "Khuyến mãi phần trăm phải có 6 trường!");
-                        }
-
-                        double pt = Double.parseDouble(p[5].trim());
-
-                        km = new KhuyenmaiPhantram(
-                                ma, tenLoai, ngayBD, ngayKT, pt);
-
-                    } else if ("TRUCTIEP".equalsIgnoreCase(loai)) {
-
-                        if (p.length != 6) {
-                            throw new IllegalArgumentException(
-                                    "Khuyến mãi trực tiếp phải có 6 trường!");
-                        }
-
-                        long giam = Long.parseLong(p[5].trim());
-
-                        km = new KhuyenmaiTructiep(
-                                ma, tenLoai, ngayBD, ngayKT, giam);
-
-                    } else {
-                        throw new IllegalArgumentException(
-                                "Loại khuyến mãi không xác định: " + loai);
-                    }
-
-                } catch (NumberFormatException e) {
-                    throw new IllegalArgumentException(
-                            "Dòng " + soDong + ": Giá trị số không hợp lệ!");
-
-                } catch (IllegalArgumentException e) {
-                    throw new IllegalArgumentException(
-                            "Dòng " + soDong + ": " + e.getMessage());
+                            "Dòng " + soDong + ": Mã khuyến mãi bị trùng: " + km.getMaKM());
                 }
 
                 if (!kiemTraKhuyenMai(km)) {

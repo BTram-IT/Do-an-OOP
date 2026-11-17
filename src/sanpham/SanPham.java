@@ -1,54 +1,57 @@
 package sanpham;
 
+import util.BangConsole;
+import util.HienThiBang;
+
 
 import java.time.LocalDate;
 import java.util.Scanner;
 
 import util.Ktradulieu;
 
-public abstract class SanPham {
-    public static int tongSoSanPhamKhoiTao = 0;
-
+public abstract class SanPham implements HienThiBang {
     protected String maSP;
     protected String tenSP;
+    protected String maNCC;
     protected double donGiaNhap;
     protected double donGiaBan;
     protected int soLuongTon;
     protected String donViTinh;
     protected LocalDate nsx;
     protected LocalDate hsd;
-    protected String trangThaiDuyet;
-    protected int soLuongHetHan;
     protected boolean daXoa;
     protected double phanTramThue;
 
     public SanPham(String maSP, String tenSP, double donGiaNhap, double donGiaBan, int soLuongTon,
-                   String donViTinh, LocalDate nsx, LocalDate hsd, double phanTramThue, String trangThaiDuyet, boolean daXoa) {
+                   String donViTinh, LocalDate nsx, LocalDate hsd, double phanTramThue, boolean daXoa) {
+        this(maSP, tenSP, donGiaNhap, donGiaBan, soLuongTon, donViTinh, nsx, hsd, phanTramThue, "", daXoa);
+    }
+
+    public SanPham(String maSP, String tenSP, double donGiaNhap, double donGiaBan, int soLuongTon,
+                   String donViTinh, LocalDate nsx, LocalDate hsd, double phanTramThue, String maNCC, boolean daXoa) {
         this.maSP = maSP;
         this.tenSP = tenSP;
-        this.donGiaNhap = donGiaNhap;
-        this.donGiaBan = donGiaBan;
-        this.soLuongTon = soLuongTon;
+        this.maNCC = ""; // Dữ liệu cũ chưa có nhà cung cấp.
+        if (maNCC != null && !maNCC.isBlank()) setMaNCC(maNCC);
+        setDonGiaNhap(donGiaNhap);
+        setDonGiaBan(donGiaBan);
+        setSoLuongTon(soLuongTon);
         this.donViTinh = donViTinh;
         setHSD(nsx, hsd);
-        this.phanTramThue = phanTramThue;
-        this.trangThaiDuyet = (trangThaiDuyet != null && !trangThaiDuyet.trim().isEmpty()) ? trangThaiDuyet : "Đang xử lý";
-        this.soLuongHetHan = 0;
+        setPhanTramThue(phanTramThue);
         this.daXoa = daXoa;
-        tongSoSanPhamKhoiTao++;
     }
 
     public SanPham() {
         maSP = "";
         tenSP = "";
+        maNCC = "";
         donGiaNhap = 0;
         donGiaBan = 0;
         soLuongTon = 0;
-        trangThaiDuyet = "";
         phanTramThue = 0;
         nsx = null;
         hsd = null;
-        trangThaiDuyet = "";
         daXoa = false;
     }
     public String getMaSP() {
@@ -64,6 +67,19 @@ public abstract class SanPham {
 
     public String getTenSP() {
         return tenSP;
+    }
+
+    public String getMaNCC() {
+        return maNCC;
+    }
+
+    public void setMaNCC(String maNCC) {
+        if (maNCC == null) throw new IllegalArgumentException("[Lỗi] Mã nhà cung cấp không được trống!");
+        String ma = Ktradulieu.chuanHoaMa(maNCC);
+        if (!ma.matches("NCC\\d+")) {
+            throw new IllegalArgumentException("[Lỗi] Mã nhà cung cấp phải có dạng NCC001!");
+        }
+        this.maNCC = ma;
     }
 
     public void setTenSP(String tenSP) {
@@ -163,23 +179,50 @@ public abstract class SanPham {
         this.hsd = hsd;
     }
 
-    public String getTrangThaiDuyet() {
-        return trangThaiDuyet;
-    }
-
-    public void setTrangThaiDuyet(String trangThaiDuyet) {
-        if (trangThaiDuyet == null || trangThaiDuyet.trim().isEmpty()) {
-            throw new IllegalArgumentException("[Lỗi] Trạng thái duyệt không được để trống!");
+    // Nhập bổ sung: giữ số ngày sử dụng của sản phẩm, tính lại từ ngày nhập kho.
+    public LocalDate tinhHsdKhiNhapHang(LocalDate ngayNhap) {
+        if (ngayNhap == null || nsx == null || hsd == null || hsd.isBefore(nsx)) {
+            throw new IllegalArgumentException("[Lỗi] Chưa có NSX/HSD hợp lệ để cập nhật ngày nhập hàng!");
         }
-        this.trangThaiDuyet = trangThaiDuyet.trim();
-    }
-
-    public int getSoLuongHetHan() {
-        return soLuongHetHan;
+        long soNgaySuDung = java.time.temporal.ChronoUnit.DAYS.between(nsx, hsd);
+        try {
+            return ngayNhap.plusDays(soNgaySuDung);
+        } catch (java.time.DateTimeException e) {
+            throw new IllegalArgumentException("[Lỗi] Hạn sử dụng mới vượt phạm vi ngày cho phép!", e);
+        }
     }
 
     public boolean isDaXoa() {
         return daXoa;
+    }
+
+    public boolean daHetHan(LocalDate ngayKiemTra) {
+        if (ngayKiemTra == null) throw new IllegalArgumentException("Ngày kiểm tra không được trống!");
+        return hsd != null && hsd.isBefore(ngayKiemTra);
+    }
+
+    public boolean sapHetHan(LocalDate ngayKiemTra, int soNgayCanhBao) {
+        if (ngayKiemTra == null || soNgayCanhBao < 0) {
+            throw new IllegalArgumentException("Ngày kiểm tra hoặc số ngày cảnh báo không hợp lệ!");
+        }
+        if (hsd == null) return false;
+        long soNgayConLai = java.time.temporal.ChronoUnit.DAYS.between(ngayKiemTra, hsd);
+        return soNgayConLai >= 0 && soNgayConLai <= soNgayCanhBao;
+    }
+
+    public void nhapThemHang(int soLuongNhap, LocalDate ngayNhap) {
+        if (daXoa || soLuongNhap <= 0) {
+            throw new IllegalArgumentException("Sản phẩm đã xóa hoặc số lượng nhập không hợp lệ!");
+        }
+        LocalDate hsdMoi = tinhHsdKhiNhapHang(ngayNhap);
+        boolean hetHan = daHetHan(ngayNhap);
+        int tonCu = hetHan ? 0 : soLuongTon;
+        int tonMoi = Math.addExact(tonCu, soLuongNhap);
+        if (hetHan && soLuongTon > 0) {
+            System.out.println("[Loại tồn hết hạn] " + maSP + ": " + soLuongTon + " " + donViTinh);
+        }
+        setSoLuongTon(tonMoi);
+        setHSD(ngayNhap, hsdMoi);
     }
 
     public void setDaXoa(boolean daXoa) {
@@ -193,15 +236,14 @@ public abstract class SanPham {
             return false;
         }
 
-        if (LocalDate.now().isAfter(this.hsd)) {
+        if (daHetHan(LocalDate.now())) {
             if (this.soLuongTon > 0) {
-                this.soLuongHetHan += this.soLuongTon;
                 int tonCu = this.soLuongTon;
                 this.soLuongTon = 0; // Cập nhật lại số lượng kho về 0
 
                 System.out.println("Sản phẩm [" + this.maSP + "] " + this.tenSP
-                        + " ĐÃ HẾT HẠN (HSD: " + Ktradulieu.dinhDangNgay(this.hsd) + ")! Đã chuyển "
-                        + tonCu + " sản phẩm vào danh mục hết hạn (Tồn kho = 0).");
+                        + " ĐÃ HẾT HẠN (HSD: " + Ktradulieu.dinhDangNgay(this.hsd) + ")! Đã loại "
+                        + tonCu + " đơn vị hết hạn khỏi tồn kho (Tồn kho = 0).");
             }
             return false;
         }
@@ -227,6 +269,7 @@ public abstract class SanPham {
 
     public abstract double tinhGiaBan ();
     public abstract String getLoaiSanPham ();
+    public abstract String toFileString();
 
 
     public void nhapThongTin(Scanner sc, DSSanPham ds) {
@@ -263,7 +306,8 @@ public abstract class SanPham {
         this.setTenSP(Ktradulieu.nhapChuoiKhongRong(sc, "Nhập tên sản phẩm: "));
         this.setDonGiaNhap(Ktradulieu.nhapSoThucKhongAm(sc, "Nhập đơn giá nhập (đ): "));
         this.setDonGiaBan(Ktradulieu.nhapSoThuc(sc, "Nhập đơn giá bán (đ): "));
-        this.setSoLuongTon(Ktradulieu.nhapSoNguyen(sc, "Nhập số lượng nhập kho: "));
+        this.setSoLuongTon(0);
+        System.out.println("Tồn kho ban đầu = 0. Lập hóa đơn nhập và duyệt phiếu để cộng hàng vào kho.");
         this.setDonViTinh(Ktradulieu.nhapChuoi(sc, "Nhập đơn vị tính (gói/chai/hộp...): ", ".+", "Không được để trống!"));
         this.setPhanTramThue(Ktradulieu.nhapSoThuc(sc, "Nhập thuế VAT (%): "));
 
@@ -298,15 +342,76 @@ public abstract class SanPham {
             }
         }
 
-        this.trangThaiDuyet = "Đang xử lý";
         this.daXoa = false;
     }
 
+    // Cột 14 mới là mã NCC; vẫn đọc được file cũ có cột duyệt hoặc chưa có mã NCC.
+    public static SanPham tuDongFile(String dong) {
+        if (dong == null || dong.trim().isEmpty()) {
+            throw new IllegalArgumentException("Dòng sản phẩm không được rỗng!");
+        }
+        String[] p = dong.split(";", -1);
+        if (p.length != 15 && p.length != 16) {
+            throw new IllegalArgumentException("Dòng sản phẩm phải có 16 cột (hoặc 15 cột ở file cũ)!");
+        }
+        String cotCuoi = p[p.length - 1].trim();
+        boolean daXoa;
+        if ("true".equalsIgnoreCase(cotCuoi) || "false".equalsIgnoreCase(cotCuoi)) {
+            daXoa = Boolean.parseBoolean(cotCuoi);
+        } else if (p.length == 15 && ("Đã duyệt".equalsIgnoreCase(cotCuoi)
+                || "Chờ duyệt".equalsIgnoreCase(cotCuoi) || "Đang xử lý".equalsIgnoreCase(cotCuoi))) {
+            daXoa = false; // File cũ chưa có cột xóa.
+        } else {
+            throw new IllegalArgumentException("Giá trị xóa sản phẩm phải là true hoặc false!");
+        }
+        String ma = p[1].trim();
+        String ten = p[2].trim();
+        double giaNhap = Double.parseDouble(p[3].trim());
+        double giaBan = Double.parseDouble(p[4].trim());
+        int ton = Integer.parseInt(p[5].trim());
+        String dvt = p[6].trim();
+        LocalDate nsx = Ktradulieu.chuyenChuoiThanhNgay(p[7]);
+        LocalDate hsd = Ktradulieu.chuyenChuoiThanhNgay(p[8]);
+        double thue = Double.parseDouble(p[9].trim());
+        String maNCC = "";
+        if (p.length == 16) {
+            String cotNCC = p[14].trim();
+            if (cotNCC.matches("(?i)NCC\\d+")) maNCC = cotNCC;
+            else if (!cotNCC.isEmpty() && !"Đã duyệt".equalsIgnoreCase(cotNCC)
+                    && !"Chờ duyệt".equalsIgnoreCase(cotNCC) && !"Đang xử lý".equalsIgnoreCase(cotNCC)) {
+                throw new IllegalArgumentException("Mã nhà cung cấp trong file không hợp lệ!");
+            }
+        }
+        if ("THUCAN".equalsIgnoreCase(p[0].trim())) {
+            return new ThucAn(ma, ten, giaNhap, giaBan, ton, dvt, nsx, hsd, thue,
+                    p[10].trim(), p[11].trim(), p[12].trim(), Boolean.parseBoolean(p[13].trim()), maNCC, daXoa);
+        }
+        if ("DOUONG".equalsIgnoreCase(p[0].trim())) {
+            return new DoUong(ma, ten, giaNhap, giaBan, ton, dvt, nsx, hsd, thue,
+                    Double.parseDouble(p[10].trim()), p[11].trim(), p[12].trim(), p[13].trim(), maNCC, daXoa);
+        }
+        throw new IllegalArgumentException("Loại sản phẩm không hợp lệ: " + p[0]);
+    }
+
     @Override
-    public String toString () {
-        return "[" + getLoaiSanPham() + "] " + maSP + " - " + tenSP +
-                " | Tồn: " + soLuongTon + " " + donViTinh +
-                " | Bán: " + Ktradulieu.dinhDangTien(tinhGiaBan()) +
-                " | Thuế: " + phanTramThue + "% (" + Ktradulieu.dinhDangTien(tinhTienThueDonVi()) + "/đv)";
+    public String[] layTieuDeBang() {
+        return new String[]{"MÃ SP", "LOẠI", "TÊN SẢN PHẨM", "MÃ NCC", "TỒN KHO", "ĐƠN VỊ", "NGÀY SẢN XUẤT", "HẠN SỬ DỤNG", "GIÁ BÁN", "THUẾ", "CHI TIẾT"};
+    }
+
+    @Override
+    public Object[] layDongBang() {
+        return new Object[]{maSP, getLoaiSanPham(), tenSP, maNCC.isEmpty() ? "Chưa gán" : maNCC, soLuongTon, donViTinh,
+                Ktradulieu.dinhDangNgay(nsx), Ktradulieu.dinhDangNgay(hsd),
+                Ktradulieu.dinhDangTien(tinhGiaBan()), phanTramThue + "% ("
+                + Ktradulieu.dinhDangTien(tinhTienThueDonVi()) + "/đv)", layChiTietBang()};
+    }
+
+    protected String layChiTietBang() {
+        return "-";
+    }
+
+    @Override
+    public String toString() {
+        return BangConsole.tuDoiTuong(this);
     }
 }

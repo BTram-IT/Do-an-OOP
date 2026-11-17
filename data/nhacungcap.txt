@@ -8,3 +8,6 @@ NCC007;Hàng khô Tân Thành;0903000007;17 Đường số 7, Quận Bình Thạ
 NCC008;Thực phẩm Xanh;0903000008;18 Đường số 8, Quận Bình Thạnh, TP Hồ Chí Minh;ncc008@example.com;false
 NCC009;Thương mại Minh Châu;0903000009;19 Đường số 9, Quận Bình Thạnh, TP Hồ Chí Minh;ncc009@example.com;true
 NCC010;Phân phối Phương Nam;0903000010;20 Đường số 10, Quận Bình Thạnh, TP Hồ Chí Minh;ncc010@example.com;true
+NCC011;Thực phẩm Hạt Lành;0904000011;101 Nguyễn Văn Cừ, TP Hồ Chí Minh;ncc011@example.com;false
+NCC012;Đồ uống Miền Nhiệt Đới;0904000012;102 Nguyễn Văn Cừ, TP Hồ Chí Minh;ncc012@example.com;false
+NCC013;Phân phối Hương Quê;0904000013;103 Nguyễn Văn Cừ, TP Hồ Chí Minh;ncc013@example.com;true

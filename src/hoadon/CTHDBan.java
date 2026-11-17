@@ -79,7 +79,8 @@ public class CTHDBan extends CTHoaDon {
                     System.out.println("[Lỗi] Không tìm thấy sản phẩm!");
                     continue;
                 }
-                if (!spDuocChon.kiemTraHanSuDung()) {
+                if (spDuocChon.isDaXoa()
+                        || spDuocChon.getHsd() == null || spDuocChon.getHsd().isBefore(java.time.LocalDate.now())) {
                     System.out.println("[Lỗi] Sản phẩm [" + spDuocChon.getTenSP() + "] đã hết hạn sử dụng!");
                     continue;
                 }
@@ -103,7 +104,7 @@ public class CTHDBan extends CTHoaDon {
         // BƯỚC 2: NHẬP SỐ LƯỢNG MUA
         while (true) {
             try {
-                long slNhap = Ktradulieu.nhapSoNguyen(sc, "Nhập số lượng khách mua: ");
+                long slNhap = Ktradulieu.nhapSoNguyen(sc, "Nhập số lượng mua: ");
                 if (slNhap <= 0 || slNhap > Integer.MAX_VALUE) {
                     System.out.println("[Lỗi] Số lượng không hợp lệ!");
                     continue;
@@ -161,6 +162,7 @@ public class CTHDBan extends CTHoaDon {
             int soLuongTangUngVien = 0;
 
             try {
+            if (!km.duMucChiToiThieu(giaBan, soLuongMua)) continue;
             if (km instanceof KhuyenmaiMuatang) {
                 KhuyenmaiMuatang kmMuaTang = (KhuyenmaiMuatang) km;
                 int soLuongTangLyThuyet = Math.max(0, kmMuaTang.tinhSoLuongTang(soLuongMua));
@@ -243,6 +245,7 @@ public class CTHDBan extends CTHoaDon {
 
     @Override
     public String toDongFile() {
+        kiemTraDuLieuFile();
         return String.format(Locale.US, "%s;%s;%s;%d;%.0f;%.2f;%.0f;%d;%s",
                 maHD, maSP, tenSP, getSoLuongBan(), getDonGiaBan(), phanTramThue, tienGiam, soLuongTang, maKM);
     }
@@ -252,7 +255,7 @@ public class CTHDBan extends CTHoaDon {
         try {
             String[] p = dong.split(";", -1);
             if (p.length != 9) return null;
-            return new CTHDBan(
+            CTHDBan ct = new CTHDBan(
                     p[0].trim(), p[1].trim(), p[2].trim(),
                     Integer.parseInt(p[3].trim()),
                     Double.parseDouble(p[4].trim()),
@@ -261,6 +264,8 @@ public class CTHDBan extends CTHoaDon {
                     Integer.parseInt(p[7].trim()),
                     p[8].trim()
             );
+            ct.kiemTraDuLieuFile();
+            return ct;
         } catch (RuntimeException e) {
             System.out.println("[Lỗi] Không thể đọc chi tiết hóa đơn bán: " + e.getMessage());
             return null;
@@ -301,11 +306,14 @@ public class CTHDBan extends CTHoaDon {
     // ================= TOSTRING =================
 
     @Override
-    public String toString() {
-        String kmStr = !maKM.equals("KHONG") ? " [KM: " + maKM + " - Giảm: " + Ktradulieu.dinhDangTien(tienGiam) + "]" : "";
-        String tangStr = soLuongTang > 0 ? " [Tặng: " + soLuongTang + "]" : "";
-        return String.format(Locale.US, "%-8s | %-20s | SL: %-4d | Giá: %-12s | Thuế: %-4.1f%%%s%s | Thành tiền: %s",
-                maSP, tenSP, getSoLuongBan(), Ktradulieu.dinhDangTien(getDonGiaBan()),
-                phanTramThue, kmStr, tangStr, Ktradulieu.dinhDangTien(tinhThanhTien()));
+    public String[] layTieuDeBang() {
+        return new String[]{"MÃ SP", "TÊN SẢN PHẨM", "SL", "ĐƠN GIÁ", "THUẾ", "MÃ KM", "GIẢM GIÁ", "SL TẶNG", "THÀNH TIỀN"};
+    }
+
+    @Override
+    public Object[] layDongBang() {
+        return new Object[]{maSP, tenSP, getSoLuongBan(), Ktradulieu.dinhDangTien(getDonGiaBan()),
+                phanTramThue + "%", maKM, Ktradulieu.dinhDangTien(tienGiam), soLuongTang,
+                Ktradulieu.dinhDangTien(tinhThanhTien())};
     }
 }

@@ -1,5 +1,7 @@
 package person;
 
+import util.BangConsole;
+
 import java.time.LocalDate;
 import java.util.Scanner;
 import util.Ktradulieu;
@@ -7,7 +9,7 @@ import util.Ktradulieu;
 public class NhanVien extends Nguoidung {
     private double luongCoBan;
     private LocalDate ngayVaoLam;
-    private String yeuCauSaThai; // Quản lý gửi đề xuất lý do sa thải, Giám đốc duyệt sa thải
+    private String yeuCauSaThai; // Quản lý gửi đề xuất lý do sa thải, Admin duyệt sa thải
 
     // Constructor rỗng
     public NhanVien() {
@@ -105,10 +107,9 @@ public class NhanVien extends Nguoidung {
     }
 
     @Override
-    public String toString() {
-        return super.toString() +
-                " | Ngày vào làm: " + ngayVaoLam +
-                " | Lương khởi điểm: " + Ktradulieu.dinhDangTien(luongCoBan) +
-                (yeuCauSaThai != null ? " [ĐỀ XUẤT SA THẢI: " + yeuCauSaThai + "]" : "");
+    protected String layChiTietBang() {
+        return BangConsole.thongTin(new String[]{"Ngày vào làm", "Lương khởi điểm", "Đề xuất sa thải"},
+                Ktradulieu.dinhDangNgay(ngayVaoLam), Ktradulieu.dinhDangTien(luongCoBan),
+                yeuCauSaThai == null ? "Không" : yeuCauSaThai);
     }
 }

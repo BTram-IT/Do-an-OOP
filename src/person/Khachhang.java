@@ -1,9 +1,12 @@
 package person;
 
+import util.BangConsole;
+import util.HienThiBang;
+
 import java.util.Scanner;
 import util.Ktradulieu;
 
-public class Khachhang {
+public class Khachhang implements HienThiBang {
     private String maKH;
     private String tenKH;
     private String sdt;
@@ -161,8 +164,17 @@ public class Khachhang {
     }
 
     @Override
+    public String[] layTieuDeBang() {
+        return new String[]{"MÃ KH", "HỌ TÊN", "SỐ ĐIỆN THOẠI", "ĐỊA CHỈ", "ĐIỂM TÍCH LŨY", "TRẠNG THÁI"};
+    }
+
+    @Override
+    public Object[] layDongBang() {
+        return new Object[]{maKH, tenKH, sdt, diaChi, diemTichLuy, daXoa ? "ĐÃ XÓA" : "HOẠT ĐỘNG"};
+    }
+
+    @Override
     public String toString() {
-        return "[" + maKH + "] " + tenKH + " - SĐT: " + sdt + " - ĐC: " + diaChi + " - Điểm: " + diemTichLuy
-                + (daXoa ? " [ĐÃ XÓA]" : " [HOẠT ĐỘNG]");
+        return BangConsole.tuDoiTuong(this);
     }
 }

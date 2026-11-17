@@ -1,17 +1,19 @@
 package sanpham;
 
+import util.BangConsole;
+import java.util.Arrays;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.util.Scanner;
 
 import person.Nguoidung;
-import person.QuanLyCuaHang;
-import person.Giamdoc;
+import doitac.DSNhaCungCap;
+import doitac.NhaCungCap;
 import util.Ktradulieu;
 
 public class DSSanPham {
@@ -94,20 +96,55 @@ public class DSSanPham {
     }
 
     // thêm sp
-    public void themSanPhamTuBanPhim(Scanner sc) {
-        System.out.println("\n--- THÊM SẢN PHẨM MỚI VÀO KHO ---");
-        System.out.println("1. Thêm Thức Ăn");
-        System.out.println("2. Thêm Đồ Uống");
-        int chon = Ktradulieu.luaChon(sc, "Chọn loại (1-2): ", 1, 2);
-
-        SanPham sp;
-        if (chon == 1) {
-            sp = new ThucAn();
-        } else {
-            sp = new DoUong();
+    public SanPham themSanPhamTuBanPhim(Scanner sc, DSNhaCungCap dsNCC) {
+        if (dsNCC == null || !dsNCC.coNhaCungCapHoatDong()) {
+            System.out.println("[Thông báo] Vui lòng thêm nhà cung cấp đang hợp tác trước!");
+            return null;
         }
+        System.out.println("\n--- THÊM SẢN PHẨM MỚI VÀO DANH MỤC ---");
+        System.out.println("1. Thức ăn\n2. Đồ uống\n0. Quay lại");
+        int chon = Ktradulieu.luaChon(sc, "Chọn loại (0-2): ", 0, 2);
+        if (chon == 0) return null;
+        SanPham sp = chon == 1 ? new ThucAn() : new DoUong();
         sp.nhapThongTin(sc, this);
-        this.themSP(sp);
+        NhaCungCap ncc = dsNCC.chonNhaCungCap(sc);
+        if (ncc == null) return null;
+        sp.setMaNCC(ncc.getMaNCC());
+        return themSP(sp) ? sp : null;
+    }
+
+    // Mặt hàng ở file cũ được chọn NCC một lần khi nhập hàng lần đầu.
+    public boolean boSungNhaCungCap(Scanner sc, SanPham sp, DSNhaCungCap dsNCC) {
+        if (sp == null || sp.isDaXoa() || dsNCC == null) return false;
+        if (sp.getMaNCC().isEmpty()) {
+            System.out.println("Chọn nhà cung cấp cho [" + sp.getMaSP() + "] " + sp.getTenSP());
+            NhaCungCap ncc = dsNCC.chonNhaCungCap(sc);
+            if (ncc == null) return false;
+            sp.setMaNCC(ncc.getMaNCC());
+            ghiFile("data/sanpham.txt");
+        }
+        NhaCungCap ncc = dsNCC.timKiemTheoMa(sp.getMaNCC());
+        if (ncc == null || ncc.isDaXoa()) {
+            System.out.println("[Lỗi] Nhà cung cấp của mặt hàng không còn hợp tác: " + sp.getMaSP());
+            return false;
+        }
+        return true;
+    }
+
+    public SanPham[] locHangCanNhap(int loai) {
+        SanPham[] tam = new SanPham[soLuong];
+        int dem = 0;
+        LocalDate homNay = LocalDate.now();
+        for (int i = 0; i < soLuong; i++) {
+            SanPham sp = danhSach[i];
+            if (sp.isDaXoa() || sp.getHsd() == null) continue;
+            int ton = sp.getSoLuongTon();
+            long soNgay = java.time.temporal.ChronoUnit.DAYS.between(homNay, sp.getHsd());
+            if ((loai == 1 && ton == 0) || (loai == 2 && ton > 0 && ton <= 10 && soNgay >= 0)
+                    || (loai == 3 && ton > 0 && soNgay >= 0 && soNgay <= 30)
+                    || (loai == 4 && ton > 0 && soNgay < 0)) tam[dem++] = sp;
+        }
+        return Arrays.copyOf(tam, dem);
     }
 
     public SanPham timKiem(String maSP) {
@@ -123,11 +160,10 @@ public class DSSanPham {
     public boolean xoaSP(String maSP, Nguoidung nguoiThucHien) {
 
         // Kiểm tra quyền
-        if (!(nguoiThucHien instanceof QuanLyCuaHang)
-                && !(nguoiThucHien instanceof Giamdoc)) {
+        if (nguoiThucHien == null || !nguoiThucHien.coQuyen("QUAN_LY_SAN_PHAM")) {
 
             System.out.println(
-                    "[Lỗi] BẠN KHÔNG CÓ QUYỀN! Chỉ Quản lý hoặc Giám đốc mới được thực hiện thao tác này."
+                    "[Lỗi] BẠN KHÔNG CÓ QUYỀN! Chỉ Quản lý hoặc Admin mới được thực hiện thao tác này."
             );
             return false;
         }
@@ -166,8 +202,12 @@ public class DSSanPham {
 
     // Sửa sp
     public boolean suaSP(Scanner sc, String maSP, Nguoidung nguoiThucHien) {
-        if (!(nguoiThucHien instanceof QuanLyCuaHang) && !(nguoiThucHien instanceof Giamdoc)) {
-            System.out.println("BẠN KHÔNG CÓ QUYỀN! Chỉ Quản lý hoặc Giám đốc mới được sửa sản phẩm.");
+        return suaSP(sc, maSP, nguoiThucHien, null);
+    }
+
+    public boolean suaSP(Scanner sc, String maSP, Nguoidung nguoiThucHien, DSNhaCungCap dsNCC) {
+        if (nguoiThucHien == null || !nguoiThucHien.coQuyen("QUAN_LY_SAN_PHAM")) {
+            System.out.println("BẠN KHÔNG CÓ QUYỀN! Chỉ Quản lý hoặc Admin mới được sửa sản phẩm.");
             return false;
         }
 
@@ -181,9 +221,9 @@ public class DSSanPham {
         System.out.println("1. Sửa tên sản phẩm");
         System.out.println("2. Sửa đơn giá nhập");
         System.out.println("3. Sửa đơn giá bán");
-        System.out.println("4. Sửa số lượng tồn kho");
-        System.out.println("5. Sửa thuế VAT (%)");
-        System.out.println("6. Sửa ngày sản xuất & hạn sử dụng");
+        System.out.println("4. Sửa thuế VAT (%)");
+        System.out.println("5. Sửa ngày sản xuất & hạn sử dụng");
+        System.out.println("6. Đổi nhà cung cấp");
         System.out.println("0. Hủy bỏ");
 
 
@@ -203,17 +243,18 @@ public class DSSanPham {
                     sp.setDonGiaBan(giaBan);
                     break;
                 case 4:
-                    int tonMoi = Ktradulieu.nhapSoNguyen(sc, "Nhập số lượng tồn kho mới: ");
-                    sp.setSoLuongTon(tonMoi);
-                    break;
-                case 5:
                     double thueMoi = Ktradulieu.nhapSoThuc(sc, "Nhập % thuế VAT mới (VD: 8 hoặc 10): ");
                     sp.setPhanTramThue(thueMoi);
                     break;
-                case 6:
+                case 5:
                     LocalDate nsxDate = Ktradulieu.nhapNgay(sc, "Nhập NSX mới (dd/MM/yyyy): ");
                     LocalDate hsdDate = Ktradulieu.nhapNgay(sc, "Nhập HSD mới (dd/MM/yyyy): ");
                     sp.setHSD(nsxDate, hsdDate);
+                    break;
+                case 6:
+                    NhaCungCap ncc = dsNCC == null ? null : dsNCC.chonNhaCungCap(sc);
+                    if (ncc == null) return false;
+                    sp.setMaNCC(ncc.getMaNCC());
                     break;
                 case 0:
                     System.out.println("Đã hủy thao tác sửa.");
@@ -241,42 +282,106 @@ public class DSSanPham {
     }
 
     public void kiemTraVaCapNhatHanSuDung() {
-        int hetHan = 0;
+        SanPham[] hetHan = locSanPhamHetHan(LocalDate.now());
+        for (SanPham sp : hetHan) sp.setSoLuongTon(0);
+        if (hetHan.length > 0) ghiFile("data/sanpham.txt");
+        System.out.println("Đã loại tồn hết hạn của " + hetHan.length + " mặt hàng về 0.");
+    }
 
-        for (int i = 0; i < this.soLuong; i++) {
-            if (!this.danhSach[i].kiemTraHanSuDung()) {
-                hetHan++;
+    public SanPham[] locSanPhamHetHan(LocalDate ngayKiemTra) {
+        return locTheoHanSuDung(ngayKiemTra, true, 0);
+    }
+
+    public SanPham[] locSanPhamSapHetHan(int soNgayCanhBao, LocalDate ngayKiemTra) {
+        return locTheoHanSuDung(ngayKiemTra, false, soNgayCanhBao);
+    }
+
+    private SanPham[] locTheoHanSuDung(LocalDate ngayKiemTra, boolean hetHan, int soNgayCanhBao) {
+        if (ngayKiemTra == null || soNgayCanhBao < 0) {
+            throw new IllegalArgumentException("Ngày kiểm tra hoặc số ngày cảnh báo không hợp lệ!");
+        }
+        SanPham[] tam = new SanPham[soLuong];
+        int dem = 0;
+        for (int i = 0; i < soLuong; i++) {
+            SanPham sp = danhSach[i];
+            if (sp.isDaXoa() || sp.getSoLuongTon() <= 0) continue;
+            if (hetHan ? sp.daHetHan(ngayKiemTra) : sp.sapHetHan(ngayKiemTra, soNgayCanhBao)) {
+                tam[dem++] = sp;
             }
         }
+        return Arrays.copyOf(tam, dem);
+    }
 
-        if (hetHan == 0) {
-            System.out.println("Tất cả sản phẩm trong kho đều còn hạn sử dụng.");
-        } else {
-            // Lưu lại số lượng tồn kho sau khi cập nhật
-            ghiFile("data/sanpham.txt");
+    public void thongKeSanPhamHetHan() {
+        thongKeSanPhamHetHan(LocalDate.now());
+    }
 
-            System.out.println("Có " + hetHan + " sản phẩm hết hạn đã được cập nhật đưa về tồn kho = 0!");
+    public void thongKeSanPhamHetHan(LocalDate ngayKiemTra) {
+        xuatThongKeHanSuDung("SẢN PHẨM HẾT HẠN CÒN TỒN", locSanPhamHetHan(ngayKiemTra), ngayKiemTra);
+    }
+
+    public void thongKeSanPhamSapHetHan() {
+        thongKeSanPhamSapHetHan(30, LocalDate.now());
+    }
+
+    public void thongKeSanPhamSapHetHan(int soNgayCanhBao, LocalDate ngayKiemTra) {
+        xuatThongKeHanSuDung("SẢN PHẨM SẮP HẾT HẠN (0-" + soNgayCanhBao + " NGÀY)",
+                locSanPhamSapHetHan(soNgayCanhBao, ngayKiemTra), ngayKiemTra);
+    }
+
+    private void xuatThongKeHanSuDung(String tieuDe, SanPham[] ds, LocalDate ngayKiemTra) {
+        System.out.println("\n========== " + tieuDe + " ==========");
+        System.out.println("Ngày kiểm tra: " + Ktradulieu.dinhDangNgay(ngayKiemTra));
+        BangConsole bang = new BangConsole("STT", "MÃ SP", "LOẠI", "TÊN SẢN PHẨM", "MÃ NCC", "TỒN", "ĐƠN VỊ", "NSX", "HSD", "TÌNH TRẠNG");
+        long tongSoLuong = 0;
+        for (int i = 0; i < ds.length; i++) {
+            SanPham sp = ds[i];
+            long soNgay = java.time.temporal.ChronoUnit.DAYS.between(ngayKiemTra, sp.getHsd());
+            bang.themDong(i + 1, sp.getMaSP(), sp.getLoaiSanPham(), sp.getTenSP(),
+                    sp.getMaNCC().isEmpty() ? "Chưa gán" : sp.getMaNCC(), sp.getSoLuongTon(), sp.getDonViTinh(),
+                    Ktradulieu.dinhDangNgay(sp.getNsx()), Ktradulieu.dinhDangNgay(sp.getHsd()),
+                    soNgay < 0 ? "Quá hạn " + (-soNgay) + " ngày" : "Còn " + soNgay + " ngày");
+            tongSoLuong += sp.getSoLuongTon();
         }
+        if (ds.length == 0) System.out.println("Không có sản phẩm phù hợp còn tồn trong kho.");
+        else System.out.println(bang);
+        System.out.println("Số mặt hàng: " + ds.length);
+        System.out.println("Tổng số đơn vị còn tồn: " + tongSoLuong);
+    }
+
+    public long loaiBoSoLuongHetHan(Nguoidung nguoiThucHien) {
+        return loaiBoSoLuongHetHan(nguoiThucHien, LocalDate.now());
+    }
+
+    public long loaiBoSoLuongHetHan(Nguoidung nguoiThucHien, LocalDate ngayKiemTra) {
+        if (nguoiThucHien == null || !nguoiThucHien.coQuyen("QUYEN_KIEM_KE_KHO")) {
+            System.out.println("[Từ chối] Tài khoản không có quyền kiểm kê hoặc đã bị khóa!");
+            return 0;
+        }
+        SanPham[] hetHan = locSanPhamHetHan(ngayKiemTra);
+        long tongLoai = 0;
+        for (SanPham sp : hetHan) {
+            tongLoai += sp.getSoLuongTon();
+            sp.setSoLuongTon(0);
+        }
+        if (tongLoai > 0) ghiFile("data/sanpham.txt");
+        System.out.println("Đã loại " + tongLoai + " đơn vị hết hạn của " + hetHan.length + " mặt hàng khỏi tồn kho.");
+        return tongLoai;
     }
 
     public void xuatDanhSach() {
-        System.out.println("\n                          DANH SÁCH SẢN PHẨM TRONG KHO");
-        System.out.println("                       Tổng số: " + this.soLuong + " sản phẩm");
+        System.out.println(this);
+    }
 
+    @Override
+    public String toString() {
         if (this.soLuong == 0) {
-            System.out.println("\n                 Kho hiện chưa có sản phẩm.");
-            return;
+            return "[Thông báo] Kho hiện chưa có sản phẩm.";
         }
-
-        for (int i = 0; i < this.soLuong; i++) {
-            System.out.printf("\n  %02d. %s%n", i + 1, this.danhSach[i]);
-
-            if (i < this.soLuong - 1) {
-                System.out.println("  " + "─".repeat(60));
-            }
-        }
-
-        System.out.println("\n                             KẾT THÚC DANH SÁCH SẢN PHẨM");
+        String xuongDong = System.lineSeparator();
+        return xuongDong + "===== DANH SÁCH SẢN PHẨM TRONG KHO =====" + xuongDong
+                + BangConsole.tuDanhSach(Arrays.asList(getDanhSach())) + xuongDong
+                + "Tổng số sản phẩm: " + this.soLuong;
     }
 
     // đọc file
@@ -308,72 +413,8 @@ public class DSSanPham {
                 }
 
                 try {
-                    String[] p = line.split(";", -1);
-
-                    if (p.length < 15) {
-                        loi++;
-                        continue;
-                    }
-
-                    String loai = p[0].trim();
-                    String ma = p[1].trim();
-                    String ten = p[2].trim();
-
-                    double giaNhap = Double.parseDouble(p[3].trim());
-                    double giaBan = Double.parseDouble(p[4].trim());
-                    int ton = Integer.parseInt(p[5].trim());
-
-                    String dvt = p[6].trim();
-                    LocalDate nsx = Ktradulieu.chuyenChuoiThanhNgay(p[7]);
-                    LocalDate hsd = Ktradulieu.chuyenChuoiThanhNgay(p[8]);
-
-                    double thue = Double.parseDouble(p[9].trim());
-
-                    SanPham sp;
-
-                    if ("DOUONG".equalsIgnoreCase(loai)) {
-
-                        double dungTich = Double.parseDouble(p[10].trim());
-                        String thuongHieu = p[11].trim();
-                        String huongVi = p[12].trim();
-                        String loaiDoUong = p[13].trim();
-                        String trangThai = p[14].trim();
-
-                        boolean daXoa = p.length > 15
-                                && Boolean.parseBoolean(p[15].trim());
-
-                        sp = new DoUong(
-                                ma, ten, giaNhap, giaBan, ton,
-                                dvt, nsx, hsd, thue,
-                                dungTich, thuongHieu, huongVi,
-                                loaiDoUong, trangThai, daXoa
-                        );
-
-                    } else if ("THUCAN".equalsIgnoreCase(loai)) {
-
-                        String thanhPhan = p[10].trim();
-                        String baoQuan = p[11].trim();
-                        String xuatXu = p[12].trim();
-
-                        boolean laDoChay =
-                                Boolean.parseBoolean(p[13].trim());
-
-                        String trangThai = p[14].trim();
-
-                        boolean daXoa = p.length > 15
-                                && Boolean.parseBoolean(p[15].trim());
-
-                        sp = new ThucAn(
-                                ma, ten, giaNhap, giaBan, ton,
-                                dvt, nsx, hsd, thue,
-                                thanhPhan, baoQuan, xuatXu,
-                                laDoChay, trangThai, daXoa
-                        );
-
-                    } else {
-                        loi++;
-                        continue;
-                    }
+                    SanPham sp = SanPham.tuDongFile(line);
+                    String ma = sp.getMaSP();
 
                     if (timKiem(ma) != null) {
                         loi++;

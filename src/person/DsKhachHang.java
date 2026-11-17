@@ -1,5 +1,7 @@
 package person;
 
+import util.BangConsole;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -151,10 +153,15 @@ public class DsKhachHang {
     }
     // xuất
     public void xuatDanhSach() {
-        System.out.println("\n================ DANH SÁCH KHÁCH HÀNG ================");
-        for (Khachhang kh : danhSach) {
-            System.out.println(kh.toString());
-        }
+        System.out.println(this);
+    }
+
+    @Override
+    public String toString() {
+        String xuongDong = System.lineSeparator();
+        return xuongDong + "===== DANH SÁCH KHÁCH HÀNG =====" + xuongDong
+                + BangConsole.tuDanhSach(danhSach) + xuongDong
+                + "Tổng số khách hàng: " + danhSach.size();
     }
 
     // ghi
@@ -177,7 +184,7 @@ public class DsKhachHang {
     public void docFile(String duongDan) {
         File file = new File(duongDan);
         if (!file.exists()) return;
-        java.util.List<Khachhang> banCu = new java.util.ArrayList<>(danhSach);
+        List<Khachhang> banCu = new ArrayList<>(danhSach);
         danhSach.clear();
         try (BufferedReader br = new BufferedReader(new FileReader(file))) {
             String dong;

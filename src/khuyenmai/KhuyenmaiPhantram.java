@@ -9,6 +9,7 @@ import util.Ktradulieu;
 public class KhuyenmaiPhantram extends Khuyenmai {
 
     private double phanTramGiamGia;
+    private long mucGiamToiDa; // 0: không giới hạn, tương thích các chương trình cũ.
 
     // Constructor mặc định
     public KhuyenmaiPhantram() {
@@ -118,6 +119,24 @@ public class KhuyenmaiPhantram extends Khuyenmai {
         );
     }
 
+    // Mức giảm tối đa áp dụng cho cả dòng sản phẩm.
+    @Override
+    public long tinhTongTienGiam(long giaBan, int soLuong) {
+        long tongGiam = super.tinhTongTienGiam(giaBan, soLuong);
+        return mucGiamToiDa > 0 ? Math.min(tongGiam, mucGiamToiDa) : tongGiam;
+    }
+
+    public long getMucGiamToiDa() {
+        return mucGiamToiDa;
+    }
+
+    public void setMucGiamToiDa(long mucGiamToiDa) {
+        if (mucGiamToiDa < 0) {
+            throw new IllegalArgumentException("[Lỗi] Mức giảm tối đa không được âm!");
+        }
+        this.mucGiamToiDa = mucGiamToiDa;
+    }
+
     // Cập nhật phần trăm giảm giá
     public void setPhanTramGiamGia(double phanTramGiamGia) {
         kiemTraPhanTram(phanTramGiamGia);
@@ -143,12 +162,13 @@ public class KhuyenmaiPhantram extends Khuyenmai {
 
         return "PHANTRAM;"
                 + super.toDongFile()
-                + ";" + phanTramGiamGia;
+                + ";" + phanTramGiamGia
+                + (mucChiToiThieu > 0 || mucGiamToiDa > 0 ? ";" + mucChiToiThieu + ";" + mucGiamToiDa : "");
     }
 
     @Override
-    public String toString() {
-        return super.toString()
-                + " | Giảm: " + dinhDangPhanTram() + "%";
+    protected String layChiTietBang() {
+        return "Giảm: " + dinhDangPhanTram() + "%"
+                + (mucGiamToiDa > 0 ? System.lineSeparator() + "Giảm tối đa: " + Ktradulieu.dinhDangTien(mucGiamToiDa) : "");
     }
 }

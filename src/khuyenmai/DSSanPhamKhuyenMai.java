@@ -1,5 +1,8 @@
 package khuyenmai;
 
+import util.BangConsole;
+import java.util.Arrays;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -9,11 +12,16 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
 import sanpham.DSSanPham;
+import sanpham.SanPham;
+import sanpham.ThucAn;
+import person.Nguoidung;
 import util.Ktradulieu;
 
 public class DSSanPhamKhuyenMai {
@@ -400,25 +408,110 @@ public class DSSanPhamKhuyenMai {
     // =====================================================
     // 8. XUẤT DANH SÁCH
     // =====================================================
+    /** Tạo/cập nhật giảm cận hạn; chỉ thay đổi khi người quản lý gọi chức năng này. */
+    public int tuDongGiamGiaCanHSD(DSSanPham dsSP, DSKhuyenMai dsKM) {
+        return tuDongGiamGiaCanHSD(dsSP, dsKM, LocalDate.now());
+    }
+
+    public int tuDongGiamGiaCanHSD(DSSanPham dsSP, DSKhuyenMai dsKM, LocalDate ngay) {
+        return apDungGiamGiaCanHan(dsSP, dsKM, ngay, 15, true);
+    }
+
+    public int xuLyHangSapHetHan(DSSanPham dsSP, DSKhuyenMai dsKM, Nguoidung nguoiThucHien) {
+        return xuLyHangSapHetHan(dsSP, dsKM, nguoiThucHien, LocalDate.now());
+    }
+
+    public int xuLyHangSapHetHan(DSSanPham dsSP, DSKhuyenMai dsKM, Nguoidung nguoiThucHien, LocalDate ngay) {
+        if (nguoiThucHien == null || !nguoiThucHien.coQuyen("QUAN_LY_KHUYEN_MAI")) {
+            System.out.println("[Từ chối] Chỉ Admin/Quản lý đang hoạt động được áp dụng giảm giá cận hạn!");
+            return 0;
+        }
+        goGiamGiaCanHanKhongConPhuHop(dsSP, dsKM, ngay);
+        return apDungGiamGiaCanHan(dsSP, dsKM, ngay, 30, false);
+    }
+
+    // Chỉ gỡ liên kết tự động, giữ chương trình và giá đã ghi trong hóa đơn lịch sử.
+    public int goGiamGiaCanHanKhongConPhuHop(DSSanPham dsSP, DSKhuyenMai dsKM, LocalDate ngay) {
+        if (dsSP == null || dsKM == null || ngay == null) throw new IllegalArgumentException("Dữ liệu kiểm tra cận hạn không hợp lệ!");
+        int soGo = 0;
+        for (int i = 0; i < soLuong;) {
+            SPKhMai lk = danhSach[i];
+            Khuyenmai km = dsKM.timKiem(lk.getMaKM());
+            SanPham sp = dsSP.timKiem(lk.getMaSP());
+            boolean tuDong = km instanceof KhuyenmaiPhantram && "Giảm cận HSD tự động".equals(km.getLoaiKM());
+            if (tuDong && (sp == null || sp.isDaXoa() || sp.getSoLuongTon() == 0 || !sp.sapHetHan(ngay, 30))) {
+                for (int j = i; j < soLuong - 1; j++) danhSach[j] = danhSach[j + 1];
+                danhSach[--soLuong] = null;
+                soGo++;
+            } else i++;
+        }
+        return soGo;
+    }
+
+    private int apDungGiamGiaCanHan(DSSanPham dsSP, DSKhuyenMai dsKM, LocalDate ngay,
+                                   int soNgayCanhBao, boolean chiThucAn) {
+        if (dsSP == null || dsKM == null || ngay == null) {
+            throw new IllegalArgumentException("Danh sách sản phẩm, khuyến mãi và ngày không được null!");
+        }
+        String tenTuDong = "Giảm cận HSD tự động";
+        int soCapNhat = 0;
+        for (SanPham sp : dsSP.getDanhSach()) {
+            if ((chiThucAn && !(sp instanceof ThucAn)) || sp.isDaXoa() || sp.getSoLuongTon() <= 0
+                    || sp.getHsd() == null || sp.getDonGiaBan() <= 0) continue;
+            long soNgay = ChronoUnit.DAYS.between(ngay, sp.getHsd());
+            if (soNgay < 0 || soNgay > soNgayCanhBao) continue;
+            double phanTram = soNgay <= 3 ? 50 : (soNgay <= 7 ? 30 : (soNgay <= 15 ? 15 : 10));
+            KhuyenmaiPhantram kmTuDong = null;
+            boolean coKhuyenMaiThuCong = false;
+            for (int i = 0; i < soLuong; i++) {
+                SPKhMai lienKet = danhSach[i];
+                if (!sp.getMaSP().equalsIgnoreCase(lienKet.getMaSP())) continue;
+                Khuyenmai km = dsKM.timKiem(lienKet.getMaKM());
+                if (km instanceof KhuyenmaiPhantram && tenTuDong.equals(km.getLoaiKM())) {
+                    kmTuDong = (KhuyenmaiPhantram) km;
+                } else if (km != null && !km.kiemTraHetHan(ngay)) {
+                    coKhuyenMaiThuCong = true;
+                }
+            }
+            // Giữ chương trình thủ công đang chạy hoặc đang chờ bắt đầu.
+            if (coKhuyenMaiThuCong) continue;
+            if (kmTuDong == null) {
+                kmTuDong = new KhuyenmaiPhantram(dsKM.sinhMaTuDong("KM"), tenTuDong,
+                        ngay, sp.getHsd(), phanTram);
+                kmTuDong.setLoaiKM(tenTuDong);
+                if (dsKM.themKhuyenMai(kmTuDong)) {
+                    them(new SPKhMai(sp.getMaSP(), kmTuDong.getMaKM()), dsSP, dsKM);
+                    soCapNhat++;
+                }
+            } else if (Double.compare(kmTuDong.getPhanTramGiamGia(), phanTram) != 0
+                    || !sp.getHsd().equals(kmTuDong.getNgayKetThuc()) || !kmTuDong.kiemTraThoiHan(ngay)
+                    || kmTuDong.getMucChiToiThieu() != 0 || kmTuDong.getMucGiamToiDa() != 0) {
+                LocalDate batDau = kmTuDong.kiemTraThoiHan(ngay) ? kmTuDong.getNgayBatDau() : ngay;
+                kmTuDong.setKhoangNgay(batDau, sp.getHsd());
+                kmTuDong.setPhanTramGiamGia(phanTram);
+                kmTuDong.setLoaiKM(tenTuDong);
+                kmTuDong.setMucChiToiThieu(0);
+                kmTuDong.setMucGiamToiDa(0);
+                soCapNhat++;
+            }
+        }
+        return soCapNhat;
+    }
+
     public void xuatDanhSach() {
+        System.out.println(this.toString());
+    }
+
+    @Override
+    public String toString() {
         if (this.soLuong == 0) {
-            System.out.println("[Thông báo] Danh sách sản phẩm khuyến mãi đang trống!");
-            return;
+            return "[Thông báo] Danh sách sản phẩm khuyến mãi đang trống!";
         }
 
-        System.out.println("\n===== DANH SÁCH SẢN PHẨM KHUYẾN MÃI =====");
-        System.out.printf("%-6s | %-15s | %-15s%n", "STT", "MÃ SẢN PHẨM", "MÃ KHUYẾN MÃI");
-        System.out.println("------------------------------------------------");
-
-        for (int i = 0; i < this.soLuong; i++) {
-            System.out.printf(
-                    "%-6d | %-15s | %-15s%n",
-                    i + 1,
-                    this.danhSach[i].getMaSP(),
-                    this.danhSach[i].getMaKM());
-        }
-
-        System.out.println("Tổng số liên kết: " + this.soLuong);
+        String xuongDong = System.lineSeparator();
+        return xuongDong + "===== DANH SÁCH SẢN PHẨM KHUYẾN MÃI =====" + xuongDong
+                + BangConsole.tuDanhSach(Arrays.asList(getDanhSach())) + xuongDong
+                + "Tổng số liên kết: " + this.soLuong;
     }
 
     // =====================================================
@@ -430,18 +523,12 @@ public class DSSanPhamKhuyenMai {
             return;
         }
 
-        File file = new File(filePath);
-        File parentDir = file.getParentFile();
+        String dich = Ktradulieu.duongDanGhi(filePath);
+        File tam = Ktradulieu.chuanBiFileTam(dich);
 
         try {
-            if (parentDir != null && !parentDir.exists()) {
-                if (!parentDir.mkdirs() && !parentDir.exists()) {
-                    throw new IOException("Không thể tạo thư mục lưu file!");
-                }
-            }
-
             try (BufferedWriter bw = new BufferedWriter(
-                    new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8))) {
+                    new OutputStreamWriter(new FileOutputStream(tam), StandardCharsets.UTF_8))) {
                 for (int i = 0; i < this.soLuong; i++) {
                     if (this.danhSach[i] == null) {
                         throw new IllegalStateException("Danh sách chứa liên kết rỗng tại vị trí " + i);
@@ -450,10 +537,11 @@ public class DSSanPhamKhuyenMai {
                     bw.newLine();
                 }
             }
-
-            System.out.println("[Thành công] Lưu file sản phẩm khuyến mãi tại: " + filePath);
+            Ktradulieu.hoanTatGhi(tam, dich);
+            System.out.println("[Thành công] Lưu file sản phẩm khuyến mãi tại: " + dich);
 
         } catch (IOException | RuntimeException e) {
+            Ktradulieu.huyFileTam(tam);
             System.out.println("[Lỗi] Ghi file sản phẩm khuyến mãi: " + e.getMessage());
         }
     }
@@ -527,7 +615,7 @@ public class DSSanPhamKhuyenMai {
             System.out.println("[Thành công] Đọc file sản phẩm khuyến mãi! Tổng số: " + soLuongTam);
 
         } catch (IOException | RuntimeException e) {
-            System.out.println("[Lỗi] Đọc file sản phẩm khuyến mãi: " + e.getMessage());
+            Ktradulieu.danhDauFileLoi(filePath, "Dòng " + soDong + ": " + e.getMessage());
             System.out.println("[Thông báo] Danh sách cũ được giữ nguyên.");
         }
     }
