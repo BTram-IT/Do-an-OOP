@@ -1,9 +1,12 @@
 package doitac;
 
+import util.BangConsole;
+import util.HienThiBang;
+
 import java.util.Scanner;
 import util.Ktradulieu;
 
-public class NhaCungCap {
+public class NhaCungCap implements HienThiBang {
     private String maNCC;
     private String tenNCC;
     private String sdt;
@@ -163,8 +166,17 @@ public class NhaCungCap {
     }
 
     @Override
+    public String[] layTieuDeBang() {
+        return new String[]{"MÃ NCC", "TÊN NHÀ CUNG CẤP", "SỐ ĐIỆN THOẠI", "EMAIL", "ĐỊA CHỈ", "TRẠNG THÁI"};
+    }
+
+    @Override
+    public Object[] layDongBang() {
+        return new Object[]{maNCC, tenNCC, sdt, email, diaChi, daXoa ? "NGỪNG HỢP TÁC" : "ĐANG GIAO DỊCH"};
+    }
+
+    @Override
     public String toString() {
-        return "[" + maNCC + "] " + tenNCC + " - SĐT: " + sdt + " - Email: " + email + " - ĐC: " + diaChi
-                + (daXoa ? " [NGỪNG HỢP TÁC]" : " [ĐANG GIAO DỊCH]");
+        return BangConsole.tuDoiTuong(this);
     }
 }

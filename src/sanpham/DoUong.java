@@ -1,5 +1,7 @@
 package sanpham;
 
+import util.BangConsole;
+
 import util.Ktradulieu;
 
 import java.time.LocalDate;
@@ -15,13 +17,20 @@ public class DoUong extends SanPham {
     public DoUong(String maSP, String tenSP, double donGiaNhap, double donGiaBan, int soLuongTon,
                   String donViTinh, LocalDate nsx, LocalDate hsd, double phanTramThue,
                   double dungTich, String thuongHieu, String huongVi, String loaiDoUong,
-                  String trangThaiDuyet, boolean daXoa) {
-        super(maSP, tenSP, donGiaNhap, donGiaBan, soLuongTon, donViTinh, nsx, hsd, phanTramThue, trangThaiDuyet, daXoa);
+                  boolean daXoa) {
+        this(maSP, tenSP, donGiaNhap, donGiaBan, soLuongTon, donViTinh, nsx, hsd, phanTramThue,
+                dungTich, thuongHieu, huongVi, loaiDoUong, "", daXoa);
+    }
+
+    public DoUong(String maSP, String tenSP, double donGiaNhap, double donGiaBan, int soLuongTon,
+                  String donViTinh, LocalDate nsx, LocalDate hsd, double phanTramThue,
+                  double dungTich, String thuongHieu, String huongVi, String loaiDoUong,
+                  String maNCC, boolean daXoa) {
+        super(maSP, tenSP, donGiaNhap, donGiaBan, soLuongTon, donViTinh, nsx, hsd, phanTramThue, maNCC, daXoa);
         this.dungTich = dungTich;
         this.thuongHieu = thuongHieu;
         this.huongVi = huongVi;
         this.loaiDoUong = loaiDoUong;
-        this.trangThaiDuyet = trangThaiDuyet;
         this.daXoa = daXoa;
     }
 
@@ -31,7 +40,6 @@ public class DoUong extends SanPham {
         this.thuongHieu = "";
         this.huongVi = "";
         this.loaiDoUong = "";
-        this.trangThaiDuyet = "";
         this.daXoa = false;
     }
     public double getDungTich() {
@@ -95,22 +103,19 @@ public class DoUong extends SanPham {
         this.setLoaiDoUong(Ktradulieu.nhapChuoiKhongRong(sc, "Nhập loại đồ uống: "));
         this.setHuongVi(Ktradulieu.nhapChuoiKhongRong(sc, "Nhập hương vị: "));
         this.setDungTich(Ktradulieu.nhapSoThuc(sc, "Nhập dung tích (ml): "));
-        System.out.println("Đã thêm xong đồ uống: [" + this.maSP + "] " + this.tenSP);
+        System.out.println("Đã nhập thông tin đồ uống: [" + this.maSP + "] " + this.tenSP);
     }
 
     public String toFileString() {
-        return String.format("DOUONG;%s;%s;%.0f;%.0f;%d;%s;%s;%s;%.1f;%.1f;%s;%s;%s;%s;%b",
+        return String.format(java.util.Locale.US, "DOUONG;%s;%s;%.0f;%.0f;%d;%s;%s;%s;%.1f;%.1f;%s;%s;%s;%s;%b",
                 this.maSP, this.tenSP, this.donGiaNhap, this.donGiaBan,
                 this.soLuongTon, this.donViTinh, Ktradulieu.dinhDangNgay(this.nsx), Ktradulieu.dinhDangNgay(this.hsd),
                 this.phanTramThue, this.dungTich, this.thuongHieu,
-                this.huongVi, this.loaiDoUong, this.trangThaiDuyet, this.daXoa);
+                this.huongVi, this.loaiDoUong, this.maNCC, this.daXoa);
     }
     @Override
-    public String toString() {
-        return super.toString() +
-                "\n   ↳ [Chi tiết]: Thương hiệu: " + thuongHieu +
-                " | Loại: " + loaiDoUong +
-                " | Hương vị: " + huongVi +
-                " | Dung tích: " + (int)dungTich + " ml";
+    protected String layChiTietBang() {
+        return BangConsole.thongTin(new String[]{"Thương hiệu", "Loại", "Hương vị", "Dung tích"},
+                thuongHieu, loaiDoUong, huongVi, (int) dungTich + " ml");
     }
 }

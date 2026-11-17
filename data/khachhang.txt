@@ -1,4 +1,4 @@
-KH001;Nguyễn Minh Anh;0901000001;21 Đường thử nghiệm 2, TP Hồ Chí Minh;0;false
+KH001;Nguyễn Minh Anh;0901000001;21 Đường thử nghiệm 2, TP Hồ Chí Minh;1;false
 KH002;Trần Minh Anh;0901000002;22 Đường thử nghiệm 3, TP Hồ Chí Minh;5;false
 KH003;Lê Minh Anh;0901000003;23 Đường thử nghiệm 4, TP Hồ Chí Minh;300;false
 KH004;Phạm Minh Anh;0901000004;24 Đường thử nghiệm 5, TP Hồ Chí Minh;100;false
@@ -58,3 +58,21 @@ KH057;Bùi Quốc Huy;0901000057;77 Đường thử nghiệm 2, TP Hồ Chí Min
 KH058;Huỳnh Quốc Huy;0901000058;78 Đường thử nghiệm 3, TP Hồ Chí Minh;6800;true
 KH059;Đỗ Quốc Huy;0901000059;79 Đường thử nghiệm 4, TP Hồ Chí Minh;6900;true
 KH060;Ngô Quốc Huy;0901000060;80 Đường thử nghiệm 5, TP Hồ Chí Minh;7000;true
+KH061;Nguyễn Minh Châu;0935000061;201 Lê Văn Sỹ, Quận 1, TP Hồ Chí Minh;0;false
+KH062;Trần Bảo Ngọc;0935000062;202 Lê Văn Sỹ, Quận 2, TP Hồ Chí Minh;1;false
+KH063;Lê Quốc Khánh;0935000063;203 Lê Văn Sỹ, Quận 3, TP Hồ Chí Minh;5;false
+KH064;Phạm Thanh Hà;0935000064;204 Lê Văn Sỹ, Quận 4, TP Hồ Chí Minh;9;false
+KH065;Võ Đức Anh;0935000065;205 Lê Văn Sỹ, Quận 5, TP Hồ Chí Minh;10;false
+KH066;Đặng Thảo Vy;0935000066;206 Lê Văn Sỹ, Quận 6, TP Hồ Chí Minh;99;false
+KH067;Bùi Hoàng Phúc;0935000067;207 Lê Văn Sỹ, Quận 7, TP Hồ Chí Minh;100;false
+KH068;Huỳnh Ngọc Lan;0935000068;208 Lê Văn Sỹ, Quận 8, TP Hồ Chí Minh;101;false
+KH069;Đỗ Gia Bảo;0935000069;209 Lê Văn Sỹ, Quận 9, TP Hồ Chí Minh;500;false
+KH070;Ngô Kim Chi;0935000070;210 Lê Văn Sỹ, Quận 10, TP Hồ Chí Minh;999;false
+KH071;Dương Anh Tuấn;0935000071;211 Lê Văn Sỹ, Quận 1, TP Hồ Chí Minh;1000;false
+KH072;Lý Minh Thư;0935000072;212 Lê Văn Sỹ, Quận 2, TP Hồ Chí Minh;1500;false
+KH073;Phan Ngọc Huy;0935000073;213 Lê Văn Sỹ, Quận 3, TP Hồ Chí Minh;2000;false
+KH074;Cao Khánh Vân;0935000074;214 Lê Văn Sỹ, Quận 4, TP Hồ Chí Minh;5000;false
+KH075;Vũ Thiên Ân;0935000075;215 Lê Văn Sỹ, Quận 5, TP Hồ Chí Minh;10000;false
+KH076;Hồ Nhật Minh;0935000076;216 Lê Văn Sỹ, Quận 6, TP Hồ Chí Minh;250;false
+KH077;Mai Quỳnh Như;0935000077;217 Lê Văn Sỹ, Quận 7, TP Hồ Chí Minh;20;true
+KH078;Tạ Đức Duy;0935000078;218 Lê Văn Sỹ, Quận 8, TP Hồ Chí Minh;0;true

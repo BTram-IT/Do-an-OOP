@@ -1,5 +1,8 @@
 package giaodien;
 
+import util.BangConsole;
+import java.util.ArrayList;
+
 import java.io.File;
 import java.time.DateTimeException;
 import java.time.LocalDate;
@@ -20,7 +23,7 @@ import khuyenmai.Khuyenmai;
 import khuyenmai.SPKhMai;
 import person.DsKhachHang;
 import person.DSNhanVien;
-import person.Giamdoc;
+import person.Admin;
 import person.Khachhang;
 import person.Nguoidung;
 import person.NhanVien;
@@ -79,12 +82,11 @@ public class Giaodien {
         );
         dsNhanVien.them(ql);
 
-        Giamdoc gd = new Giamdoc(
-                "GD001", "Lê Hoàng Long", "giamdoc",
-                "123456", "0909123456", "Giám đốc",
-                false, 15000000.0, 45.0
+        Admin admin = new Admin(
+                "AD001", "Lê Hoàng Long", "admin",
+                "123456", "0909123456", false
         );
-        dsNhanVien.them(gd);
+        dsNhanVien.them(admin);
 
         dsNhanVien.ghiFile("data/nhanvien.txt");
 
@@ -182,8 +184,8 @@ public class Giaodien {
                     break;
                 }
 
-                if (this.nguoiDangNhap instanceof Giamdoc) {
-                    menuGiamDoc(sc);
+                if (this.nguoiDangNhap instanceof Admin) {
+                    menuAdmin(sc);
                 } else if (this.nguoiDangNhap instanceof QuanLyCuaHang) {
                     menuQuanLyCuaHang(sc);
                 } else if (this.nguoiDangNhap instanceof NhanVien) {
@@ -202,7 +204,7 @@ public class Giaodien {
         }
     }
 
-      private static final int WIDTH = 56; 
+      private static final int WIDTH = 56;
 
     private static String vienTren() {
         return "╔" + "═".repeat(WIDTH - 2) + "╗";
@@ -275,6 +277,7 @@ public class Giaodien {
 
     // 1. MENU NHÂN VIÊN
     public void menuNhanVien(Scanner sc) {
+        if (!yeuCauQuyen("QUYEN_BAN_HANG")) return;
         while (true) {
             System.out.println("\n========== MENU NHÂN VIÊN ==========");
             System.out.println("1. Quản lý kho hàng");
@@ -295,9 +298,10 @@ public class Giaodien {
     }
 
     public void menuQuanLyKhoHang(Scanner sc) {
+        if (!yeuCauQuyen("QUYEN_NHAP_KHO")) return;
         while (true) {
             System.out.println("\n========== QUẢN LÝ KHO HÀNG ==========");
-            System.out.println("1. Tạo hóa đơn nhập");
+            System.out.println("1. Nhập thêm hàng - lập phiếu theo nhà cung cấp");
             System.out.println("2. Xem danh sách hóa đơn nhập");
             System.out.println("3. Tra cứu hóa đơn nhập");
             System.out.println("4. Xem danh sách sản phẩm");
@@ -305,10 +309,15 @@ public class Giaodien {
             System.out.println("6. Xem danh sách nhà cung cấp");
             System.out.println("7. Thêm nhà cung cấp");
             System.out.println("8. Tìm kiếm nhà cung cấp");
-            System.out.println("0. Quay lại menu nhân viên");
+            System.out.println("9. Thống kê sản phẩm hết hạn còn tồn");
+            System.out.println("10. Thống kê sản phẩm sắp hết hạn (30 ngày)");
+            System.out.println("11. Xử lý hàng sắp hết hạn (Admin/Quản lý)");
+            System.out.println("12. Loại bỏ số lượng hàng hết hạn");
+            System.out.println("13. Nhập mã hóa đơn nhập để chỉnh sửa");
+            System.out.println("0. Quay lại");
             System.out.println("=====================================");
 
-            int chon = Ktradulieu.luaChon(sc, "Chọn chức năng (0-8): ", 0, 8);
+            int chon = Ktradulieu.luaChon(sc, "Chọn chức năng (0-13): ", 0, 13);
             switch (chon) {
                 case 1: taoHoaDonNhap(sc); break;
                 case 2:
@@ -325,6 +334,11 @@ public class Giaodien {
                     break;
                 }
                 case 8: timKiemNhaCungCap(sc); break;
+                case 9: dsSanPham.thongKeSanPhamHetHan(); break;
+                case 10: dsSanPham.thongKeSanPhamSapHetHan(); break;
+                case 11: menuXuLyHangSapHetHan(sc); break;
+                case 12: loaiBoHangHetHan(sc); break;
+                case 13: dsHoaDon.chinhSuaHoaDonNhapTheoMa(sc, nguoiDangNhap, dsNhaCungCap, dsSanPham); break;
                 case 0: return;
                 default:
                     System.out.println("Lựa chọn không hợp lệ");
@@ -332,17 +346,46 @@ public class Giaodien {
         }
     }
 
+    public void menuXuLyHangSapHetHan(Scanner sc) {
+        if (!yeuCauQuyen("QUAN_LY_KHUYEN_MAI")) return;
+        while (true) {
+            dsSanPham.thongKeSanPhamSapHetHan();
+            System.out.println("Giảm 50% khi còn 0-3 ngày; 30% khi còn 4-7 ngày; 15% khi còn 8-15 ngày; 10% khi còn 16-30 ngày.");
+            System.out.println("Áp dụng cho thức ăn và đồ uống còn tồn; giữ nguyên khuyến mãi thủ công.");
+            System.out.println("1. Tạo/cập nhật giảm giá cận hạn\n0. Quay lại");
+            int chon = Ktradulieu.luaChon(sc, "Chọn (0-1): ", 0, 1);
+            if (chon == 0) return;
+            int soCapNhat = dsSPKM.xuLyHangSapHetHan(dsSanPham, dsKhuyenMai, nguoiDangNhap);
+            dsKhuyenMai.ghiFile("data/khuyenmai.txt");
+            dsSPKM.ghiFile("data/sanphamkhuyenmai.txt");
+            System.out.println("Đã tạo/cập nhật giảm giá cận hạn cho " + soCapNhat + " sản phẩm.");
+        }
+    }
+
+    public void loaiBoHangHetHan(Scanner sc) {
+        if (!yeuCauQuyen("QUYEN_KIEM_KE_KHO")) return;
+        dsSanPham.thongKeSanPhamHetHan();
+        if (dsSanPham.locSanPhamHetHan(LocalDate.now()).length == 0) return;
+        if (Ktradulieu.nhapXacNhan(sc, "Xác nhận đưa số lượng hàng hết hạn về 0 (giữ danh mục sản phẩm)?")) {
+            dsSanPham.loaiBoSoLuongHetHan(nguoiDangNhap);
+            if (dsSPKM.goGiamGiaCanHanKhongConPhuHop(dsSanPham, dsKhuyenMai, LocalDate.now()) > 0) {
+                dsSPKM.ghiFile("data/sanphamkhuyenmai.txt");
+            }
+        } else System.out.println("Đã hủy loại bỏ hàng hết hạn.");
+    }
+
     public void menuThuNganTiepNhanKhachHang(Scanner sc) {
+        if (!yeuCauQuyen("QUYEN_BAN_HANG")) return;
         while (true) {
             System.out.println("\n========== THU NGÂN ==========");
             System.out.println("1. Tiếp nhận khách hàng");
             System.out.println("2. Lập hóa đơn bán");
             System.out.println("3. Quản lý hóa đơn bán");
             System.out.println("4. Tra cứu khuyến mãi");
-            System.out.println("0. Quay lại menu nhân viên");
+            System.out.println("0. Quay lại");
             System.out.println("==============================");
 
-            int chon = Ktradulieu.luaChon(sc, "Chọn chức năng (1-5): ", 0, 4);
+            int chon = Ktradulieu.luaChon(sc, "Chọn chức năng (0-4): ", 0, 4);
 
             switch (chon) {
                 case 1:
@@ -368,6 +411,7 @@ public class Giaodien {
     }
 
     public void menuKiemTraHoaDonBan(Scanner sc, Hoadonban hdb) {
+        if (!yeuCauQuyen("QUYEN_BAN_HANG")) return;
         while (true) {
             System.out.println("\n========== KIỂM TRA HÓA ĐƠN ==========");
             System.out.println("1. Thêm sản phẩm");
@@ -406,6 +450,7 @@ public class Giaodien {
     }
 
     public void menuTiepNhanKhachHang(Scanner sc) {
+        if (!yeuCauQuyen("QUYEN_BAN_HANG")) return;
         while (true) {
             System.out.println("\n--- TIẾP NHẬN KHÁCH HÀNG ---");
             System.out.println("1. Tìm kiếm khách hàng");
@@ -413,7 +458,7 @@ public class Giaodien {
             System.out.println("3. Thêm khách hàng mới");
             System.out.println("4. Xem lịch sử mua hàng của khách");
             System.out.println("5. Sửa thông tin khách hàng");
-            System.out.println("6. Xóa khách hàng (chỉ Quản lý/Giám đốc)");
+            System.out.println("6. Xóa khách hàng (chỉ Quản lý/Admin)");
             System.out.println("0. Quay lại");
 
             int chon = Ktradulieu.luaChon(sc, "Chọn (0-6): ", 0, 6);
@@ -428,8 +473,8 @@ public class Giaodien {
                     break;
                 }
                 case 6: {
-                    if (!(nguoiDangNhap instanceof QuanLyCuaHang) && !(nguoiDangNhap instanceof Giamdoc)) {
-                        System.out.println("[Từ chối] Chỉ Quản lý hoặc Giám đốc mới được xóa khách hàng.");
+                    if (!yeuCauQuyen("QUAN_LY_KHACH_HANG")) {
+                        System.out.println("[Từ chối] Chỉ Quản lý hoặc Admin mới được xóa khách hàng.");
                         break;
                     }
                     String ma = Ktradulieu.nhapChuoiKhongRong(sc, "Nhập mã hoặc SĐT khách hàng cần xóa: ");
@@ -450,6 +495,7 @@ public class Giaodien {
     }
 
     public void menuXemVaTimKiemKhuyenMai(Scanner sc) {
+        if (!yeuCauQuyen("QUYEN_TRA_CUU")) return;
         while (true) {
             System.out.println("\n--- XEM & TÌM KIẾM KHUYẾN MÃI ---");
             System.out.println("1. Xem danh sách khuyến mãi");
@@ -468,21 +514,29 @@ public class Giaodien {
     }
 
     public void menuQuanLyHoaDonBan(Scanner sc) {
+        if (!yeuCauQuyen("QUYEN_TRA_CUU")) return;
         while (true) {
             System.out.println("\n--- QUẢN LÝ HÓA ĐƠN BÁN ---");
             System.out.println("1. Xem danh sách hóa đơn bán");
             System.out.println("2. Tìm kiếm và xem chi tiết hóa đơn bán");
+            System.out.println("3. Tra cứu theo ngày, khách hàng, tổng tiền hoặc trạng thái");
+            System.out.println("4. Thống kê Top N sản phẩm bán chạy");
             System.out.println("0. Quay lại");
 
-            int chon = Ktradulieu.luaChon(sc, "Chọn (0-2): ", 0, 2);
+            int chon = Ktradulieu.luaChon(sc, "Chọn (0-4): ", 0, 4);
             switch (chon) {
-                case 1:
+                case 1: {
+                    List<HoaDon> dsBan = new ArrayList<>();
                     for (int i = 0; i < dsHoaDon.getSoLuong(); i++) {
                         HoaDon hd = dsHoaDon.get(i);
-                        if (hd instanceof Hoadonban) System.out.println(hd);
+                        if (hd instanceof Hoadonban) dsBan.add(hd);
                     }
+                    System.out.println(BangConsole.tuDanhSach(dsBan));
                     break;
+                }
                 case 2: xemChiTietHoaDonBan(sc); break;
+                case 3: dsHoaDon.traCuuHoaDon(sc, "HDBAN"); break;
+                case 4: dsHoaDon.thongKeTopNSanPham(sc); break;
                 case 0: return;
             }
         }
@@ -490,36 +544,12 @@ public class Giaodien {
 
     // 2. MENU QUẢN LÝ CỬA HÀNG
     public void menuQuanLyCuaHang(Scanner sc) {
-        while (true) {
-            System.out.println("\n========== MENU QUẢN LÝ CỬA HÀNG ==========");
-            System.out.println("1. Quản lý sản phẩm");
-            System.out.println("2. Quản lý khuyến mãi");
-            System.out.println("3. Quản lý nhập kho ");
-            System.out.println("4. Quản lý nhà cung cấp");
-            System.out.println("5. Quản lý nhân viên");
-            System.out.println("6. Báo cáo ");
-            System.out.println("7. Quản lý khách hàng");
-            System.out.println("0. Đăng xuất");
-            System.out.println("===========================================");
-
-            int chon = Ktradulieu.luaChon(sc, "Chọn phân hệ quản lý (0-7): ", 0, 7);
-            switch (chon) {
-                case 1: menuQuanLySanPham(sc); break;
-                case 2: menuQuanLyKhuyenMai(sc); break;
-                case 3: menuQuanLyNhapKhoQuyTrinh(sc); break;
-                case 4: menuQuanLyNhaCungCap(sc); break;
-                case 5: menuQuanLyNhanVien(sc); break;
-                case 6: menuThongKeBaoCao(sc); break;
-                case 7: menuTiepNhanKhachHang(sc); break;
-                case 0:
-                    System.out.println("Đã đăng xuất.");
-                    this.nguoiDangNhap = null;
-                    return;
-            }
-        }
+        if (!yeuCauQuyen("QUAN_LY_KHO")) return;
+        menuDieuHanh(sc);
     }
 
     public void menuQuanLySanPham(Scanner sc) {
+        if (!yeuCauQuyen("QUAN_LY_SAN_PHAM")) return;
         while (true) {
             System.out.println("\n--- 2.1. QUẢN LÝ SẢN PHẨM ---");
             System.out.println("1. Thêm sản phẩm");
@@ -532,12 +562,12 @@ public class Giaodien {
 
             int chon = Ktradulieu.luaChon(sc, "Chọn (0-6): ", 0, 6);
             switch (chon) {
-                case 1: dsSanPham.themSanPhamTuBanPhim(sc); break;
+                case 1: dsSanPham.themSanPhamTuBanPhim(sc, dsNhaCungCap); break;
                 case 2: dsSanPham.xuatDanhSach(); break;
                 case 3: timKiemSanPham(sc); break;
                 case 4: {
                     String ma = Ktradulieu.nhapChuoiKhongRong(sc, "Nhập mã sản phẩm cần sửa: ");
-                    dsSanPham.suaSP(sc, ma, nguoiDangNhap);
+                    dsSanPham.suaSP(sc, ma, nguoiDangNhap, dsNhaCungCap);
                     break;
                 }
                 case 5: {
@@ -560,7 +590,6 @@ public class Giaodien {
                     if (nguoiDangNhap instanceof QuanLyCuaHang) {
                         ((QuanLyCuaHang) nguoiDangNhap).thongKeTonKho(dsSanPham);
                     }
-                    dsSanPham.kiemTraVaCapNhatHanSuDung();
                     break;
                 case 0: return;
             }
@@ -568,6 +597,7 @@ public class Giaodien {
     }
 
     public void menuQuanLyKhuyenMai(Scanner sc) {
+        if (!yeuCauQuyen("QUAN_LY_KHUYEN_MAI")) return;
         while (true) {
             System.out.println("\n--- 2.2. QUẢN LÝ KHUYẾN MÃI ---");
             System.out.println("1. Thêm chương trình khuyến mãi");
@@ -578,9 +608,11 @@ public class Giaodien {
             System.out.println("6. Áp dụng khuyến mãi cho sản phẩm");
             System.out.println("7. Hủy áp dụng khuyến mãi cho sản phẩm");
             System.out.println("8. Xem danh sách sản phẩm áp dụng khuyến mãi");
+            System.out.println("9. Thống kê khuyến mãi đang áp dụng, hết hạn hoặc chưa bắt đầu");
+            System.out.println("10. Tạo/cập nhật giảm giá thực phẩm cận hạn");
             System.out.println("0. Quay lại ");
 
-            int chon = Ktradulieu.luaChon(sc, "Chọn (0-8): ", 0, 8);
+            int chon = Ktradulieu.luaChon(sc, "Chọn (0-10): ", 0, 10);
             switch (chon) {
                 case 1: dsKhuyenMai.themTuBanPhim(sc); break;
                 case 2: dsKhuyenMai.xuatDanhSach(); break;
@@ -627,44 +659,59 @@ public class Giaodien {
                     break;
                 }
                 case 8: dsSPKM.xuatDanhSach(); break;
+                case 9: dsKhuyenMai.thongKeTrangThai(sc); break;
+                case 10: {
+                    System.out.println("Giảm 50% nếu còn 0-3 ngày, 30% nếu còn 4-7 ngày, 15% nếu còn 8-15 ngày.");
+                    int soCapNhat = dsSPKM.tuDongGiamGiaCanHSD(dsSanPham, dsKhuyenMai);
+                    if (soCapNhat > 0) {
+                        dsKhuyenMai.ghiFile("data/khuyenmai.txt");
+                        dsSPKM.ghiFile("data/sanphamkhuyenmai.txt");
+                    }
+                    System.out.println("Đã tạo/cập nhật khuyến mãi cận hạn cho " + soCapNhat + " sản phẩm.");
+                    break;
+                }
                 case 0: return;
             }
         }
     }
 
     public void menuQuanLyNhapKhoQuyTrinh(Scanner sc) {
+        if (!yeuCauQuyen("DUYET_HOA_DON")) return;
         while (true) {
             System.out.println("\n--- 3. QUẢN LÝ NHẬP KHO ---");
             System.out.println("1. Xem danh sách hóa đơn nhập kho chờ duyệt");
             System.out.println("2. Duyệt hóa đơn nhập kho ");
             System.out.println("3. Xem lịch sử hóa đơn nhập kho");
             System.out.println("4. Tìm kiếm hóa đơn nhập kho");
+            System.out.println("5. Tra cứu theo ngày, nhà cung cấp, tổng tiền hoặc trạng thái");
             System.out.println("0. Quay lại");
 
-            int chon = Ktradulieu.luaChon(sc, "Chọn (0-4): ", 0, 4);
+            int chon = Ktradulieu.luaChon(sc, "Chọn (0-5): ", 0, 5);
             switch (chon) {
                 case 1:
                     dsHoaDon.xuatDanhSachHoaDonChoDuyet();
                     break;
                 case 2:
-                    if (nguoiDangNhap instanceof QuanLyCuaHang) {
-                        ((QuanLyCuaHang) nguoiDangNhap).duyetHoaDon(sc, dsHoaDon, dsSanPham);
-                    } else {
-                        dsHoaDon.duyetHoaDon(sc, nguoiDangNhap, dsSanPham);
+                    if (dsHoaDon.duyetHoaDon(sc, nguoiDangNhap, dsSanPham)) {
+                        dsHoaDon.ghiFile("data/hoadon.txt");
+                        dsSanPham.ghiFile("data/sanpham.txt");
+                        if (dsSPKM.goGiamGiaCanHanKhongConPhuHop(dsSanPham, dsKhuyenMai, LocalDate.now()) > 0) {
+                            dsSPKM.ghiFile("data/sanphamkhuyenmai.txt");
+                        }
                     }
-                    dsHoaDon.ghiFile("data/hoadon.txt");
-                    dsSanPham.ghiFile("data/sanpham.txt");
                     break;
                 case 3:
                     dsHoaDon.xuatDanhSachHoaDonNhap();
                     break;
                 case 4: traCuuHoaDonNhap(sc); break;
+                case 5: dsHoaDon.traCuuHoaDon(sc, "HDNHAP"); break;
                 case 0: return;
             }
         }
     }
 
     public void menuQuanLyNhaCungCap(Scanner sc) {
+        if (!yeuCauQuyen("QUAN_LY_NHA_CUNG_CAP")) return;
         while (true) {
             System.out.println("\n--- 4. QUẢN LÝ NHÀ CUNG CẤP ---");
             System.out.println("1. Thêm nhà cung cấp");
@@ -708,13 +755,14 @@ public class Giaodien {
     }
 
     public void menuQuanLyNhanVien(Scanner sc) {
+        if (!yeuCauQuyen("QUAN_LY_NHAN_VIEN")) return;
         while (true) {
             System.out.println("\n--- 5. QUẢN LÝ NHÂN VIÊN ---");
             System.out.println("1. Xem danh sách nhân viên");
             System.out.println("2. Tìm kiếm nhân viên");
             System.out.println("3. Thêm nhân viên");
             System.out.println("4. Cập nhật thông tin nhân viên");
-            System.out.println("5. Đề xuất sa thải nhân viên (Gửi đề xuất lên Giám Đốc)");
+            System.out.println(nguoiDangNhap instanceof Admin ? "5. Sa thải nhân viên" : "5. Đề xuất sa thải nhân viên (gửi Admin)");
             System.out.println("6. Tính lương nhân viên");
             System.out.println("0. Quay lại");
 
@@ -723,9 +771,7 @@ public class Giaodien {
             switch (chon) {
                 case 1:
                     System.out.println("\n============ DANH SÁCH NHÂN VIÊN ============");
-                    for (NhanVien nv : dsNhanVien.getDanhSachNhanVien()) {
-                        System.out.println(nv.toString());
-                    }
+                    System.out.println(BangConsole.tuDanhSach(dsNhanVien.getDanhSachNhanVien()));
                     break;
 
                 case 2: {
@@ -733,7 +779,7 @@ public class Giaodien {
                     Nguoidung nd = dsNhanVien.timKiem(key);
 
                     if (nd instanceof NhanVien) {
-                        System.out.println("Kết quả: " + nd.toString());
+                        System.out.println("Kết quả:\n" + nd);
                     } else {
                         System.out.println("Không tìm thấy nhân viên phù hợp!");
                     }
@@ -777,6 +823,7 @@ public class Giaodien {
     }
 
     public void menuThongKeBaoCao(Scanner sc) {
+        if (!yeuCauQuyen("XEM_THONG_KE_DOANH_THU")) return;
         while (true) {
             System.out.println("\n================ MENU BÁO CÁO ================");
             System.out.println("1. Báo cáo tổng quan hóa đơn");
@@ -785,10 +832,11 @@ public class Giaodien {
             System.out.println("4. Báo cáo sản phẩm bán được và không bán được");
             System.out.println("5. Báo cáo nhân viên và bảng lương");
             System.out.println("6. Báo cáo tồn kho");
+            System.out.println("7. Thống kê Top N sản phẩm bán chạy");
             System.out.println("0. Quay lại");
             System.out.println("===============================================");
 
-            int chon = Ktradulieu.luaChon(sc, "Chọn (0-6): ", 0, 6);
+            int chon = Ktradulieu.luaChon(sc, "Chọn (0-7): ", 0, 7);
             switch (chon) {
                 case 1: {
                     if (nguoiDangNhap instanceof QuanLyCuaHang) {
@@ -855,323 +903,187 @@ public class Giaodien {
                     System.out.println("Đang quay lại menu quản lý cửa hàng...");
                     return;
                 }
+                case 7:
+                    if (nguoiDangNhap instanceof QuanLyCuaHang) dsHoaDon.thongKeTopNSanPham(sc);
+                    break;
                 default:
-                    System.out.println("[Lỗi] Vui lòng chọn từ 0 đến 6!");
+                    System.out.println("[Lỗi] Vui lòng chọn từ 0 đến 7!");
                     break;
             }
         }
     }
-    public void menuQuanLyNhanSuGiamDoc(Scanner sc) {
+    public void menuQuanLyNhanSuAdmin(Scanner sc) {
+        if (!yeuCauQuyen("QUAN_TRI_TAI_KHOAN")) return;
         while (true) {
-            System.out.println("\n========== QUẢN LÝ NHÂN SỰ ==========");
-            System.out.println("1. Xem danh sách nhân sự");
-            System.out.println("2. Xem và xử lý yêu cầu sa thải");
+            System.out.println("\n========== QUẢN TRỊ NHÂN SỰ VÀ TÀI KHOẢN ==========");
+            System.out.println("1. Xem toàn bộ tài khoản");
+            System.out.println("2. Xử lý yêu cầu sa thải");
             System.out.println("3. Thêm nhân viên");
             System.out.println("4. Thêm quản lý cửa hàng");
+            System.out.println("5. Thêm Admin");
+            System.out.println("6. Cập nhật thông tin / đặt lại mật khẩu tài khoản");
+            System.out.println("7. Khóa tài khoản / cho nghỉ việc");
+            System.out.println("8. Mở khóa tài khoản / khôi phục nhân sự");
+            System.out.println("9. Quản lý nhân viên và tính lương");
             System.out.println("0. Quay lại");
-            System.out.println("=====================================");
-
-            if (!(nguoiDangNhap instanceof Giamdoc)) {
-                System.out.println("[Lỗi] Bạn không có quyền truy cập!");
-                return;
-            }
-
-            int chon = Ktradulieu.luaChon(sc, "Chọn chức năng (0-4): ", 0, 4);
-
+            int chon = Ktradulieu.luaChon(sc, "Chọn (0-9): ", 0, 9);
             switch (chon) {
-                case 1:
-                    dsNhanVien.xuatDanhSach();
+                case 1: dsNhanVien.xuatDanhSach(); break;
+                case 2: ((Admin) nguoiDangNhap).duyetYeuCauSaThai(sc, dsNhanVien); break;
+                case 3: themNhanVien(sc); break;
+                case 4: themQuanLy(sc); break;
+                case 5: {
+                    Admin admin = new Admin();
+                    admin.nhapThongTin(sc, dsNhanVien);
+                    dsNhanVien.them(nguoiDangNhap, admin);
                     break;
-
-                case 2:
-                    ((Giamdoc) nguoiDangNhap)
-                            .duyetYeuCauSaThai(sc, dsNhanVien);
-                    dsNhanVien.ghiFile("data/nhanvien.txt");
+                }
+                case 6: {
+                    String ma = Ktradulieu.nhapChuoiKhongRong(sc, "Nhập mã tài khoản cần cập nhật: ");
+                    dsNhanVien.sua(sc, nguoiDangNhap, ma);
                     break;
-
-                case 3:
-                    themNhanVien(sc);
+                }
+                case 7:
+                case 8: {
+                    String ma = Ktradulieu.nhapChuoiKhongRong(sc, "Nhập mã tài khoản: ");
+                    if (Ktradulieu.nhapXacNhan(sc, "Xác nhận " + (chon == 7 ? "khóa" : "mở khóa")
+                            + " tài khoản [" + ma + "]?")) {
+                        dsNhanVien.doiTrangThaiTaiKhoan(nguoiDangNhap, ma, chon == 7);
+                    }
                     break;
-
-                case 4:
-                    themQuanLy(sc);
-                    break;
-
-                case 0:
-                    return;
+                }
+                case 9: menuQuanLyNhanVien(sc); break;
+                case 0: return;
             }
         }
     }
 
-    // MENU BÁO CÁO - THỐNG KÊ CỦA GIÁM ĐỐC
-    public void menuBaoCaoThongKeGiamDoc(Scanner sc) {
-        while (true) {
-            System.out.println("\n========== BÁO CÁO - THỐNG KÊ ==========");
-            System.out.println("1. Báo cáo tổng quan hóa đơn");
-            System.out.println("2. Thống kê doanh thu và chi phí nhập hàng");
-            System.out.println("3. Báo cáo thuế VAT");
-            System.out.println("4. Thống kê sản phẩm bán được và không bán được");
-            System.out.println("5. Báo cáo nhân viên và bảng lương");
-            System.out.println("6. Báo cáo tồn kho");
-            System.out.println("0. Quay lại");
-            System.out.println("========================================");
-
-            int chon = Ktradulieu.luaChon(sc, "Chọn chức năng (0-6): ", 0, 6);
-
-            if (!(nguoiDangNhap instanceof Giamdoc)) {
-                System.out.println("[Lỗi] Bạn không có quyền truy cập!");
-                return;
-            }
-
-            // Tìm đối tượng quản lý để sử dụng các hàm thống kê đã viết
-            QuanLyCuaHang baoCao = null;
-
-            if (dsNhanVien != null) {
-                for (int i = 0; i < dsNhanVien.getSoLuong(); i++) {
-                    Object obj = dsNhanVien.get(i);
-
-                    if (obj instanceof QuanLyCuaHang) {
-                        baoCao = (QuanLyCuaHang) obj;
-                        break;
-                    }
-                }
-            }
-
-            if (chon != 0 && baoCao == null) {
-                System.out.println("[Lỗi] Không tìm thấy đối tượng quản lý để thực hiện báo cáo!");
-                continue;
-            }
-
-            switch (chon) {
-                case 1: {
-                    LocalDate[] ky = chonKyBaoCao(sc);
-
-                    if (ky != null) {
-                        baoCao.thongKeTongQuanHoaDon(
-                                dsHoaDon, ky[0], ky[1]);
-                    }
-                    break;
-                }
-
-                case 2: {
-                    LocalDate[] ky = chonKyBaoCao(sc);
-
-                    if (ky != null) {
-                        baoCao.thongKeDoanhThuLoiNhuan(
-                                dsHoaDon, ky[0], ky[1]);
-                    }
-                    break;
-                }
-
-                case 3: {
-                    LocalDate[] ky = chonKyBaoCao(sc);
-
-                    if (ky != null) {
-                        baoCao.thongKeThue(
-                                dsHoaDon, ky[0], ky[1]);
-                    }
-                    break;
-                }
-
-                case 4: {
-                    LocalDate[] ky = chonKyBaoCao(sc);
-
-                    if (ky != null) {
-                        baoCao.thongKeSanPhamBanDuoc(
-                                dsHoaDon, dsSanPham, ky[0], ky[1]);
-                    }
-                    break;
-                }
-
-                case 5:
-                    baoCao.thongKeNhanVienVaBangLuong(dsNhanVien);
-                    break;
-
-                case 6:
-                    baoCao.thongKeTonKho(dsSanPham);
-                    break;
-
-                case 0:
-                    return;
-            }
-        }
+    // 3. MENU Admin
+    public void menuAdmin(Scanner sc) {
+        if (!yeuCauQuyen("QUAN_TRI_TAI_KHOAN")) return;
+        menuDieuHanh(sc);
     }
 
-    // 3. MENU GIÁM ĐỐC
-    public void menuGiamDoc(Scanner sc) {
+    private void menuDieuHanh(Scanner sc) {
+        boolean laAdmin = nguoiDangNhap instanceof Admin;
         while (true) {
-            System.out.println("\n========== MENU GIÁM ĐỐC ==========");
-            System.out.println("1. Quản lý nhân sự");
-            System.out.println("2. Báo cáo - thống kê");
-            System.out.println("3. Phê duyệt hóa đơn nhập kho");
+            System.out.println("\n========== MENU " + (laAdmin ? "ADMIN" : "QUẢN LÝ CỬA HÀNG") + " ==========");
+            System.out.println("1. Quản lý sản phẩm");
+            System.out.println("2. Quản lý khuyến mãi");
+            System.out.println("3. Quản lý và duyệt nhập kho");
+            System.out.println("4. Quản lý nhà cung cấp");
+            System.out.println("5. " + (laAdmin ? "Quản trị nhân sự và tài khoản" : "Quản lý nhân viên"));
+            System.out.println("6. Báo cáo - thống kê");
+            System.out.println("7. Quản lý khách hàng");
+            System.out.println("8. Nghiệp vụ kho - lập hóa đơn nhập");
+            System.out.println("9. Thu ngân - lập hóa đơn bán");
+            System.out.println("10. Sửa / hủy hóa đơn chưa hoàn tất");
             System.out.println("0. Đăng xuất");
-            System.out.println("===================================");
-
-            int chon = Ktradulieu.luaChon(sc, "Chọn chức năng (0-3): ", 0, 3);
-
+            int chon = Ktradulieu.luaChon(sc, "Chọn (0-10): ", 0, 10);
             switch (chon) {
-                case 1:
-                    menuQuanLyNhanSuGiamDoc(sc);
+                case 1: menuQuanLySanPham(sc); break;
+                case 2: menuQuanLyKhuyenMai(sc); break;
+                case 3: menuQuanLyNhapKhoQuyTrinh(sc); break;
+                case 4: menuQuanLyNhaCungCap(sc); break;
+                case 5:
+                    if (laAdmin) menuQuanLyNhanSuAdmin(sc);
+                    else menuQuanLyNhanVien(sc);
                     break;
-
-                case 2:
-                    menuBaoCaoThongKeGiamDoc(sc);
-                    break;
-                case 3:
-                    if (nguoiDangNhap instanceof Giamdoc) {
-                        ((Giamdoc) nguoiDangNhap).duyetHoaDon(sc, dsHoaDon, dsSanPham);
-
-                        dsHoaDon.ghiFile("data/hoadon.txt");
-                        dsSanPham.ghiFile("data/sanpham.txt");
-                    }
-                    break;
-
+                case 6: menuThongKeBaoCao(sc); break;
+                case 7: menuTiepNhanKhachHang(sc); break;
+                case 8: menuQuanLyKhoHang(sc); break;
+                case 9: menuThuNganTiepNhanKhachHang(sc); break;
+                case 10: menuDieuChinhHoaDon(sc); break;
                 case 0:
+                    ghiDuLieu();
+                    nguoiDangNhap = null;
                     System.out.println(">> Đã đăng xuất.");
-                    this.nguoiDangNhap = null;
                     return;
             }
         }
+    }
+
+    public void menuDieuChinhHoaDon(Scanner sc) {
+        if (!yeuCauQuyen("SUA_HOA_DON")) return;
+        while (true) {
+            System.out.println("\n========== ĐIỀU CHỈNH HÓA ĐƠN ==========");
+            System.out.println("1. Sửa thông tin hóa đơn chưa hoàn tất");
+            System.out.println("2. Hủy hóa đơn chưa hoàn tất");
+            System.out.println("0. Quay lại");
+            int chon = Ktradulieu.luaChon(sc, "Chọn (0-2): ", 0, 2);
+            switch (chon) {
+                case 1: dsHoaDon.suaHD(sc, nguoiDangNhap); break;
+                case 2: dsHoaDon.xoaHD(sc, nguoiDangNhap); break;
+                case 0: return;
+            }
+        }
+    }
+
+    private boolean yeuCauQuyen(String maQuyen) {
+        if (nguoiDangNhap != null && nguoiDangNhap.coQuyen(maQuyen)) return true;
+        System.out.println("[Từ chối] Tài khoản không có quyền truy cập chức năng này hoặc đã bị khóa!");
+        return false;
     }
 
     // =========================================================
     // HỖ TRỢ NGHIỆP VỤ - GỌI ĐÚNG HÀM TRONG CÁC CLASS CỦA BẠN
     // =========================================================
-    private NhanVien layNhanVienThaoTac() {
-        if (nguoiDangNhap instanceof NhanVien) {
-            return (NhanVien) nguoiDangNhap;
-        }
-        return null;
+    private Nguoidung layNguoiThaoTac() {
+        return nguoiDangNhap != null && !nguoiDangNhap.isDaXoa() ? nguoiDangNhap : null;
     }
 
     public void taoHoaDonNhap(Scanner sc) {
-        NhanVien nvLap = layNhanVienThaoTac();
-
-        if (nvLap == null) {
-            System.out.println("[Lỗi] Không tìm thấy nhân viên lập hóa đơn!");
-            return;
-        }
-
-        HoadonNhap hdn = new HoadonNhap();
-
-        hdn.nhapThongTin(sc, nvLap, dsHoaDon,
-                dsNhaCungCap, dsSanPham, nguoiDangNhap);
-        if (dsHoaDon.themHD(hdn)) {
-            dsHoaDon.ghiFile("data/hoadon.txt");
-            dsSanPham.ghiFile("data/sanpham.txt");
-            dsNhaCungCap.ghiFile("data/nhacungcap.txt");
-
-            System.out.println("[Thành công] Đã lưu hóa đơn nhập!");
-        }
+        if (!yeuCauQuyen("QUYEN_NHAP_KHO")) return;
+        dsHoaDon.nhapThemHang(sc, nguoiDangNhap, dsNhaCungCap, dsSanPham);
     }
 
     public void taoHoaDonBan(Scanner sc) {
-        NhanVien nvLap = layNhanVienThaoTac();
+        if (!yeuCauQuyen("QUYEN_BAN_HANG")) return;
+        Nguoidung nvLap = layNguoiThaoTac();
 
         if (nvLap == null) {
-            System.out.println("[Lỗi] Không tìm thấy nhân viên lập hóa đơn!");
+            System.out.println("[Lỗi] Không tìm thấy tài khoản hợp lệ để lập hóa đơn!");
             return;
         }
 
         Hoadonban hdb = new Hoadonban();
 
-        // Khởi tạo thông tin hóa đơn
-        hdb.nhapThongTin(sc, nvLap, dsHoaDon,
-                dsKhachHang, dsSanPham, dsKhuyenMai, dsSPKM);
-
-        while (true) {
-            System.out.println("\n========== LẬP HÓA ĐƠN BÁN ==========");
-            System.out.println("Mã hóa đơn: " + hdb.getMaHD());
-            System.out.println("Nhân viên: " + nvLap.getMaND()
-                    + " - " + nvLap.getTenND());
-
-            String tenKhachHang = "Khách lẻ";
-
-            if (!"KHACH_LE".equalsIgnoreCase(hdb.getMaKH())) {
-                // Tìm thông tin khách hàng theo mã
-                for (Khachhang kh : dsKhachHang.getDanhSach()) {
-                    if (kh != null && kh.getMaKH() != null
-                            && kh.getMaKH().equalsIgnoreCase(hdb.getMaKH())) {
-                        tenKhachHang = kh.getTenKH();
-                        break;
-                    }
-                }
-            }
-
-            System.out.println("Khách hàng: " + tenKhachHang);
-            System.out.println("Số sản phẩm: " + hdb.getSoLuongCT());
-            System.out.println("Tổng tiền: "
-                    + Ktradulieu.dinhDangTien(hdb.tinhThanhTien()));
-
-            System.out.println("------------------------------------");
-            System.out.println("1. Tiếp nhận khách hàng");
-            System.out.println("2. Kiểm tra và điều chỉnh hóa đơn");
-            System.out.println("3. Thanh toán và hoàn tất");
-            System.out.println("0. Hủy lập hóa đơn");
-            System.out.println("====================================");
-
-            int chon = Ktradulieu.luaChon(
-                    sc, "Chọn chức năng (0-3): ", 0, 3);
-
-            switch (chon) {
-                case 1:
-                    hdb.tiepNhanKhachHang(sc, dsKhachHang);
-                    break;
-
-                case 2:
-                    menuKiemTraHoaDonBan(sc, hdb);
-                    break;
-
-                case 3:
-                    boolean thanhCong = hdb.thanhToanHoaDon(
-                            sc, nvLap, dsKhachHang, dsSanPham);
-
-                    if (thanhCong) {
-                        if (dsHoaDon.themHD(hdb)) {
-                            dsHoaDon.ghiFile("data/hoadon.txt");
-                            dsSanPham.ghiFile("data/sanpham.txt");
-                            dsKhachHang.ghiFile("data/khachhang.txt");
-
-                            System.out.println(
-                                    "[Thành công] Đã hoàn tất và lưu hóa đơn bán!");
-                        }
-                        return;
-                    }
-                    break;
-
-                case 0:
-                    System.out.println(
-                            "[Thông báo] Đã hủy lập hóa đơn: " + hdb.getMaHD());
-                    return;
-            }
+        if (hdb.lapHoaDon(sc, nvLap, dsHoaDon, dsKhachHang, dsSanPham, dsKhuyenMai, dsSPKM)
+                && dsHoaDon.themHD(hdb)) {
+            dsHoaDon.ghiFile("data/hoadon.txt");
+            dsSanPham.ghiFile("data/sanpham.txt");
+            dsKhachHang.ghiFile("data/khachhang.txt");
+            System.out.println("[Thành công] Đã hoàn tất và lưu hóa đơn bán!");
         }
     }
 
     public void timKiemSanPham(Scanner sc) {
         String key = Ktradulieu.nhapChuoiKhongRong(sc, "Nhập mã hoặc tên sản phẩm: ").toLowerCase();
-        int dem = 0;
+        List<SanPham> ketQua = new ArrayList<>();
         System.out.println("\n============ KẾT QUẢ TÌM KIẾM SẢN PHẨM ============");
         for (int i = 0; i < dsSanPham.getSoLuong(); i++) {
             SanPham sp = dsSanPham.get(i);
             if (sp != null && (sp.getMaSP().toLowerCase().contains(key) || sp.getTenSP().toLowerCase().contains(key))) {
-                dem++;
-                System.out.println(dem + ". " + sp.toString());
+                ketQua.add(sp);
             }
         }
-        if (dem == 0) System.out.println("Không tìm thấy sản phẩm phù hợp.");
-        System.out.println("==================================================");
+        if (ketQua.isEmpty()) {
+            System.out.println("Không tìm thấy sản phẩm phù hợp.");
+        } else {
+            System.out.println(BangConsole.tuDanhSach(ketQua));
+        }
     }
 
     public void timKiemNhaCungCap(Scanner sc) {
         String key = Ktradulieu.nhapChuoiKhongRong(sc, "Nhập mã hoặc tên NCC: ");
         NhaCungCap ncc = dsNhaCungCap.timKiem(key);
-        System.out.println(ncc != null ? "\nKết quả: " + ncc.toString() : "Không tìm thấy nhà cung cấp: " + key);
+        System.out.println(ncc != null ? "\nKết quả:\n" + ncc : "Không tìm thấy nhà cung cấp: " + key);
     }
 
     public void timKiemKhachHang(Scanner sc) {
         String key = Ktradulieu.nhapChuoiKhongRong(sc, "Nhập mã hoặc SĐT: ");
         Khachhang kh = dsKhachHang.timKiem(key);
-        System.out.println(kh != null ? "\nThông tin: " + kh.toString() : "Không tìm thấy khách hàng: " + key);
+        System.out.println(kh != null ? "\nThông tin:\n" + kh : "Không tìm thấy khách hàng: " + key);
     }
 
     public void xemLichSuMuaHangKhach(Scanner sc) {
@@ -1183,15 +1095,20 @@ public class Giaodien {
         }
         System.out.println("\nLỊCH SỬ MUA HÀNG CỦA: " + kh.getTenKH() + " [" + kh.getMaKH() + "]");
         int dem = 0;
+        BangConsole bang = new BangConsole("STT", "MÃ HĐ", "NGÀY LẬP", "TỔNG TIỀN HÀNG", "TRẠNG THÁI").canPhai(3);
         for (int i = 0; i < dsHoaDon.getSoLuong(); i++) {
             HoaDon hd = dsHoaDon.get(i);
             if (hd instanceof Hoadonban && ((Hoadonban) hd).getMaKH().equalsIgnoreCase(kh.getMaKH())) {
                 dem++;
-                System.out.printf("%d. [%s] Ngày: %s | Tổng tiền: %,.0f VND | Trạng thái: %s\n",
-                        dem, hd.getMaHD(), Ktradulieu.dinhDangNgay(hd.getNgayLap()), hd.tinhTongTien(), hd.getTrangThai());
+                bang.themDong(dem, hd.getMaHD(), Ktradulieu.dinhDangNgay(hd.getNgayLap()),
+                        Ktradulieu.dinhDangTien(hd.tinhTongTien()), hd.getTrangThai());
             }
         }
-        if (dem == 0) System.out.println("Khách hàng này chưa có đơn mua hàng nào.");
+        if (dem == 0) {
+            System.out.println("Khách hàng này chưa có đơn mua hàng nào.");
+        } else {
+            System.out.println(bang);
+        }
     }
 
     public void traCuuHoaDonNhap(Scanner sc) {
@@ -1226,27 +1143,29 @@ public class Giaodien {
             return;
         }
 
+        BangConsole bang = new BangConsole("STT", "MÃ KM", "LOẠI KHUYẾN MÃI", "NGÀY BẮT ĐẦU",
+                "NGÀY KẾT THÚC", "CHI TIẾT", "SẢN PHẨM ÁP DỤNG");
+        int stt = 0;
         for (Khuyenmai km : listKM) {
             if (km == null) {
                 continue;
             }
 
-            System.out.println("\n" + km);
-
             List<String> spList =
                     dsSPKM.layDanhSachMaSPTheoKM(km.getMaKM());
-
-            if (spList == null || spList.isEmpty()) {
-                System.out.println("   Sản phẩm: (Chưa gán)");
-            } else {
-                System.out.println("   Sản phẩm: " + String.join(", ", spList));
-            }
+            Object[] duLieu = km.layDongBang();
+            Object[] dong = new Object[duLieu.length + 2];
+            dong[0] = ++stt;
+            System.arraycopy(duLieu, 0, dong, 1, duLieu.length);
+            dong[dong.length - 1] = spList == null || spList.isEmpty()
+                    ? "Chưa gán" : String.join(System.lineSeparator(), spList);
+            bang.themDong(dong);
         }
+        System.out.println(bang);
     }
     private void themNhanVien(Scanner sc) {
 
-        if (!(nguoiDangNhap instanceof Giamdoc)
-                && !(nguoiDangNhap instanceof QuanLyCuaHang)) {
+        if (!yeuCauQuyen("QUAN_LY_NHAN_VIEN")) {
             System.out.println("[Lỗi] Bạn không có quyền thêm nhân viên!");
             return;
         }
@@ -1254,28 +1173,27 @@ public class Giaodien {
         NhanVien nvMoi = new NhanVien();
         nvMoi.nhapThongTin(sc, dsNhanVien);
 
-        if (dsNhanVien.them(nvMoi)) {
+        if (dsNhanVien.them(nguoiDangNhap, nvMoi)) {
             System.out.println("Đã thêm và lưu nhân viên thành công!");
         } else {
             System.out.println("[Lỗi] Không thể thêm nhân viên (dữ liệu bị trùng hoặc không hợp lệ). Dữ liệu không thay đổi.");
         }
     }
 
-    // Thêm quản lý cửa hàng - Chỉ Giám đốc được phép
+    // Thêm quản lý cửa hàng - Chỉ Admin được phép
     private void themQuanLy(Scanner sc) {
 
-        if (!(nguoiDangNhap instanceof Giamdoc)) {
-            System.out.println("[Lỗi] Chỉ Giám đốc mới có quyền thêm quản lý!");
+        if (!yeuCauQuyen("QUAN_TRI_TAI_KHOAN")) {
+            System.out.println("[Lỗi] Chỉ Admin mới có quyền thêm quản lý!");
             return;
         }
 
         QuanLyCuaHang qlMoi = new QuanLyCuaHang();
         qlMoi.nhapThongTin(sc, dsNhanVien);
 
-        dsNhanVien.them(qlMoi);
-        dsNhanVien.ghiFile("data/nhanvien.txt");
-
-        System.out.println("Đã thêm và lưu quản lý cửa hàng thành công!");
+        if (!dsNhanVien.them(nguoiDangNhap, qlMoi)) {
+            System.out.println("[Lỗi] Không thể tạo tài khoản quản lý!");
+        }
     }
 
     private void docDuLieu() {

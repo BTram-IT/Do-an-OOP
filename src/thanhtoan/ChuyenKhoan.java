@@ -1,7 +1,9 @@
 package thanhtoan;
 
+import util.BangConsole;
+
 import java.util.Scanner;
-import person.NhanVien;
+import person.Nguoidung;
 import util.Ktradulieu;
 
 public class ChuyenKhoan extends ThanhToan {
@@ -10,6 +12,7 @@ public class ChuyenKhoan extends ThanhToan {
     private String tenNguoiChuyen;
     private String soTKChuyen;
     private String tenNganHang;
+    private boolean daXacNhan;
 
 
     public ChuyenKhoan() {
@@ -22,7 +25,7 @@ public class ChuyenKhoan extends ThanhToan {
     }
 
 
-    public ChuyenKhoan(String maHD, double soTien, NhanVien nvDangDangNhap) {
+    public ChuyenKhoan(String maHD, double soTien, Nguoidung nvDangDangNhap) {
         super(maHD, "ChuyenKhoan", soTien, nvDangDangNhap);
         this.maGDNganHang = "";
         this.tenNguoiChuyen = "";
@@ -34,6 +37,8 @@ public class ChuyenKhoan extends ThanhToan {
     @Override
     public void nhap(Scanner sc) {
         if (sc == null) throw new IllegalArgumentException("Scanner không được null!");
+        batDauThanhToan();
+        this.daXacNhan = false;
 
         System.out.println("\n========== THANH TOÁN CHUYỂN KHOẢN ==========");
         System.out.println("• Mã giao dịch       : [" + this.maGD + "]");
@@ -42,7 +47,11 @@ public class ChuyenKhoan extends ThanhToan {
 
         while (true) {
             try {
-                String nh = Ktradulieu.nhapChuoiKhongRong(sc, "Nhập tên ngân hàng (VD: Vietcombank, MB Bank, Techcombank): ");
+                String nh = Ktradulieu.nhapChuoiKhongRong(sc, "Nhập tên ngân hàng (0 để hủy thanh toán): ");
+                if (nh.equals("0")) {
+                    ketThuc(false);
+                    return;
+                }
                 setTenNganHang(nh);
                 break;
             } catch (IllegalArgumentException e) {
@@ -52,7 +61,7 @@ public class ChuyenKhoan extends ThanhToan {
 
         while (true) {
             try {
-                String stk = Ktradulieu.nhapChuoi(sc, "Nhập số tài khoản người chuyển: ", "^\\d{6,20}$",
+                String stk = Ktradulieu.nhapChuoi(sc, chiTien ? "Nhập tài khoản nhà cung cấp nhận tiền: " : "Nhập số tài khoản người chuyển: ", "^\\d{6,20}$",
                         "Số tài khoản phải là chữ số và có độ dài từ 6 đến 20 số!");
                 setSoTKChuyen(stk);
                 break;
@@ -62,7 +71,7 @@ public class ChuyenKhoan extends ThanhToan {
         }
         while (true) {
             try {
-                String ten = Ktradulieu.nhapChuoiKhongRong(sc, "Nhập tên người chuyển tiền: ");
+                String ten = Ktradulieu.nhapChuoiKhongRong(sc, chiTien ? "Nhập tên người nhận tiền: " : "Nhập tên người chuyển tiền: ");
                 setTenNguoiChuyen(ten);
                 break;
             } catch (IllegalArgumentException e) {
@@ -80,15 +89,21 @@ public class ChuyenKhoan extends ThanhToan {
                 System.out.println( e.getMessage());
             }
         }
+        System.out.println("Nội dung chuyển khoản: " + getMaGD() + " | Số tiền: " + Ktradulieu.dinhDangTien(soTien));
+        this.daXacNhan = Ktradulieu.luaChon(sc, chiTien
+                ? "Xác nhận cửa hàng đã chuyển tiền? (1: Có / 0: Chưa, quay lại sửa): "
+                : "Xác nhận đã nhận tiền chuyển khoản? (1: Có / 0: Chưa, quay lại sửa): ", 0, 1) == 1;
         qTrinhThanhToan();
     }
 
     @Override
     public boolean qTrinhThanhToan() {
         // Hợp lệ khi đã nhập đầy đủ mã giao dịch ngân hàng và số tài khoản
-        boolean hopLe = (this.maGDNganHang != null && !this.maGDNganHang.isEmpty())
+        boolean hopLe = daXacNhan && (this.maGDNganHang != null && !this.maGDNganHang.isEmpty())
                 && (this.soTKChuyen != null && !this.soTKChuyen.isEmpty())
-                && (this.soTien >= 0);
+                && (this.tenNguoiChuyen != null && !this.tenNguoiChuyen.isEmpty())
+                && (this.tenNganHang != null && !this.tenNganHang.isEmpty())
+                && Double.isFinite(this.soTien) && (this.soTien >= 0);
 
         if (hopLe) {
             ketThuc(true);
@@ -96,15 +111,14 @@ public class ChuyenKhoan extends ThanhToan {
             return true;
         } else {
             ketThuc(false);
-            System.out.println("GIAO DỊCH CHUYỂN KHOẢN THẤT BẠI: Thiếu thông tin xác thực!");
+            System.out.println("[Thông báo] Chuyển khoản chưa được xác nhận thành công.");
             return false;
         }
     }
 
     public boolean thanhToan(Scanner sc, double tongTien) {
-        this.soTien = tongTien;
-        nhap(sc);
-        return qTrinhThanhToan();
+        setSoTien(tongTien);
+        return thucHienThanhToan(sc);
     }
 
 
@@ -157,8 +171,8 @@ public class ChuyenKhoan extends ThanhToan {
     }
 
     @Override
-    public String toString() {
-        return super.toString() + " | Ngân hàng: " + tenNganHang + " (STK: " + soTKChuyen + " - " + tenNguoiChuyen + ")"
-                + " | Mã GD NH: " + maGDNganHang;
+    protected String layChiTietBang() {
+        return BangConsole.thongTin(new String[]{"Ngân hàng", "Số tài khoản", chiTien ? "Người nhận" : "Người chuyển", "Mã GD ngân hàng"},
+                tenNganHang, soTKChuyen, tenNguoiChuyen, maGDNganHang);
     }
 }

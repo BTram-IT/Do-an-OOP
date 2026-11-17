@@ -1,5 +1,7 @@
 package khuyenmai;
 
+import util.BangConsole;
+
 import java.time.LocalDate;
 import java.util.Scanner;
 import util.Ktradulieu;
@@ -208,18 +210,12 @@ public class KhuyenmaiMuatang extends Khuyenmai {
                 ";%d;%d",
                 soLuongMuaToiThieu,
                 soLuongTang
-        );
+        ) + (mucChiToiThieu > 0 ? ";" + mucChiToiThieu : "");
     }
 
     @Override
-    public String toString() {
-        return "KhuyenmaiMuatang{" +
-                "soLuongMuaToiThieu=" + soLuongMuaToiThieu +
-                ", soLuongTang=" + soLuongTang +
-                ", maKM='" + maKM + '\'' +
-                ", loaiKM='" + loaiKM + '\'' +
-                ", ngayBatDau=" + ngayBatDau +
-                ", ngayKetThuc=" + ngayKetThuc +
-                '}';
+    protected String layChiTietBang() {
+        return BangConsole.thongTin(new String[]{"Mua tối thiểu", "Số lượng tặng"},
+                soLuongMuaToiThieu, soLuongTang);
     }
 }

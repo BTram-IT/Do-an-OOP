@@ -1,10 +1,13 @@
 
 package khuyenmai;
 
+import util.BangConsole;
+import util.HienThiBang;
+
 import java.util.Scanner;
 import util.Ktradulieu;
 
-public class SPKhMai {
+public class SPKhMai implements HienThiBang {
 
     private String maSP;
     private String maKM;
@@ -28,12 +31,10 @@ public class SPKhMai {
 
         String maChuan = Ktradulieu.chuanHoaMa(maSP);
 
-        if (!maChuan.startsWith("TA")
-                && !maChuan.startsWith("DU")
-                && !maChuan.startsWith("SP")) {
+        if (!maChuan.matches("^(TA|DU|SP)\\d+$")) {
 
             throw new IllegalArgumentException(
-                    "Mã sản phẩm phải bắt đầu bằng TA, DU hoặc SP!");
+                    "Mã sản phẩm phải có tiền tố TA, DU hoặc SP và theo sau là chữ số!");
         }
 
         return maChuan;
@@ -49,9 +50,9 @@ public class SPKhMai {
 
         String maChuan = Ktradulieu.chuanHoaMa(maKM);
 
-        if (!maChuan.startsWith("KM")) {
+        if (!maChuan.matches("^KM\\d+$")) {
             throw new IllegalArgumentException(
-                    "Mã khuyến mãi phải bắt đầu bằng KM!");
+                    "Mã khuyến mãi phải có tiền tố KM và theo sau là chữ số!");
         }
 
         return maChuan;
@@ -152,8 +153,17 @@ public class SPKhMai {
     }
 
     @Override
+    public String[] layTieuDeBang() {
+        return new String[]{"MÃ SẢN PHẨM", "MÃ KHUYẾN MÃI"};
+    }
+
+    @Override
+    public Object[] layDongBang() {
+        return new Object[]{maSP, maKM};
+    }
+
+    @Override
     public String toString() {
-        return "Sản phẩm: " + maSP
-                + " <--> Khuyến mãi: " + maKM;
+        return BangConsole.tuDoiTuong(this);
     }
 }

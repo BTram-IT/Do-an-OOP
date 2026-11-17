@@ -1,102 +1,133 @@
-THUCAN;TA001;Bánh mì thịt - phần thường;13000;22000;723;gói;16/09/2026;13/06/2027;5.0;Bột ngũ cốc và nguyên liệu thực phẩm;Nơi khô thoáng, tránh ánh nắng;Việt Nam;false;Đã duyệt;false
-THUCAN;TA002;Bánh mì thịt - phần lớn;17000;29000;706;gói;16/09/2026;13/07/2027;8.0;Bột ngũ cốc và nguyên liệu thực phẩm;Nơi khô thoáng, tránh ánh nắng;Việt Nam;false;Đã duyệt;false
-THUCAN;TA003;Bánh mì chay - phần thường;21000;36000;709;gói;16/09/2026;16/11/2026;10.0;Bột ngũ cốc và nguyên liệu thực phẩm;Nơi khô thoáng, tránh ánh nắng;Việt Nam;false;Đã duyệt;false
-THUCAN;TA004;Bánh mì chay - phần lớn;25000;43000;712;gói;16/09/2026;15/11/2026;0.0;Rau củ và đậu;Nơi khô thoáng, tránh ánh nắng;Việt Nam;true;Đã duyệt;false
-THUCAN;TA005;Cơm gà - phần thường;30000;50000;715;gói;16/09/2026;14/05/2027;5.0;Bột ngũ cốc và nguyên liệu thực phẩm;Nơi khô thoáng, tránh ánh nắng;Việt Nam;false;Đã duyệt;false
-THUCAN;TA006;Cơm gà - phần lớn;34000;57000;718;gói;16/09/2026;13/06/2027;8.0;Bột ngũ cốc và nguyên liệu thực phẩm;Nơi khô thoáng, tránh ánh nắng;Việt Nam;false;Đã duyệt;false
-THUCAN;TA007;Cơm sườn - phần thường;38000;64000;1;gói;16/09/2026;13/07/2027;10.0;Bột ngũ cốc và nguyên liệu thực phẩm;Nơi khô thoáng, tránh ánh nắng;Việt Nam;false;Đã duyệt;false
-THUCAN;TA008;Cơm sườn - phần lớn;42000;71000;0;gói;16/09/2026;12/08/2027;0.0;Rau củ và đậu;Nơi khô thoáng, tránh ánh nắng;Việt Nam;true;Đã duyệt;false
-THUCAN;TA009;Xôi đậu xanh - phần thường;46000;78000;10;gói;16/09/2026;11/09/2027;5.0;Bột ngũ cốc và nguyên liệu thực phẩm;Nơi khô thoáng, tránh ánh nắng;Việt Nam;false;Đã duyệt;false
-THUCAN;TA010;Xôi đậu xanh - phần lớn;60000;100000;730;gói;16/09/2026;14/05/2027;0.0;Bột ngũ cốc và nguyên liệu thực phẩm;Nơi khô thoáng, tránh ánh nắng;Việt Nam;false;Đã duyệt;false
-THUCAN;TA011;Xôi gà - phần thường;9000;16000;733;gói;16/09/2026;13/06/2027;10.0;Bột ngũ cốc và nguyên liệu thực phẩm;Nơi khô thoáng, tránh ánh nắng;Việt Nam;false;Đã duyệt;false
-THUCAN;TA012;Xôi gà - phần lớn;13000;23000;736;gói;16/09/2026;13/07/2027;0.0;Rau củ và đậu;Nơi khô thoáng, tránh ánh nắng;Việt Nam;true;Đã duyệt;false
-THUCAN;TA013;Bánh bao thịt - phần thường;18000;30000;739;gói;16/09/2026;12/08/2027;5.0;Bột ngũ cốc và nguyên liệu thực phẩm;Nơi khô thoáng, tránh ánh nắng;Việt Nam;false;Đã duyệt;false
-THUCAN;TA014;Bánh bao thịt - phần lớn;22000;37000;742;gói;16/09/2026;11/09/2027;8.0;Bột ngũ cốc và nguyên liệu thực phẩm;Nơi khô thoáng, tránh ánh nắng;Việt Nam;false;Đã duyệt;false
-THUCAN;TA015;Bánh bao chay - phần thường;26000;44000;745;gói;16/09/2026;14/05/2027;10.0;Bột ngũ cốc và nguyên liệu thực phẩm;Nơi khô thoáng, tránh ánh nắng;Việt Nam;false;Đã duyệt;false
-THUCAN;TA016;Bánh bao chay - phần lớn;30000;51000;748;gói;16/09/2026;13/06/2027;0.0;Rau củ và đậu;Nơi khô thoáng, tránh ánh nắng;Việt Nam;true;Đã duyệt;false
-THUCAN;TA017;Mì xào rau củ - phần thường;34000;58000;751;gói;16/09/2026;13/07/2027;5.0;Bột ngũ cốc và nguyên liệu thực phẩm;Nơi khô thoáng, tránh ánh nắng;Việt Nam;false;Đã duyệt;false
-THUCAN;TA018;Mì xào rau củ - phần lớn;39000;65000;754;gói;16/09/2026;12/08/2027;8.0;Bột ngũ cốc và nguyên liệu thực phẩm;Nơi khô thoáng, tránh ánh nắng;Việt Nam;false;Đã duyệt;false
-THUCAN;TA019;Nui xào bò - phần thường;43000;72000;757;gói;16/09/2026;11/09/2027;10.0;Bột ngũ cốc và nguyên liệu thực phẩm;Nơi khô thoáng, tránh ánh nắng;Việt Nam;false;Đã duyệt;false
-THUCAN;TA020;Nui xào bò - phần lớn;47000;79000;760;gói;16/09/2026;14/05/2027;0.0;Rau củ và đậu;Nơi khô thoáng, tránh ánh nắng;Việt Nam;true;Đã duyệt;false
-THUCAN;TA021;Bánh bông lan - phần thường;51000;86000;763;gói;16/09/2026;13/06/2027;5.0;Bột ngũ cốc và nguyên liệu thực phẩm;Nơi khô thoáng, tránh ánh nắng;Việt Nam;false;Đã duyệt;false
-THUCAN;TA022;Bánh bông lan - phần lớn;10000;17000;766;gói;16/09/2026;13/07/2027;8.0;Bột ngũ cốc và nguyên liệu thực phẩm;Nơi khô thoáng, tránh ánh nắng;Việt Nam;false;Đã duyệt;false
-THUCAN;TA023;Bánh quy bơ - phần thường;14000;24000;769;gói;16/09/2026;12/08/2027;10.0;Bột ngũ cốc và nguyên liệu thực phẩm;Nơi khô thoáng, tránh ánh nắng;Việt Nam;false;Đã duyệt;false
-THUCAN;TA024;Bánh quy bơ - phần lớn;18000;31000;772;gói;16/09/2026;11/09/2027;0.0;Rau củ và đậu;Nơi khô thoáng, tránh ánh nắng;Việt Nam;true;Đã duyệt;false
-THUCAN;TA025;Bánh gạo - phần thường;22000;38000;775;gói;16/09/2026;14/05/2027;5.0;Bột ngũ cốc và nguyên liệu thực phẩm;Nơi khô thoáng, tránh ánh nắng;Việt Nam;false;Đã duyệt;false
-THUCAN;TA026;Bánh gạo - phần lớn;27000;45000;778;gói;16/09/2026;13/06/2027;8.0;Bột ngũ cốc và nguyên liệu thực phẩm;Nơi khô thoáng, tránh ánh nắng;Việt Nam;false;Đã duyệt;false
-THUCAN;TA027;Khoai tây lát - phần thường;31000;52000;781;gói;16/09/2026;13/07/2027;10.0;Bột ngũ cốc và nguyên liệu thực phẩm;Nơi khô thoáng, tránh ánh nắng;Việt Nam;false;Đã duyệt;false
-THUCAN;TA028;Khoai tây lát - phần lớn;35000;59000;784;gói;16/09/2026;12/08/2027;0.0;Rau củ và đậu;Nơi khô thoáng, tránh ánh nắng;Việt Nam;true;Đã duyệt;false
-THUCAN;TA029;Hạt điều rang - phần thường;39000;66000;787;gói;16/09/2026;11/09/2027;5.0;Bột ngũ cốc và nguyên liệu thực phẩm;Nơi khô thoáng, tránh ánh nắng;Việt Nam;false;Đã duyệt;false
-THUCAN;TA030;Hạt điều rang - phần lớn;43000;73000;790;gói;16/09/2026;14/05/2027;8.0;Bột ngũ cốc và nguyên liệu thực phẩm;Nơi khô thoáng, tránh ánh nắng;Việt Nam;false;Đã duyệt;false
-THUCAN;TA031;Đậu phộng rang - phần thường;48000;80000;793;gói;16/09/2026;13/06/2027;10.0;Bột ngũ cốc và nguyên liệu thực phẩm;Nơi khô thoáng, tránh ánh nắng;Việt Nam;false;Đã duyệt;false
-THUCAN;TA032;Đậu phộng rang - phần lớn;52000;87000;796;gói;16/09/2026;13/07/2027;0.0;Rau củ và đậu;Nơi khô thoáng, tránh ánh nắng;Việt Nam;true;Đã duyệt;false
-THUCAN;TA033;Rong biển sấy - phần thường;10000;18000;799;gói;16/09/2026;12/08/2027;5.0;Bột ngũ cốc và nguyên liệu thực phẩm;Nơi khô thoáng, tránh ánh nắng;Việt Nam;false;Đã duyệt;false
-THUCAN;TA034;Rong biển sấy - phần lớn;15000;25000;802;gói;16/09/2026;11/09/2027;8.0;Bột ngũ cốc và nguyên liệu thực phẩm;Nơi khô thoáng, tránh ánh nắng;Việt Nam;false;Đã duyệt;false
-THUCAN;TA035;Trái cây sấy - phần thường;19000;32000;805;gói;16/09/2026;14/05/2027;10.0;Bột ngũ cốc và nguyên liệu thực phẩm;Nơi khô thoáng, tránh ánh nắng;Việt Nam;false;Đã duyệt;false
-THUCAN;TA036;Trái cây sấy - phần lớn;23000;39000;808;gói;16/09/2026;13/06/2027;0.0;Rau củ và đậu;Nơi khô thoáng, tránh ánh nắng;Việt Nam;true;Đã duyệt;false
-THUCAN;TA037;Ngũ cốc - phần thường;27000;46000;811;gói;16/09/2026;13/07/2027;5.0;Bột ngũ cốc và nguyên liệu thực phẩm;Nơi khô thoáng, tránh ánh nắng;Việt Nam;false;Đã duyệt;false
-THUCAN;TA038;Ngũ cốc - phần lớn;31000;53000;814;gói;16/09/2026;12/08/2027;8.0;Bột ngũ cốc và nguyên liệu thực phẩm;Nơi khô thoáng, tránh ánh nắng;Việt Nam;false;Đã duyệt;false
-THUCAN;TA039;Mì ăn liền - phần thường;36000;60000;817;gói;16/09/2026;11/09/2027;10.0;Bột ngũ cốc và nguyên liệu thực phẩm;Nơi khô thoáng, tránh ánh nắng;Việt Nam;false;Đã duyệt;false
-THUCAN;TA040;Mì ăn liền - phần lớn;40000;67000;820;gói;16/09/2026;14/05/2027;0.0;Rau củ và đậu;Nơi khô thoáng, tránh ánh nắng;Việt Nam;true;Đã duyệt;false
-THUCAN;TA041;Phở ăn liền - phần thường;44000;74000;0;gói;16/09/2026;13/06/2027;5.0;Bột ngũ cốc và nguyên liệu thực phẩm;Nơi khô thoáng, tránh ánh nắng;Việt Nam;false;Chờ duyệt;false
-THUCAN;TA042;Phở ăn liền - phần lớn;48000;81000;0;gói;16/09/2026;13/07/2027;8.0;Bột ngũ cốc và nguyên liệu thực phẩm;Nơi khô thoáng, tránh ánh nắng;Việt Nam;false;Chờ duyệt;false
-THUCAN;TA043;Cháo yến mạch - phần thường;52000;88000;0;gói;16/09/2026;12/08/2027;10.0;Bột ngũ cốc và nguyên liệu thực phẩm;Nơi khô thoáng, tránh ánh nắng;Việt Nam;false;Chờ duyệt;false
-THUCAN;TA044;Cháo yến mạch - phần lớn;11000;19000;0;gói;16/09/2026;11/09/2027;0.0;Rau củ và đậu;Nơi khô thoáng, tránh ánh nắng;Việt Nam;true;Chờ duyệt;false
-THUCAN;TA045;Cá hộp - phần thường;15000;26000;0;gói;16/09/2026;14/05/2027;5.0;Bột ngũ cốc và nguyên liệu thực phẩm;Nơi khô thoáng, tránh ánh nắng;Việt Nam;false;Chờ duyệt;false
-THUCAN;TA046;Cá hộp - phần lớn;19000;33000;25;gói;16/09/2026;13/06/2027;8.0;Bột ngũ cốc và nguyên liệu thực phẩm;Nơi khô thoáng, tránh ánh nắng;Việt Nam;false;Đã duyệt;true
-THUCAN;TA047;Thịt hộp - phần thường;24000;40000;25;gói;16/09/2026;13/07/2027;10.0;Bột ngũ cốc và nguyên liệu thực phẩm;Nơi khô thoáng, tránh ánh nắng;Việt Nam;false;Đã duyệt;true
-THUCAN;TA048;Thịt hộp - phần lớn;28000;47000;25;gói;16/09/2026;12/08/2027;0.0;Rau củ và đậu;Nơi khô thoáng, tránh ánh nắng;Việt Nam;true;Đã duyệt;true
-THUCAN;TA049;Thanh năng lượng - phần thường;32000;54000;0;gói;18/07/2026;14/11/2026;5.0;Bột ngũ cốc và nguyên liệu thực phẩm;Nơi khô thoáng, tránh ánh nắng;Việt Nam;false;Đã duyệt;false
-THUCAN;TA050;Thanh năng lượng - phần lớn;36000;61000;0;gói;18/07/2026;16/10/2026;8.0;Bột ngũ cốc và nguyên liệu thực phẩm;Nơi khô thoáng, tránh ánh nắng;Việt Nam;false;Đã duyệt;false
-DOUONG;DU001;Nước suối 250ml;40000;68000;883;chai;16/09/2026;13/06/2027;10.0;250.0;Nhãn thử nghiệm A;Nguyên bản;Nước uống đóng chai;Đã duyệt;false
-DOUONG;DU002;Nước suối 500ml;45000;75000;856;chai;16/09/2026;13/07/2027;0.0;500.0;Nhãn thử nghiệm B;Ít đường;Nước uống đóng chai;Đã duyệt;false
-DOUONG;DU003;Trà xanh 250ml;49000;82000;859;chai;16/09/2026;16/11/2026;5.0;250.0;Nhãn thử nghiệm C;Không đường;Nước uống đóng chai;Đã duyệt;false
-DOUONG;DU004;Trà xanh 500ml;53000;89000;862;chai;16/09/2026;15/11/2026;8.0;500.0;Nhãn thử nghiệm A;Nguyên bản;Nước uống đóng chai;Đã duyệt;false
-DOUONG;DU005;Trà đào 250ml;12000;20000;865;chai;16/09/2026;14/05/2027;10.0;250.0;Nhãn thử nghiệm B;Ít đường;Nước uống đóng chai;Đã duyệt;false
-DOUONG;DU006;Trà đào 500ml;16000;27000;868;chai;16/09/2026;13/06/2027;0.0;500.0;Nhãn thử nghiệm C;Không đường;Nước uống đóng chai;Đã duyệt;false
-DOUONG;DU007;Trà chanh 250ml;20000;34000;1;chai;16/09/2026;13/07/2027;5.0;250.0;Nhãn thử nghiệm A;Nguyên bản;Nước uống đóng chai;Đã duyệt;false
-DOUONG;DU008;Trà chanh 500ml;24000;41000;0;chai;16/09/2026;12/08/2027;8.0;500.0;Nhãn thử nghiệm B;Ít đường;Nước uống đóng chai;Đã duyệt;false
-DOUONG;DU009;Cà phê đen 250ml;28000;48000;10;chai;16/09/2026;11/09/2027;10.0;250.0;Nhãn thử nghiệm C;Không đường;Nước uống đóng chai;Đã duyệt;false
-DOUONG;DU010;Cà phê đen 500ml;33000;55000;880;chai;16/09/2026;14/05/2027;0.0;500.0;Nhãn thử nghiệm A;Nguyên bản;Nước uống đóng chai;Đã duyệt;false
-DOUONG;DU011;Cà phê sữa 250ml;37000;62000;883;chai;16/09/2026;13/06/2027;5.0;250.0;Nhãn thử nghiệm B;Ít đường;Nước uống đóng chai;Đã duyệt;false
-DOUONG;DU012;Cà phê sữa 500ml;41000;69000;886;chai;16/09/2026;13/07/2027;8.0;500.0;Nhãn thử nghiệm C;Không đường;Nước uống đóng chai;Đã duyệt;false
-DOUONG;DU013;Sữa tươi 250ml;45000;76000;889;chai;16/09/2026;12/08/2027;10.0;250.0;Nhãn thử nghiệm A;Nguyên bản;Nước uống đóng chai;Đã duyệt;false
-DOUONG;DU014;Sữa tươi 500ml;49000;83000;892;chai;16/09/2026;11/09/2027;0.0;500.0;Nhãn thử nghiệm B;Ít đường;Nước uống đóng chai;Đã duyệt;false
-DOUONG;DU015;Sữa đậu nành 250ml;54000;90000;895;chai;16/09/2026;14/05/2027;5.0;250.0;Nhãn thử nghiệm C;Không đường;Nước uống đóng chai;Đã duyệt;false
-DOUONG;DU016;Sữa đậu nành 500ml;12000;21000;898;chai;16/09/2026;13/06/2027;8.0;500.0;Nhãn thử nghiệm A;Nguyên bản;Nước uống đóng chai;Đã duyệt;false
-DOUONG;DU017;Nước cam 250ml;16000;28000;901;chai;16/09/2026;13/07/2027;10.0;250.0;Nhãn thử nghiệm B;Ít đường;Nước uống đóng chai;Đã duyệt;false
-DOUONG;DU018;Nước cam 500ml;21000;35000;904;chai;16/09/2026;12/08/2027;0.0;500.0;Nhãn thử nghiệm C;Không đường;Nước uống đóng chai;Đã duyệt;false
-DOUONG;DU019;Nước táo 250ml;25000;42000;907;chai;16/09/2026;11/09/2027;5.0;250.0;Nhãn thử nghiệm A;Nguyên bản;Nước uống đóng chai;Đã duyệt;false
-DOUONG;DU020;Nước táo 500ml;29000;49000;910;chai;16/09/2026;14/05/2027;8.0;500.0;Nhãn thử nghiệm B;Ít đường;Nước uống đóng chai;Đã duyệt;false
-DOUONG;DU021;Nước dừa 250ml;33000;56000;913;chai;16/09/2026;13/06/2027;10.0;250.0;Nhãn thử nghiệm C;Không đường;Nước uống đóng chai;Đã duyệt;false
-DOUONG;DU022;Nước dừa 500ml;37000;63000;916;chai;16/09/2026;13/07/2027;0.0;500.0;Nhãn thử nghiệm A;Nguyên bản;Nước uống đóng chai;Đã duyệt;false
-DOUONG;DU023;Nước ép ổi 250ml;42000;70000;919;chai;16/09/2026;12/08/2027;5.0;250.0;Nhãn thử nghiệm B;Ít đường;Nước uống đóng chai;Đã duyệt;false
-DOUONG;DU024;Nước ép ổi 500ml;46000;77000;922;chai;16/09/2026;11/09/2027;8.0;500.0;Nhãn thử nghiệm C;Không đường;Nước uống đóng chai;Đã duyệt;false
-DOUONG;DU025;Nước ép nho 250ml;50000;84000;925;chai;16/09/2026;14/05/2027;10.0;250.0;Nhãn thử nghiệm A;Nguyên bản;Nước uống đóng chai;Đã duyệt;false
-DOUONG;DU026;Nước ép nho 500ml;9000;15000;928;chai;16/09/2026;13/06/2027;0.0;500.0;Nhãn thử nghiệm B;Ít đường;Nước uống đóng chai;Đã duyệt;false
-DOUONG;DU027;Sữa chua uống 250ml;13000;22000;931;chai;16/09/2026;13/07/2027;5.0;250.0;Nhãn thử nghiệm C;Không đường;Nước uống đóng chai;Đã duyệt;false
-DOUONG;DU028;Sữa chua uống 500ml;17000;29000;934;chai;16/09/2026;12/08/2027;8.0;500.0;Nhãn thử nghiệm A;Nguyên bản;Nước uống đóng chai;Đã duyệt;false
-DOUONG;DU029;Nước khoáng 250ml;21000;36000;937;chai;16/09/2026;11/09/2027;10.0;250.0;Nhãn thử nghiệm B;Ít đường;Nước uống đóng chai;Đã duyệt;false
-DOUONG;DU030;Nước khoáng 500ml;25000;43000;940;chai;16/09/2026;14/05/2027;0.0;500.0;Nhãn thử nghiệm C;Không đường;Nước uống đóng chai;Đã duyệt;false
-DOUONG;DU031;Trà ô long 250ml;30000;50000;943;chai;16/09/2026;13/06/2027;5.0;250.0;Nhãn thử nghiệm A;Nguyên bản;Nước uống đóng chai;Đã duyệt;false
-DOUONG;DU032;Trà ô long 500ml;34000;57000;946;chai;16/09/2026;13/07/2027;8.0;500.0;Nhãn thử nghiệm B;Ít đường;Nước uống đóng chai;Đã duyệt;false
-DOUONG;DU033;Trà bí đao 250ml;38000;64000;949;chai;16/09/2026;12/08/2027;10.0;250.0;Nhãn thử nghiệm C;Không đường;Nước uống đóng chai;Đã duyệt;false
-DOUONG;DU034;Trà bí đao 500ml;42000;71000;952;chai;16/09/2026;11/09/2027;0.0;500.0;Nhãn thử nghiệm A;Nguyên bản;Nước uống đóng chai;Đã duyệt;false
-DOUONG;DU035;Nước lúa mạch 250ml;46000;78000;955;chai;16/09/2026;14/05/2027;5.0;250.0;Nhãn thử nghiệm B;Ít đường;Nước uống đóng chai;Đã duyệt;false
-DOUONG;DU036;Nước lúa mạch 500ml;51000;85000;958;chai;16/09/2026;13/06/2027;8.0;500.0;Nhãn thử nghiệm C;Không đường;Nước uống đóng chai;Đã duyệt;false
-DOUONG;DU037;Nước điện giải 250ml;9000;16000;961;chai;16/09/2026;13/07/2027;10.0;250.0;Nhãn thử nghiệm A;Nguyên bản;Nước uống đóng chai;Đã duyệt;false
-DOUONG;DU038;Nước điện giải 500ml;13000;23000;964;chai;16/09/2026;12/08/2027;0.0;500.0;Nhãn thử nghiệm B;Ít đường;Nước uống đóng chai;Đã duyệt;false
-DOUONG;DU039;Sữa hạt 250ml;18000;30000;967;chai;16/09/2026;11/09/2027;5.0;250.0;Nhãn thử nghiệm C;Không đường;Nước uống đóng chai;Đã duyệt;false
-DOUONG;DU040;Sữa hạt 500ml;22000;37000;970;chai;16/09/2026;14/05/2027;8.0;500.0;Nhãn thử nghiệm A;Nguyên bản;Nước uống đóng chai;Đã duyệt;false
-DOUONG;DU041;Cacao 250ml;26000;44000;0;chai;16/09/2026;13/06/2027;10.0;250.0;Nhãn thử nghiệm B;Ít đường;Nước uống đóng chai;Chờ duyệt;false
-DOUONG;DU042;Cacao 500ml;30000;51000;0;chai;16/09/2026;13/07/2027;0.0;500.0;Nhãn thử nghiệm C;Không đường;Nước uống đóng chai;Chờ duyệt;false
-DOUONG;DU043;Nước chanh muối 250ml;34000;58000;0;chai;16/09/2026;12/08/2027;5.0;250.0;Nhãn thử nghiệm A;Nguyên bản;Nước uống đóng chai;Chờ duyệt;false
-DOUONG;DU044;Nước chanh muối 500ml;39000;65000;0;chai;16/09/2026;11/09/2027;8.0;500.0;Nhãn thử nghiệm B;Ít đường;Nước uống đóng chai;Chờ duyệt;false
-DOUONG;DU045;Nước yến 250ml;43000;72000;0;chai;16/09/2026;14/05/2027;10.0;250.0;Nhãn thử nghiệm C;Không đường;Nước uống đóng chai;Chờ duyệt;false
-DOUONG;DU046;Nước yến 500ml;47000;79000;25;chai;16/09/2026;13/06/2027;0.0;500.0;Nhãn thử nghiệm A;Nguyên bản;Nước uống đóng chai;Đã duyệt;true
-DOUONG;DU047;Trà hoa cúc 250ml;51000;86000;25;chai;16/09/2026;13/07/2027;5.0;250.0;Nhãn thử nghiệm B;Ít đường;Nước uống đóng chai;Đã duyệt;true
-DOUONG;DU048;Trà hoa cúc 500ml;10000;17000;0;chai;18/07/2026;16/10/2026;8.0;500.0;Nhãn thử nghiệm C;Không đường;Nước uống đóng chai;Đã duyệt;false
-DOUONG;DU049;Nước ép cà rốt 250ml;14000;24000;0;chai;18/07/2026;14/11/2026;10.0;250.0;Nhãn thử nghiệm A;Nguyên bản;Nước uống đóng chai;Đã duyệt;false
-DOUONG;DU050;Nước ép cà rốt 500ml;18000;31000;0;chai;18/07/2026;16/10/2026;0.0;500.0;Nhãn thử nghiệm B;Ít đường;Nước uống đóng chai;Đã duyệt;false
-THUCAN;TA051;Mì Xào Hải Sản;25000;38000;20;hộp;15/11/2026;17/11/2026;5.0;Mì, tôm, mực, rau cải, hành;Nơi thoáng mát;Việt Nam;false;Đang xử lý;false
-THUCAN;TA111;Sp001;20000;30000;20;hộp;16/11/2026;18/11/2026;5.0;;;;false;Đã duyệt;false
+THUCAN;TA001;Bánh mì thịt - phần thường;13000;22000;713;gói;16/09/2026;13/06/2027;5.0;Bột ngũ cốc và nguyên liệu thực phẩm;Nơi khô thoáng, tránh ánh nắng;Việt Nam;false;;false
+THUCAN;TA002;Bánh mì thịt - phần lớn;17000;29000;706;gói;16/09/2026;13/07/2027;8.0;Bột ngũ cốc và nguyên liệu thực phẩm;Nơi khô thoáng, tránh ánh nắng;Việt Nam;false;;false
+THUCAN;TA003;Bánh mì chay - phần thường;21000;36000;709;gói;16/09/2026;16/11/2026;10.0;Bột ngũ cốc và nguyên liệu thực phẩm;Nơi khô thoáng, tránh ánh nắng;Việt Nam;false;;false
+THUCAN;TA004;Bánh mì chay - phần lớn;25000;43000;712;gói;16/09/2026;15/11/2026;0.0;Rau củ và đậu;Nơi khô thoáng, tránh ánh nắng;Việt Nam;true;;false
+THUCAN;TA005;Cơm gà - phần thường;30000;50000;715;gói;16/09/2026;14/05/2027;5.0;Bột ngũ cốc và nguyên liệu thực phẩm;Nơi khô thoáng, tránh ánh nắng;Việt Nam;false;;false
+THUCAN;TA006;Cơm gà - phần lớn;34000;57000;718;gói;16/09/2026;13/06/2027;8.0;Bột ngũ cốc và nguyên liệu thực phẩm;Nơi khô thoáng, tránh ánh nắng;Việt Nam;false;;false
+THUCAN;TA007;Cơm sườn - phần thường;38000;64000;1;gói;16/09/2026;13/07/2027;10.0;Bột ngũ cốc và nguyên liệu thực phẩm;Nơi khô thoáng, tránh ánh nắng;Việt Nam;false;;false
+THUCAN;TA008;Cơm sườn - phần lớn;42000;71000;0;gói;16/09/2026;12/08/2027;0.0;Rau củ và đậu;Nơi khô thoáng, tránh ánh nắng;Việt Nam;true;;false
+THUCAN;TA009;Xôi đậu xanh - phần thường;46000;78000;10;gói;16/09/2026;11/09/2027;5.0;Bột ngũ cốc và nguyên liệu thực phẩm;Nơi khô thoáng, tránh ánh nắng;Việt Nam;false;;false
+THUCAN;TA010;Xôi đậu xanh - phần lớn;60000;100000;730;gói;16/09/2026;14/05/2027;0.0;Bột ngũ cốc và nguyên liệu thực phẩm;Nơi khô thoáng, tránh ánh nắng;Việt Nam;false;;false
+THUCAN;TA011;Xôi gà - phần thường;9000;16000;733;gói;16/09/2026;13/06/2027;10.0;Bột ngũ cốc và nguyên liệu thực phẩm;Nơi khô thoáng, tránh ánh nắng;Việt Nam;false;;false
+THUCAN;TA012;Xôi gà - phần lớn;13000;23000;736;gói;16/09/2026;13/07/2027;0.0;Rau củ và đậu;Nơi khô thoáng, tránh ánh nắng;Việt Nam;true;;false
+THUCAN;TA013;Bánh bao thịt - phần thường;18000;30000;739;gói;16/09/2026;12/08/2027;5.0;Bột ngũ cốc và nguyên liệu thực phẩm;Nơi khô thoáng, tránh ánh nắng;Việt Nam;false;;false
+THUCAN;TA014;Bánh bao thịt - phần lớn;22000;37000;742;gói;16/09/2026;11/09/2027;8.0;Bột ngũ cốc và nguyên liệu thực phẩm;Nơi khô thoáng, tránh ánh nắng;Việt Nam;false;;false
+THUCAN;TA015;Bánh bao chay - phần thường;26000;44000;745;gói;16/09/2026;14/05/2027;10.0;Bột ngũ cốc và nguyên liệu thực phẩm;Nơi khô thoáng, tránh ánh nắng;Việt Nam;false;;false
+THUCAN;TA016;Bánh bao chay - phần lớn;30000;51000;748;gói;16/09/2026;13/06/2027;0.0;Rau củ và đậu;Nơi khô thoáng, tránh ánh nắng;Việt Nam;true;;false
+THUCAN;TA017;Mì xào rau củ - phần thường;34000;58000;751;gói;16/09/2026;13/07/2027;5.0;Bột ngũ cốc và nguyên liệu thực phẩm;Nơi khô thoáng, tránh ánh nắng;Việt Nam;false;;false
+THUCAN;TA018;Mì xào rau củ - phần lớn;39000;65000;754;gói;16/09/2026;12/08/2027;8.0;Bột ngũ cốc và nguyên liệu thực phẩm;Nơi khô thoáng, tránh ánh nắng;Việt Nam;false;;false
+THUCAN;TA019;Nui xào bò - phần thường;43000;72000;757;gói;16/09/2026;11/09/2027;10.0;Bột ngũ cốc và nguyên liệu thực phẩm;Nơi khô thoáng, tránh ánh nắng;Việt Nam;false;;false
+THUCAN;TA020;Nui xào bò - phần lớn;47000;79000;760;gói;16/09/2026;14/05/2027;0.0;Rau củ và đậu;Nơi khô thoáng, tránh ánh nắng;Việt Nam;true;;false
+THUCAN;TA021;Bánh bông lan - phần thường;51000;86000;763;gói;16/09/2026;13/06/2027;5.0;Bột ngũ cốc và nguyên liệu thực phẩm;Nơi khô thoáng, tránh ánh nắng;Việt Nam;false;;false
+THUCAN;TA022;Bánh bông lan - phần lớn;10000;17000;766;gói;16/09/2026;13/07/2027;8.0;Bột ngũ cốc và nguyên liệu thực phẩm;Nơi khô thoáng, tránh ánh nắng;Việt Nam;false;;false
+THUCAN;TA023;Bánh quy bơ - phần thường;14000;24000;769;gói;16/09/2026;12/08/2027;10.0;Bột ngũ cốc và nguyên liệu thực phẩm;Nơi khô thoáng, tránh ánh nắng;Việt Nam;false;;false
+THUCAN;TA024;Bánh quy bơ - phần lớn;18000;31000;772;gói;16/09/2026;11/09/2027;0.0;Rau củ và đậu;Nơi khô thoáng, tránh ánh nắng;Việt Nam;true;;false
+THUCAN;TA025;Bánh gạo - phần thường;22000;38000;775;gói;16/09/2026;14/05/2027;5.0;Bột ngũ cốc và nguyên liệu thực phẩm;Nơi khô thoáng, tránh ánh nắng;Việt Nam;false;;false
+THUCAN;TA026;Bánh gạo - phần lớn;27000;45000;778;gói;16/09/2026;13/06/2027;8.0;Bột ngũ cốc và nguyên liệu thực phẩm;Nơi khô thoáng, tránh ánh nắng;Việt Nam;false;;false
+THUCAN;TA027;Khoai tây lát - phần thường;31000;52000;781;gói;16/09/2026;13/07/2027;10.0;Bột ngũ cốc và nguyên liệu thực phẩm;Nơi khô thoáng, tránh ánh nắng;Việt Nam;false;;false
+THUCAN;TA028;Khoai tây lát - phần lớn;35000;59000;784;gói;16/09/2026;12/08/2027;0.0;Rau củ và đậu;Nơi khô thoáng, tránh ánh nắng;Việt Nam;true;;false
+THUCAN;TA029;Hạt điều rang - phần thường;39000;66000;787;gói;16/09/2026;11/09/2027;5.0;Bột ngũ cốc và nguyên liệu thực phẩm;Nơi khô thoáng, tránh ánh nắng;Việt Nam;false;;false
+THUCAN;TA030;Hạt điều rang - phần lớn;43000;73000;790;gói;16/09/2026;14/05/2027;8.0;Bột ngũ cốc và nguyên liệu thực phẩm;Nơi khô thoáng, tránh ánh nắng;Việt Nam;false;;false
+THUCAN;TA031;Đậu phộng rang - phần thường;48000;80000;793;gói;16/09/2026;13/06/2027;10.0;Bột ngũ cốc và nguyên liệu thực phẩm;Nơi khô thoáng, tránh ánh nắng;Việt Nam;false;;false
+THUCAN;TA032;Đậu phộng rang - phần lớn;52000;87000;796;gói;16/09/2026;13/07/2027;0.0;Rau củ và đậu;Nơi khô thoáng, tránh ánh nắng;Việt Nam;true;;false
+THUCAN;TA033;Rong biển sấy - phần thường;10000;18000;799;gói;16/09/2026;12/08/2027;5.0;Bột ngũ cốc và nguyên liệu thực phẩm;Nơi khô thoáng, tránh ánh nắng;Việt Nam;false;;false
+THUCAN;TA034;Rong biển sấy - phần lớn;15000;25000;802;gói;16/09/2026;11/09/2027;8.0;Bột ngũ cốc và nguyên liệu thực phẩm;Nơi khô thoáng, tránh ánh nắng;Việt Nam;false;;false
+THUCAN;TA035;Trái cây sấy - phần thường;19000;32000;805;gói;16/09/2026;14/05/2027;10.0;Bột ngũ cốc và nguyên liệu thực phẩm;Nơi khô thoáng, tránh ánh nắng;Việt Nam;false;;false
+THUCAN;TA036;Trái cây sấy - phần lớn;23000;39000;808;gói;16/09/2026;13/06/2027;0.0;Rau củ và đậu;Nơi khô thoáng, tránh ánh nắng;Việt Nam;true;;false
+THUCAN;TA037;Ngũ cốc - phần thường;27000;46000;811;gói;16/09/2026;13/07/2027;5.0;Bột ngũ cốc và nguyên liệu thực phẩm;Nơi khô thoáng, tránh ánh nắng;Việt Nam;false;;false
+THUCAN;TA038;Ngũ cốc - phần lớn;31000;53000;814;gói;16/09/2026;12/08/2027;8.0;Bột ngũ cốc và nguyên liệu thực phẩm;Nơi khô thoáng, tránh ánh nắng;Việt Nam;false;;false
+THUCAN;TA039;Mì ăn liền - phần thường;36000;60000;817;gói;16/09/2026;11/09/2027;10.0;Bột ngũ cốc và nguyên liệu thực phẩm;Nơi khô thoáng, tránh ánh nắng;Việt Nam;false;;false
+THUCAN;TA040;Mì ăn liền - phần lớn;40000;67000;820;gói;16/09/2026;14/05/2027;0.0;Rau củ và đậu;Nơi khô thoáng, tránh ánh nắng;Việt Nam;true;;false
+THUCAN;TA041;Phở ăn liền - phần thường;44000;74000;0;gói;16/09/2026;13/06/2027;5.0;Bột ngũ cốc và nguyên liệu thực phẩm;Nơi khô thoáng, tránh ánh nắng;Việt Nam;false;;false
+THUCAN;TA042;Phở ăn liền - phần lớn;48000;81000;0;gói;16/09/2026;13/07/2027;8.0;Bột ngũ cốc và nguyên liệu thực phẩm;Nơi khô thoáng, tránh ánh nắng;Việt Nam;false;;false
+THUCAN;TA043;Cháo yến mạch - phần thường;52000;88000;0;gói;16/09/2026;12/08/2027;10.0;Bột ngũ cốc và nguyên liệu thực phẩm;Nơi khô thoáng, tránh ánh nắng;Việt Nam;false;;false
+THUCAN;TA044;Cháo yến mạch - phần lớn;11000;19000;0;gói;16/09/2026;11/09/2027;0.0;Rau củ và đậu;Nơi khô thoáng, tránh ánh nắng;Việt Nam;true;;false
+THUCAN;TA045;Cá hộp - phần thường;15000;26000;0;gói;16/09/2026;14/05/2027;5.0;Bột ngũ cốc và nguyên liệu thực phẩm;Nơi khô thoáng, tránh ánh nắng;Việt Nam;false;;false
+THUCAN;TA046;Cá hộp - phần lớn;19000;33000;25;gói;16/09/2026;13/06/2027;8.0;Bột ngũ cốc và nguyên liệu thực phẩm;Nơi khô thoáng, tránh ánh nắng;Việt Nam;false;;true
+THUCAN;TA047;Thịt hộp - phần thường;24000;40000;25;gói;16/09/2026;13/07/2027;10.0;Bột ngũ cốc và nguyên liệu thực phẩm;Nơi khô thoáng, tránh ánh nắng;Việt Nam;false;;true
+THUCAN;TA048;Thịt hộp - phần lớn;28000;47000;25;gói;16/09/2026;12/08/2027;0.0;Rau củ và đậu;Nơi khô thoáng, tránh ánh nắng;Việt Nam;true;;true
+THUCAN;TA049;Thanh năng lượng - phần thường;32000;54000;0;gói;18/07/2026;14/11/2026;5.0;Bột ngũ cốc và nguyên liệu thực phẩm;Nơi khô thoáng, tránh ánh nắng;Việt Nam;false;;false
+THUCAN;TA050;Thanh năng lượng - phần lớn;36000;61000;0;gói;18/07/2026;16/10/2026;8.0;Bột ngũ cốc và nguyên liệu thực phẩm;Nơi khô thoáng, tránh ánh nắng;Việt Nam;false;;false
+DOUONG;DU001;Nước suối 250ml;40000;68000;883;chai;16/09/2026;13/06/2027;10.0;250.0;Nhãn thử nghiệm A;Nguyên bản;Nước uống đóng chai;;false
+DOUONG;DU002;Nước suối 500ml;45000;75000;856;chai;16/09/2026;13/07/2027;0.0;500.0;Nhãn thử nghiệm B;Ít đường;Nước uống đóng chai;;false
+DOUONG;DU003;Trà xanh 250ml;49000;82000;859;chai;16/09/2026;16/11/2026;5.0;250.0;Nhãn thử nghiệm C;Không đường;Nước uống đóng chai;;false
+DOUONG;DU004;Trà xanh 500ml;53000;89000;862;chai;16/09/2026;15/11/2026;8.0;500.0;Nhãn thử nghiệm A;Nguyên bản;Nước uống đóng chai;;false
+DOUONG;DU005;Trà đào 250ml;12000;20000;865;chai;16/09/2026;14/05/2027;10.0;250.0;Nhãn thử nghiệm B;Ít đường;Nước uống đóng chai;;false
+DOUONG;DU006;Trà đào 500ml;16000;27000;868;chai;16/09/2026;13/06/2027;0.0;500.0;Nhãn thử nghiệm C;Không đường;Nước uống đóng chai;;false
+DOUONG;DU007;Trà chanh 250ml;20000;34000;1;chai;16/09/2026;13/07/2027;5.0;250.0;Nhãn thử nghiệm A;Nguyên bản;Nước uống đóng chai;;false
+DOUONG;DU008;Trà chanh 500ml;24000;41000;0;chai;16/09/2026;12/08/2027;8.0;500.0;Nhãn thử nghiệm B;Ít đường;Nước uống đóng chai;;false
+DOUONG;DU009;Cà phê đen 250ml;28000;48000;10;chai;16/09/2026;11/09/2027;10.0;250.0;Nhãn thử nghiệm C;Không đường;Nước uống đóng chai;;false
+DOUONG;DU010;Cà phê đen 500ml;33000;55000;879;chai;16/09/2026;14/05/2027;0.0;500.0;Nhãn thử nghiệm A;Nguyên bản;Nước uống đóng chai;;false
+DOUONG;DU011;Cà phê sữa 250ml;37000;62000;883;chai;16/09/2026;13/06/2027;5.0;250.0;Nhãn thử nghiệm B;Ít đường;Nước uống đóng chai;;false
+DOUONG;DU012;Cà phê sữa 500ml;41000;69000;886;chai;16/09/2026;13/07/2027;8.0;500.0;Nhãn thử nghiệm C;Không đường;Nước uống đóng chai;;false
+DOUONG;DU013;Sữa tươi 250ml;45000;76000;889;chai;16/09/2026;12/08/2027;10.0;250.0;Nhãn thử nghiệm A;Nguyên bản;Nước uống đóng chai;;false
+DOUONG;DU014;Sữa tươi 500ml;49000;83000;892;chai;16/09/2026;11/09/2027;0.0;500.0;Nhãn thử nghiệm B;Ít đường;Nước uống đóng chai;;false
+DOUONG;DU015;Sữa đậu nành 250ml;54000;90000;895;chai;16/09/2026;14/05/2027;5.0;250.0;Nhãn thử nghiệm C;Không đường;Nước uống đóng chai;;false
+DOUONG;DU016;Sữa đậu nành 500ml;12000;21000;898;chai;16/09/2026;13/06/2027;8.0;500.0;Nhãn thử nghiệm A;Nguyên bản;Nước uống đóng chai;;false
+DOUONG;DU017;Nước cam 250ml;16000;28000;901;chai;16/09/2026;13/07/2027;10.0;250.0;Nhãn thử nghiệm B;Ít đường;Nước uống đóng chai;;false
+DOUONG;DU018;Nước cam 500ml;21000;35000;904;chai;16/09/2026;12/08/2027;0.0;500.0;Nhãn thử nghiệm C;Không đường;Nước uống đóng chai;;false
+DOUONG;DU019;Nước táo 250ml;25000;42000;907;chai;16/09/2026;11/09/2027;5.0;250.0;Nhãn thử nghiệm A;Nguyên bản;Nước uống đóng chai;;false
+DOUONG;DU020;Nước táo 500ml;29000;49000;910;chai;16/09/2026;14/05/2027;8.0;500.0;Nhãn thử nghiệm B;Ít đường;Nước uống đóng chai;;false
+DOUONG;DU021;Nước dừa 250ml;33000;56000;913;chai;16/09/2026;13/06/2027;10.0;250.0;Nhãn thử nghiệm C;Không đường;Nước uống đóng chai;;false
+DOUONG;DU022;Nước dừa 500ml;37000;63000;916;chai;16/09/2026;13/07/2027;0.0;500.0;Nhãn thử nghiệm A;Nguyên bản;Nước uống đóng chai;;false
+DOUONG;DU023;Nước ép ổi 250ml;42000;70000;919;chai;16/09/2026;12/08/2027;5.0;250.0;Nhãn thử nghiệm B;Ít đường;Nước uống đóng chai;;false
+DOUONG;DU024;Nước ép ổi 500ml;46000;77000;922;chai;16/09/2026;11/09/2027;8.0;500.0;Nhãn thử nghiệm C;Không đường;Nước uống đóng chai;;false
+DOUONG;DU025;Nước ép nho 250ml;50000;84000;925;chai;16/09/2026;14/05/2027;10.0;250.0;Nhãn thử nghiệm A;Nguyên bản;Nước uống đóng chai;;false
+DOUONG;DU026;Nước ép nho 500ml;9000;15000;928;chai;16/09/2026;13/06/2027;0.0;500.0;Nhãn thử nghiệm B;Ít đường;Nước uống đóng chai;;false
+DOUONG;DU027;Sữa chua uống 250ml;13000;22000;931;chai;16/09/2026;13/07/2027;5.0;250.0;Nhãn thử nghiệm C;Không đường;Nước uống đóng chai;;false
+DOUONG;DU028;Sữa chua uống 500ml;17000;29000;934;chai;16/09/2026;12/08/2027;8.0;500.0;Nhãn thử nghiệm A;Nguyên bản;Nước uống đóng chai;;false
+DOUONG;DU029;Nước khoáng 250ml;21000;36000;937;chai;16/09/2026;11/09/2027;10.0;250.0;Nhãn thử nghiệm B;Ít đường;Nước uống đóng chai;;false
+DOUONG;DU030;Nước khoáng 500ml;25000;43000;940;chai;16/09/2026;14/05/2027;0.0;500.0;Nhãn thử nghiệm C;Không đường;Nước uống đóng chai;;false
+DOUONG;DU031;Trà ô long 250ml;30000;50000;943;chai;16/09/2026;13/06/2027;5.0;250.0;Nhãn thử nghiệm A;Nguyên bản;Nước uống đóng chai;;false
+DOUONG;DU032;Trà ô long 500ml;34000;57000;946;chai;16/09/2026;13/07/2027;8.0;500.0;Nhãn thử nghiệm B;Ít đường;Nước uống đóng chai;;false
+DOUONG;DU033;Trà bí đao 250ml;38000;64000;949;chai;16/09/2026;12/08/2027;10.0;250.0;Nhãn thử nghiệm C;Không đường;Nước uống đóng chai;;false
+DOUONG;DU034;Trà bí đao 500ml;42000;71000;952;chai;16/09/2026;11/09/2027;0.0;500.0;Nhãn thử nghiệm A;Nguyên bản;Nước uống đóng chai;;false
+DOUONG;DU035;Nước lúa mạch 250ml;46000;78000;955;chai;16/09/2026;14/05/2027;5.0;250.0;Nhãn thử nghiệm B;Ít đường;Nước uống đóng chai;;false
+DOUONG;DU036;Nước lúa mạch 500ml;51000;85000;958;chai;16/09/2026;13/06/2027;8.0;500.0;Nhãn thử nghiệm C;Không đường;Nước uống đóng chai;;false
+DOUONG;DU037;Nước điện giải 250ml;9000;16000;961;chai;16/09/2026;13/07/2027;10.0;250.0;Nhãn thử nghiệm A;Nguyên bản;Nước uống đóng chai;;false
+DOUONG;DU038;Nước điện giải 500ml;13000;23000;964;chai;16/09/2026;12/08/2027;0.0;500.0;Nhãn thử nghiệm B;Ít đường;Nước uống đóng chai;;false
+DOUONG;DU039;Sữa hạt 250ml;18000;30000;967;chai;16/09/2026;11/09/2027;5.0;250.0;Nhãn thử nghiệm C;Không đường;Nước uống đóng chai;;false
+DOUONG;DU040;Sữa hạt 500ml;22000;37000;970;chai;16/09/2026;14/05/2027;8.0;500.0;Nhãn thử nghiệm A;Nguyên bản;Nước uống đóng chai;;false
+DOUONG;DU041;Cacao 250ml;26000;44000;0;chai;16/09/2026;13/06/2027;10.0;250.0;Nhãn thử nghiệm B;Ít đường;Nước uống đóng chai;;false
+DOUONG;DU042;Cacao 500ml;30000;51000;0;chai;16/09/2026;13/07/2027;0.0;500.0;Nhãn thử nghiệm C;Không đường;Nước uống đóng chai;;false
+DOUONG;DU043;Nước chanh muối 250ml;34000;58000;0;chai;16/09/2026;12/08/2027;5.0;250.0;Nhãn thử nghiệm A;Nguyên bản;Nước uống đóng chai;;false
+DOUONG;DU044;Nước chanh muối 500ml;39000;65000;0;chai;16/09/2026;11/09/2027;8.0;500.0;Nhãn thử nghiệm B;Ít đường;Nước uống đóng chai;;false
+DOUONG;DU045;Nước yến 250ml;43000;72000;0;chai;16/09/2026;14/05/2027;10.0;250.0;Nhãn thử nghiệm C;Không đường;Nước uống đóng chai;;false
+DOUONG;DU046;Nước yến 500ml;47000;79000;25;chai;16/09/2026;13/06/2027;0.0;500.0;Nhãn thử nghiệm A;Nguyên bản;Nước uống đóng chai;;true
+DOUONG;DU047;Trà hoa cúc 250ml;51000;86000;25;chai;16/09/2026;13/07/2027;5.0;250.0;Nhãn thử nghiệm B;Ít đường;Nước uống đóng chai;;true
+DOUONG;DU048;Trà hoa cúc 500ml;10000;17000;0;chai;18/07/2026;16/10/2026;8.0;500.0;Nhãn thử nghiệm C;Không đường;Nước uống đóng chai;;false
+DOUONG;DU049;Nước ép cà rốt 250ml;14000;24000;0;chai;18/07/2026;14/11/2026;10.0;250.0;Nhãn thử nghiệm A;Nguyên bản;Nước uống đóng chai;;false
+DOUONG;DU050;Nước ép cà rốt 500ml;18000;31000;0;chai;18/07/2026;16/10/2026;0.0;500.0;Nhãn thử nghiệm B;Ít đường;Nước uống đóng chai;;false
+THUCAN;TA051;Mì Xào Hải Sản;25000;38000;20;hộp;15/11/2026;17/11/2026;5.0;Mì, tôm, mực, rau cải, hành;Nơi thoáng mát;Việt Nam;false;;false
+THUCAN;TA111;Sp001;20000;30000;20;hộp;16/11/2026;18/11/2026;5.0;;;;false;;false
+THUCAN;TA112;Bánh mì ngũ cốc;6000;10000;12;gói;19/08/2026;10/11/2026;0.0;Nguyên liệu thực vật, gia vị;Bảo quản mát 2-8 độ C;Việt Nam;true;NCC001;false
+THUCAN;TA113;Bánh cuốn nấm;7500;12500;6;gói;19/08/2026;16/11/2026;5.0;Nguyên liệu thực vật, gia vị;Nơi khô ráo;Việt Nam;true;NCC001;false
+THUCAN;TA114;Bánh gạo lứt;9000;15000;15;gói;19/08/2026;17/11/2026;8.0;Nguyên liệu thực vật, gia vị;Nơi khô ráo;Việt Nam;true;NCC001;false
+THUCAN;TA115;Bánh quy yến mạch;10500;17500;0;gói;19/08/2026;18/11/2026;10.0;Nguyên liệu thực vật, gia vị;Bảo quản mát 2-8 độ C;Việt Nam;true;NCC001;false
+THUCAN;TA116;Hạt điều rang nhạt;12000;16000;1;gói;19/08/2026;20/11/2026;0.0;Nguyên liệu thực vật, gia vị;Nơi khô ráo;Việt Nam;true;NCC001;false
+THUCAN;TA117;Rong biển sấy mè;13500;18500;5;gói;19/08/2026;21/11/2026;5.0;Nguyên liệu thực vật, gia vị;Nơi khô ráo;Việt Nam;true;NCC001;false
+THUCAN;TA118;Mì rau củ;15000;21000;9;gói;19/08/2026;24/11/2026;8.0;Nguyên liệu thực vật, gia vị;Bảo quản mát 2-8 độ C;Việt Nam;true;NCC002;false
+THUCAN;TA119;Nui sốt cà chua;16500;23500;10;gói;19/08/2026;25/11/2026;10.0;Nguyên liệu thực vật, gia vị;Nơi khô ráo;Việt Nam;true;NCC002;false
+THUCAN;TA120;Súp bí đỏ;18000;22000;11;gói;19/08/2026;02/12/2026;0.0;Nguyên liệu thực vật, gia vị;Nơi khô ráo;Việt Nam;true;NCC002;false
+THUCAN;TA121;Cháo đậu xanh;19500;24500;25;gói;19/08/2026;03/12/2026;5.0;Nguyên liệu thực vật, gia vị;Bảo quản mát 2-8 độ C;Việt Nam;true;NCC002;false
+THUCAN;TA122;Bánh bao nấm;21000;27000;30;gói;19/08/2026;17/12/2026;8.0;Nguyên liệu thực vật, gia vị;Nơi khô ráo;Việt Nam;true;NCC002;false
+THUCAN;TA123;Đậu hũ sốt nấm;22500;29500;60;gói;19/08/2026;18/12/2026;10.0;Nguyên liệu thực vật, gia vị;Nơi khô ráo;Việt Nam;true;NCC002;false
+THUCAN;TA124;Cơm gạo lứt;24000;28000;100;gói;19/08/2026;16/01/2027;0.0;Nguyên liệu thực vật, gia vị;Bảo quản mát 2-8 độ C;Việt Nam;true;NCC003;false
+THUCAN;TA125;Khoai lang sấy;6000;11000;150;gói;19/08/2026;15/02/2027;5.0;Nguyên liệu thực vật, gia vị;Nơi khô ráo;Việt Nam;true;NCC003;false
+THUCAN;TA126;Bánh chuối hạt óc chó;7500;13500;0;gói;19/08/2026;16/05/2027;8.0;Nguyên liệu thực vật, gia vị;Nơi khô ráo;Việt Nam;true;NCC003;false
+THUCAN;TA127;Ngũ cốc hạt chia;9000;16000;8;gói;19/08/2026;17/11/2027;10.0;Nguyên liệu thực vật, gia vị;Bảo quản mát 2-8 độ C;Việt Nam;true;NCC003;false
+DOUONG;DU053;Sữa yến mạch 180ml;10500;14500;20;chai;19/08/2026;16/11/2026;0.0;180.0;Hạt Lành;Yến mạch;Nước uống đóng chai;NCC003;false
+DOUONG;DU054;Trà hoa cúc 350ml;12000;17000;12;chai;19/08/2026;17/11/2026;5.0;350.0;Miền Nhiệt Đới;Hoa cúc;Nước uống đóng chai;NCC003;false
+DOUONG;DU055;Nước dừa 330ml;13500;19500;4;chai;19/08/2026;18/11/2026;8.0;330.0;Hạt Lành;Dừa;Nước uống đóng chai;NCC011;false
+DOUONG;DU056;Nước ép ổi 250ml;15000;22000;7;chai;19/08/2026;20/11/2026;10.0;250.0;Miền Nhiệt Đới;Ổi;Nước uống đóng chai;NCC012;false
+DOUONG;DU057;Sữa đậu đỏ 250ml;16500;20500;15;chai;19/08/2026;24/11/2026;0.0;250.0;Hạt Lành;Đậu đỏ;Nước uống đóng chai;NCC011;false
+DOUONG;DU058;Trà gạo lứt 500ml;18000;23000;25;chai;19/08/2026;02/12/2026;5.0;500.0;Miền Nhiệt Đới;Gạo lứt;Nước uống đóng chai;NCC012;false
+DOUONG;DU059;Nước chanh mật ong 350ml;19500;25500;40;chai;19/08/2026;17/12/2026;8.0;350.0;Hạt Lành;Chanh mật ong;Nước uống đóng chai;NCC011;false
+DOUONG;DU060;Cacao ít đường 250ml;21000;28000;10;chai;19/08/2026;18/12/2026;10.0;250.0;Miền Nhiệt Đới;Cacao;Nước uống đóng chai;NCC012;false
+DOUONG;DU061;Nước khoáng 750ml;22500;26500;0;chai;19/08/2026;16/01/2027;0.0;750.0;Hạt Lành;Tự nhiên;Nước khoáng;NCC011;false
+DOUONG;DU062;Trà bí đao 330ml;24000;29000;5;chai;19/08/2026;15/02/2027;5.0;330.0;Miền Nhiệt Đới;Bí đao;Nước uống đóng chai;NCC013;false
+DOUONG;DU063;Sữa hạnh nhân 180ml;6000;12000;11;chai;19/08/2026;16/05/2027;8.0;180.0;Hạt Lành;Hạnh nhân;Nước uống đóng chai;NCC009;false
+DOUONG;DU064;Nước ép thơm 350ml;7500;14500;16;chai;19/08/2026;17/11/2027;10.0;350.0;Miền Nhiệt Đới;Thơm;Nước uống đóng chai;NCC012;true
+DOUONG;DU065;Cà phê dừa 250ml;9000;13000;200;chai;19/08/2026;16/01/2027;0.0;250.0;Hạt Lành;Cà phê dừa;Nước uống đóng chai;NCC011;false
+DOUONG;DU066;Trà vải 500ml;10500;15500;0;chai;19/08/2026;15/02/2027;5.0;500.0;Miền Nhiệt Đới;Vải;Nước uống đóng chai;NCC012;true
+DOUONG;DU067;Nước ép lựu 300ml;12000;18000;2147483647;chai;19/08/2026;16/05/2027;8.0;300.0;Hạt Lành;Lựu;Nước uống đóng chai;NCC011;false

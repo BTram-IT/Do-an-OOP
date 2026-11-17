@@ -78,7 +78,7 @@ public class KhuyenmaiTructiep extends Khuyenmai {
     // Tính tổng tiền giảm cho một dòng sản phẩm
     @Override
     public long tinhTongTienGiam(long giaBan, int soLuong) {
-        if (giaBan <= 0 || soLuong <= 0 || soTienGiam <= 0) {
+        if (!duMucChiToiThieu(giaBan, soLuong) || soTienGiam <= 0) {
             return 0;
         }
 
@@ -107,7 +107,8 @@ public class KhuyenmaiTructiep extends Khuyenmai {
             throw new IllegalStateException("[Lỗi] Số tiền giảm trực tiếp chưa hợp lệ!");
         }
 
-        return "TRUCTIEP;" + super.toDongFile() + ";" + soTienGiam;
+        return "TRUCTIEP;" + super.toDongFile() + ";" + soTienGiam
+                + (mucChiToiThieu > 0 ? ";" + mucChiToiThieu : "");
     }
 
     // Getter
@@ -126,9 +127,7 @@ public class KhuyenmaiTructiep extends Khuyenmai {
     }
 
     @Override
-    public String toString() {
-        return super.toString()
-                + " | Tiền giảm mỗi sản phẩm: "
-                + Ktradulieu.dinhDangTien(soTienGiam);
+    protected String layChiTietBang() {
+        return "Tiền giảm mỗi sản phẩm: " + Ktradulieu.dinhDangTien(soTienGiam);
     }
 }

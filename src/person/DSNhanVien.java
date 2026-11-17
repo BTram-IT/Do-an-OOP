@@ -1,5 +1,7 @@
 package person;
 
+import util.BangConsole;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -89,6 +91,38 @@ public class DSNhanVien {
         return them(nv);
     }
 
+    /** Thêm qua nghiệp vụ: Quản lý chỉ được tạo nhân viên thường. */
+    public boolean them(Nguoidung nguoiThucHien, Nguoidung taiKhoanMoi) {
+        if (nguoiThucHien == null || taiKhoanMoi == null
+                || !(nguoiThucHien.coQuyen("QUAN_TRI_TAI_KHOAN")
+                || (nguoiThucHien.coQuyen("QUAN_LY_NHAN_VIEN") && taiKhoanMoi instanceof NhanVien))) {
+            System.out.println("[Từ chối] Chỉ Admin được tạo tài khoản Quản lý hoặc Admin!");
+            return false;
+        }
+        return them(taiKhoanMoi);
+    }
+
+    public boolean doiTrangThaiTaiKhoan(Nguoidung nguoiThucHien, String maND, boolean khoa) {
+        if (nguoiThucHien == null || !nguoiThucHien.coQuyen("QUAN_TRI_TAI_KHOAN")) {
+            System.out.println("[Từ chối] Chỉ Admin đang hoạt động được khóa/mở khóa tài khoản!");
+            return false;
+        }
+        Nguoidung nd = timKiemTheoMa(maND);
+        if (nd == null) {
+            System.out.println("[Lỗi] Không tìm thấy tài khoản: " + maND);
+            return false;
+        }
+        if (khoa && nd.getMaND().equalsIgnoreCase(nguoiThucHien.getMaND())) {
+            System.out.println("[Từ chối] Không thể tự khóa tài khoản đang đăng nhập!");
+            return false;
+        }
+        nd.setDaXoa(khoa);
+        if (nd instanceof NhanVien) ((NhanVien) nd).setYeuCauSaThai(null);
+        ghiFile("data/nhanvien.txt");
+        System.out.println("Đã " + (khoa ? "khóa" : "mở khóa") + " tài khoản [" + nd.getMaND() + "].");
+        return true;
+    }
+
     // =========================================================
     // TÌM KIẾM
     // =========================================================
@@ -143,8 +177,8 @@ public class DSNhanVien {
         return nd != null && !nd.isDaXoa();
     }
 
-    private boolean laQuanLyHoacGiamDoc(Nguoidung nd) {
-        return nd instanceof QuanLyCuaHang || nd instanceof Giamdoc;
+    private boolean laQuanLyHoacAdmin(Nguoidung nd) {
+        return nd != null && nd.coQuyen("QUAN_LY_NHAN_VIEN");
     }
 
     // =========================================================
@@ -155,7 +189,7 @@ public class DSNhanVien {
             System.out.println("[TỪ CHỐI TRUY CẬP] Tài khoản không hợp lệ hoặc đã bị vô hiệu hóa!");
             return false;
         }
-        if (!laQuanLyHoacGiamDoc(nguoiThucHien)) {
+        if (!laQuanLyHoacAdmin(nguoiThucHien)) {
             System.out.println("[TỪ CHỐI TRUY CẬP] Bạn không có quyền hạn đối với tác vụ này!");
             return false;
         }
@@ -174,17 +208,17 @@ public class DSNhanVien {
             return false;
         }
 
-        if (nguoiThucHien instanceof Giamdoc) {
+        if (nguoiThucHien instanceof Admin) {
             nv.setDaXoa(true);
             nv.setYeuCauSaThai(null);
             ghiFile("data/nhanvien.txt");
 
-            System.out.println("[GIÁM ĐỐC PHÊ DUYỆT] Đã sa thải nhân viên [" + maNV + "] " + nv.getTenND() + ". (Dữ liệu cũ vẫn được bảo lưu).");
+            System.out.println("[Admin PHÊ DUYỆT] Đã sa thải nhân viên [" + maNV + "] " + nv.getTenND() + ". (Dữ liệu cũ vẫn được bảo lưu).");
             return true;
         }
 
         // Quản lý: chỉ được gửi đề xuất
-        System.out.println("QUẢN LÝ KHÔNG CÓ QUYỀN SA THẢI! Bạn chỉ có thể gửi đề xuất lên Giám Đốc.");
+        System.out.println("QUẢN LÝ KHÔNG CÓ QUYỀN SA THẢI! Bạn chỉ có thể gửi đề xuất lên Admin.");
         if (sc == null) {
             System.out.println("[Lỗi] Không có nguồn nhập liệu để ghi lý do đề xuất!");
             return false;
@@ -193,7 +227,7 @@ public class DSNhanVien {
         nv.setYeuCauSaThai(lyDo);
         ghiFile("data/nhanvien.txt");
 
-        System.out.println(" Đã gửi đề xuất sa thải nhân viên [" + maNV + "] lên Giám Đốc phê duyệt.");
+        System.out.println(" Đã gửi đề xuất sa thải nhân viên [" + maNV + "] lên Admin phê duyệt.");
         return false;
     }
 
@@ -201,82 +235,87 @@ public class DSNhanVien {
     // SỬA
     // =========================================================
     public void sua(Scanner sc, Nguoidung nguoiThucHien, String maNV) {
-        if (!taiKhoanConHoatDong(nguoiThucHien)) {
-            System.out.println("[TỪ CHỐI TRUY CẬP] Tài khoản không hợp lệ hoặc đã bị vô hiệu hóa!");
+        if (!taiKhoanConHoatDong(nguoiThucHien) || !laQuanLyHoacAdmin(nguoiThucHien)) {
+            System.out.println("[Từ chối] Chỉ Quản lý hoặc Admin đang hoạt động được cập nhật nhân sự!");
             return;
         }
-        if (!laQuanLyHoacGiamDoc(nguoiThucHien)) {
-            System.out.println("[TỪ CHỐI TRUY CẬP] Chỉ Quản Lý và Giám Đốc mới có quyền chỉnh sửa nhân viên!");
+        Nguoidung nd = timKiemTheoMa(maNV);
+        boolean laAdmin = nguoiThucHien.coQuyen("QUAN_TRI_TAI_KHOAN");
+        if (nd == null || (!laAdmin && (!(nd instanceof NhanVien) || nd.isDaXoa()))) {
+            System.out.println("[Từ chối] Quản lý chỉ được sửa nhân viên thường đang làm việc; kiểm tra lại mã tài khoản!");
             return;
         }
-        if (sc == null) {
-            System.out.println("[Lỗi] Không có nguồn nhập liệu!");
-            return;
-        }
-
-        NhanVien nv = timNhanVienTheoMa(maNV);
-        if (nv == null) {
-            System.out.println("Không tìm thấy nhân viên có mã: " + maNV);
-            return;
-        }
-        if (nv.isDaXoa()) {
-            System.out.println("Nhân viên [" + maNV + "] đã nghỉ việc, không thể chỉnh sửa!");
-            return;
-        }
-
+        if (sc == null) return;
         while (true) {
-            System.out.println("\n--- CHỌN TRƯỜNG CẦN SỬA CHO NHÂN VIÊN [" + nv.getMaND() + "] ---");
-            System.out.println("1. Sửa Họ và Tên");
-            System.out.println("2. Sửa Số điện thoại");
-            System.out.println("3. Sửa Mật khẩu");
-            System.out.println("4. Sửa Lương cơ bản");
-            System.out.println("5. Sửa Ngày vào làm (dd/MM/yyyy)");
-            System.out.println("0. Hoàn tất sửa");
-            int chon = Ktradulieu.luaChon(sc, "Nhập lựa chọn của bạn: ", 0, 5);
-
+            System.out.println("\n--- CẬP NHẬT TÀI KHOẢN [" + nd.getMaND() + "] ---");
+            System.out.println("1. Sửa họ tên\n2. Sửa số điện thoại");
+            if (laAdmin) System.out.println("3. Đặt lại mật khẩu\n8. Sửa tên đăng nhập");
+            if (nd instanceof NhanVien) {
+                System.out.println("4. Sửa lương cơ bản\n5. Sửa ngày vào làm");
+            } else if (nd instanceof QuanLyCuaHang && !(nd instanceof Admin)) {
+                System.out.println("6. Sửa khu vực quản lý\n7. Sửa hệ số trách nhiệm");
+            }
+            System.out.println("0. Hoàn tất");
+            int chon = Ktradulieu.luaChon(sc, "Chọn (0-8): ", 0, 8);
             try {
                 switch (chon) {
                     case 1:
-                        String tenMoi = Ktradulieu.nhapChuoiKhongRong(sc, "Nhập họ tên mới: ");
-                        nv.setTenND(tenMoi);
-                        System.out.println("Đã cập nhật họ tên thành công!");
+                        nd.setTenND(Ktradulieu.nhapChuoiKhongRong(sc, "Nhập họ tên mới: "));
                         break;
                     case 2:
-                        String sdtMoi = Ktradulieu.nhapChuoi(sc, "Nhập số điện thoại mới: ", Ktradulieu.phoneRegex, "SĐT không hợp lệ!");
-                        nv.setSoDienThoai(sdtMoi);
-                        System.out.println("Đã cập nhật SĐT!");
+                        nd.setSoDienThoai(Ktradulieu.nhapChuoi(sc, "Nhập số điện thoại mới: ",
+                                Ktradulieu.phoneRegex, "Số điện thoại không hợp lệ!"));
                         break;
                     case 3:
-                        String mkMoi = Ktradulieu.nhapChuoi(sc, "Nhập mật khẩu mới: ", "[^;]{4,}", "Mật khẩu tối thiểu 4 ký tự và không chứa dấu ';'!");
-                        nv.setMatKhau(mkMoi);
-                        System.out.println("Đã cập nhật mật khẩu!");
+                        if (!laAdmin) { System.out.println("[Từ chối] Chỉ Admin được đặt lại mật khẩu!"); break; }
+                        nd.setMatKhau(Ktradulieu.nhapChuoi(sc, "Nhập mật khẩu mới: ",
+                                "[^;]{4,}", "Mật khẩu tối thiểu 4 ký tự và không chứa ';'!"));
                         break;
                     case 4:
-                        double luongMoi = Ktradulieu.nhapSoThucKhongAm(sc, "Nhập mức lương cơ bản mới: ");
-                        nv.setLuongCoBan(luongMoi);
-                        System.out.println("Đã cập nhật mức lương cơ bản!");
+                        if (!(nd instanceof NhanVien)) { System.out.println("[Lỗi] Chỉ áp dụng cho nhân viên!"); break; }
+                        ((NhanVien) nd).setLuongCoBan(Ktradulieu.nhapSoThucKhongAm(sc, "Nhập lương cơ bản: "));
                         break;
                     case 5:
-                        LocalDate ngayMoi = Ktradulieu.nhapNgay(sc, "Nhập ngày vào làm mới (dd/MM/yyyy): ");
-                        nv.setNgayVaoLam(ngayMoi);
-                        System.out.println("Đã cập nhật ngày vào làm!");
+                        if (!(nd instanceof NhanVien)) { System.out.println("[Lỗi] Chỉ áp dụng cho nhân viên!"); break; }
+                        ((NhanVien) nd).setNgayVaoLam(Ktradulieu.nhapNgay(sc, "Nhập ngày vào làm (dd/MM/yyyy): "));
+                        break;
+                    case 6:
+                    case 7:
+                        if (!laAdmin || !(nd instanceof QuanLyCuaHang) || nd instanceof Admin) {
+                            System.out.println("[Từ chối] Chỉ Admin được cập nhật thông tin Quản lý!");
+                            break;
+                        }
+                        QuanLyCuaHang ql = (QuanLyCuaHang) nd;
+                        if (chon == 6) ql.setKhuVucQuanLy(Ktradulieu.nhapChuoiKhongRong(sc, "Nhập khu vực quản lý: "));
+                        else ql.setHeSoTrachNhiem(Ktradulieu.nhapSoThucKhongAm(sc, "Nhập hệ số trách nhiệm (> 0): "));
+                        break;
+                    case 8:
+                        if (!laAdmin) { System.out.println("[Từ chối] Chỉ Admin được đổi tên đăng nhập!"); break; }
+                        String tk = Ktradulieu.nhapChuoiKhongRong(sc, "Nhập tên đăng nhập mới: ");
+                        Nguoidung trung = timKiemTheoTaiKhoan(tk);
+                        if (trung != null && trung != nd) { System.out.println("[Lỗi] Tên đăng nhập đã tồn tại!"); break; }
+                        nd.setTaiKhoan(tk);
                         break;
                     case 0:
                         ghiFile("data/nhanvien.txt");
                         return;
                 }
-            } catch (Exception e) {
-                System.out.println("Lỗi cập nhật: " + e.getMessage());
+            } catch (IllegalArgumentException e) {
+                System.out.println("[Lỗi] " + e.getMessage());
             }
         }
     }
 
     public void xuatDanhSach() {
-        System.out.println("\n================ DANH SÁCH TÀI KHOẢN CỬA HÀNG ================");
-        for (Nguoidung nd : danhSach) {
-            System.out.println(nd.toString());
-        }
-        System.out.println("Tổng số tài khoản: " + danhSach.size());
+        System.out.println(this);
+    }
+
+    @Override
+    public String toString() {
+        String xuongDong = System.lineSeparator();
+        return xuongDong + "===== DANH SÁCH TÀI KHOẢN CỬA HÀNG =====" + xuongDong
+                + BangConsole.tuDanhSach(danhSach) + xuongDong
+                + "Tổng số tài khoản: " + danhSach.size();
     }
 
     // =========================================================
@@ -362,7 +401,7 @@ public class DSNhanVien {
         }
     }
 
-    // Định dạng: NHANVIEN;... | QUANLY;... | GIAMDOC;...  (dòng cũ không có tiền tố vẫn đọc được)
+    // Định dạng: NHANVIEN;... | QUANLY;... | ADMIN;... (vẫn đọc tài khoản cũ).
     private Nguoidung phanTichDong(String dong) {
         String[] p = dong.split(";", -1);
         String loai = p[0].trim().toUpperCase();
@@ -372,11 +411,12 @@ public class DSNhanVien {
                 return phanTichNhanVien(p, 1);
             case "QUANLY":
                 return phanTichQuanLy(p, 1);
-            case "GIAMDOC":
-                return phanTichGiamDoc(p, 1);
+            case "ADMIN":
+            case "GIAMDOC": // Chuyển vai trò cũ sang Admin, giữ nguyên mã và thông tin đăng nhập.
+                return phanTichAdmin(p, 1);
             default:
                 // Định dạng cũ: dòng bắt đầu bằng mã -> đoán vai trò theo tiền tố mã
-                if (loai.startsWith("GD")) return phanTichGiamDoc(p, 0);
+                if (loai.startsWith("AD") || loai.startsWith("GD")) return phanTichAdmin(p, 0);
                 if (loai.startsWith("QL")) return phanTichQuanLy(p, 0);
                 return phanTichNhanVien(p, 0);
         }
@@ -417,14 +457,14 @@ public class DSNhanVien {
                 p[o + 7].trim(), docSo(p[o + 8]));
     }
 
-    private Giamdoc phanTichGiamDoc(String[] p, int o) {
-        // maND;tenND;taiKhoan;matKhau;sdt;vaiTro;daXoa;phuCap;tyLeCoPhan
-        if (p.length < o + 9) {
-            throw new IllegalArgumentException("Dòng giám đốc thiếu trường dữ liệu!");
+    private Admin phanTichAdmin(String[] p, int o) {
+        // maND;tenND;taiKhoan;matKhau;sdt;vaiTro;daXoa
+        // Hai trường phụ cấp/cổ phần ở định dạng cũ không còn dùng cho Admin.
+        if (p.length < o + 7) {
+            throw new IllegalArgumentException("Dòng Admin thiếu trường dữ liệu!");
         }
-        return new Giamdoc(p[o].trim(), p[o + 1].trim(), p[o + 2].trim(), p[o + 3].trim(),
-                p[o + 4].trim(), p[o + 5].trim(), Boolean.parseBoolean(p[o + 6].trim()),
-                docSo(p[o + 7]), docSo(p[o + 8]));
+        return new Admin(p[o].trim(), p[o + 1].trim(), p[o + 2].trim(), p[o + 3].trim(),
+                p[o + 4].trim(), Boolean.parseBoolean(p[o + 6].trim()));
     }
     // =========================================================
     public List<NhanVien> getDanhSachYeuCauSaThai() {
@@ -446,16 +486,16 @@ public class DSNhanVien {
     }
 
     // =========================================================
-// GIÁM ĐỐC PHÊ DUYỆT / TỪ CHỐI YÊU CẦU SA THẢI
+// Admin PHÊ DUYỆT / TỪ CHỐI YÊU CẦU SA THẢI
 // =========================================================
     public boolean xuLyYeuCauSaThai(
             Nguoidung nguoiThucHien,
             String maNV,
             boolean chapNhan) {
 
-        if (!(nguoiThucHien instanceof Giamdoc)
+        if (!(nguoiThucHien instanceof Admin)
                 || !taiKhoanConHoatDong(nguoiThucHien)) {
-            System.out.println("[TỪ CHỐI TRUY CẬP] Chỉ Giám đốc đang hoạt động mới được xử lý yêu cầu!");
+            System.out.println("[TỪ CHỐI TRUY CẬP] Chỉ Admin đang hoạt động mới được xử lý yêu cầu!");
             return false;
         }
 
@@ -475,11 +515,11 @@ public class DSNhanVien {
 
         if (chapNhan) {
             nv.setDaXoa(true);
-            System.out.println("[GIÁM ĐỐC ĐÃ PHÊ DUYỆT] Nhân viên "
+            System.out.println("[Admin ĐÃ PHÊ DUYỆT] Nhân viên "
                     + nv.getTenND() + " [" + nv.getMaND()
                     + "] đã được sa thải.");
         } else {
-            System.out.println("[GIÁM ĐỐC ĐÃ TỪ CHỐI] Yêu cầu sa thải nhân viên "
+            System.out.println("[Admin ĐÃ TỪ CHỐI] Yêu cầu sa thải nhân viên "
                     + nv.getTenND() + " [" + nv.getMaND()
                     + "] không được chấp thuận.");
         }

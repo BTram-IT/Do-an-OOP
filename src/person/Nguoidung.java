@@ -1,9 +1,12 @@
 package person;
 
+import util.BangConsole;
+import util.HienThiBang;
+
 import java.util.Scanner;
 import util.Ktradulieu;
 
-public abstract class Nguoidung {
+public abstract class Nguoidung implements HienThiBang {
     protected String maND;
     protected String tenND;
     protected String taiKhoan;
@@ -34,11 +37,15 @@ public abstract class Nguoidung {
     }
 
     public void nhapThongTin(Scanner sc, DSNhanVien ds) {
+        nhapThongTinCoBan(sc, ds);
+    }
+
+    protected final void nhapThongTinCoBan(Scanner sc, DSNhanVien ds) {
         String tienTo = "NV"; // Mặc định là Nhân Viên
-        if (this instanceof QuanLyCuaHang) {
+        if (this instanceof Admin) {
+            tienTo = "AD";
+        } else if (this instanceof QuanLyCuaHang) {
             tienTo = "QL";
-        } else if (this instanceof Giamdoc) {
-            tienTo = "GD";
         }
 
         String maGoiY = (ds != null) ? ds.sinhMaTuDong(tienTo) : (tienTo + "001");
@@ -184,11 +191,35 @@ public abstract class Nguoidung {
     public abstract String toFileString();
 
     public abstract String[] getQuyenHan();
+
+    /** Tài khoản bị khóa không có quyền; Admin được thực hiện mọi nghiệp vụ. */
+    public final boolean coQuyen(String maQuyen) {
+        if (daXoa || maQuyen == null || maQuyen.isBlank()) return false;
+        for (String quyen : getQuyenHan()) {
+            if ("TOAN_QUYEN".equals(quyen) || maQuyen.equalsIgnoreCase(quyen)) return true;
+        }
+        return false;
+    }
+
     public abstract String thucHienCongViec();
 
     @Override
+    public String[] layTieuDeBang() {
+        return new String[]{"MÃ ND", "HỌ TÊN", "VAI TRÒ", "TÀI KHOẢN", "SỐ ĐIỆN THOẠI", "TRẠNG THÁI", "CHI TIẾT"};
+    }
+
+    @Override
+    public Object[] layDongBang() {
+        return new Object[]{maND, tenND, vaiTro, taiKhoan, soDienThoai,
+                daXoa ? "ĐÃ NGHỈ VIỆC" : "HOẠT ĐỘNG", layChiTietBang()};
+    }
+
+    protected String layChiTietBang() {
+        return "-";
+    }
+
+    @Override
     public String toString() {
-        return "[" + vaiTro + "] " + maND + " - " + tenND + " (TK: " + taiKhoan + " | SĐT: " + soDienThoai + ")"
-                + (daXoa ? " [ĐÃ NGHỈ VIỆC]" : " [HOẠT ĐỘNG]");
+        return BangConsole.tuDoiTuong(this);
     }
 }

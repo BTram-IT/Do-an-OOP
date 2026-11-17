@@ -1,25 +1,25 @@
 # Hướng dẫn bộ dữ liệu test đồ án
 
-Mốc dữ liệu: **2026-11-15**. Dữ liệu giả lập bằng tiếng Việt, UTF-8, đúng định dạng các lớp đọc file hiện tại. Bộ này đã được cài vào `data/`; không cần import thủ công hay thay mã nguồn.
+Mốc dữ liệu gốc: **2026-11-15**, bổ sung **2026-11-17**. Dữ liệu giả lập bằng tiếng Việt, UTF-8, đúng định dạng các lớp đọc file hiện tại. Bộ này đã được cài vào `data/`; không cần import thủ công hay thay mã nguồn. Đợt bổ sung tăng ít nhất 30% số bản ghi của từng loại, làm tròn lên, giữ nguyên dữ liệu đã có. Xem [dữ liệu bổ sung và sửa hóa đơn nhập](DU_LIEU_BO_SUNG_VA_SUA_HOA_DON_NHAP.md).
 
 ## 1. Số lượng và vị trí
 
 | Nội dung | Số lượng | File đang được chương trình đọc |
 |---|---:|---|
-| Sản phẩm | **100**, gồm 50 thức ăn + 50 đồ uống | `data/sanpham.txt` |
-| Nhà cung cấp | **10**, gồm 8 hoạt động + 2 đã xóa | `data/nhacungcap.txt` |
-| Hóa đơn bán | **120** | `data/hoadon.txt`, dòng `HDBAN` |
-| Hóa đơn nhập | **20** | `data/hoadon.txt`, dòng `HDNHAP` |
-| Chi tiết bán | **377** | Dòng `CTBAN` trong `hoadon.txt` |
-| Chi tiết nhập | **93** | Dòng `CTNHAP` trong `hoadon.txt` |
-| Khách hàng | **60**, gồm 55 hoạt động + 5 đã xóa | `data/khachhang.txt` |
-| Tài khoản | **15**: 10 nhân viên, 3 quản lý, 2 giám đốc | `data/nhanvien.txt` |
-| Khuyến mãi | **18**: 6 mua tặng, 6 phần trăm, 6 trực tiếp | `data/khuyenmai.txt` |
-| Liên kết sản phẩm–khuyến mãi | **120** | `data/sanphamkhuyenmai.txt` |
+| Sản phẩm | **133**, gồm 68 thức ăn + 65 đồ uống | `data/sanpham.txt` |
+| Nhà cung cấp | **13**, gồm 10 hoạt động + 3 đã xóa | `data/nhacungcap.txt` |
+| Hóa đơn bán | **159** | `data/hoadon.txt`, dòng `HDBAN` |
+| Hóa đơn nhập | **26** | `data/hoadon.txt`, dòng `HDNHAP` |
+| Chi tiết bán | **494** | Dòng `CTBAN` trong `hoadon.txt` |
+| Chi tiết nhập | **121** | Dòng `CTNHAP` trong `hoadon.txt` |
+| Khách hàng | **78**, gồm 71 hoạt động + 7 đã xóa | `data/khachhang.txt` |
+| Tài khoản | **20**: 13 nhân viên, 4 quản lý, 3 Admin | `data/nhanvien.txt` |
+| Khuyến mãi | **24**: 8 mua tặng, 8 phần trăm, 8 trực tiếp | `data/khuyenmai.txt` |
+| Liên kết sản phẩm–khuyến mãi | **156** | `data/sanphamkhuyenmai.txt` |
 
 `hoadonban.txt`, `hoadonnhap.txt` và `doitac.txt` cũ được giữ nguyên. Luồng hiện tại trong `Giaodien.docDuLieu()` dùng `hoadon.txt` và `nhacungcap.txt`, không dùng ba file cũ này.
 
-Trong phiếu nhập có thêm **5 hồ sơ sản phẩm mới nhúng bằng `SPMOI`**, chưa nằm trong 100 sản phẩm danh mục. Bốn hồ sơ ở phiếu chờ duyệt, một hồ sơ ở phiếu đã hủy. Chỉ khi duyệt thì sản phẩm mới được đưa vào kho.
+Hóa đơn cũ vẫn giữ **5 hồ sơ nhúng bằng `SPMOI`** để đọc lịch sử; mã TA051 đã có trong danh mục. Với luồng hiện tại, sản phẩm mới được tạo trước với tồn kho 0, phiếu nhập được tách theo nhà cung cấp và chỉ cộng kho khi Admin/Quản lý duyệt phiếu đã thanh toán.
 
 ## 2. Đăng nhập và cách chạy
 
@@ -33,14 +33,14 @@ Chạy `giaodien.Main` trong IntelliJ; working directory là thư mục gốc c�
 | `nhanvien2` | NV002 | Nhân viên mới, vào làm hôm qua |
 | `nhanvien3` … `nhanvien8` | NV003 … NV008 | Đang hoạt động, ngày vào làm/lương khác nhau |
 | `nhanvien6` | NV006 | Lương cơ bản 0 để thử giá trị biên |
-| `nhanvien7`, `nhanvien8` | NV007, NV008 | Có 2 đề xuất sa thải chờ giám đốc xử lý |
+| `nhanvien7`, `nhanvien8` | NV007, NV008 | Có 2 đề xuất sa thải chờ Admin xử lý |
 | `nhanvien9`, `nhanvien10` | NV009, NV010 | Đã nghỉ việc, đăng nhập phải bị từ chối |
 | `quanly`, `quanly2` | QL001, QL002 | Quản lý hoạt động |
 | `quanly3` | QL003 | Quản lý đã bị vô hiệu hóa |
-| `giamdoc` | GD001 | Giám đốc hoạt động |
-| `giamdoc2` | GD002 | Giám đốc đã bị vô hiệu hóa |
+| `admin` | AD001 | Admin hoạt động |
+| `admin2` | AD002 | Admin đã bị vô hiệu hóa |
 
-Menu nhân viên: `1` kho, `2` thu ngân, `3` đăng xuất. Menu thu ngân: `1` khách hàng, `2` lập hóa đơn, `3` quản lý hóa đơn bán, `4` khuyến mãi, `0` quay lại. Quản lý có menu danh mục/báo cáo; giám đốc có menu nhân sự/báo cáo/duyệt nhập.
+Menu nhân viên: `1` kho, `2` thu ngân, `3` đăng xuất. Menu thu ngân: `1` khách hàng, `2` lập hóa đơn, `3` quản lý hóa đơn bán, `4` khuyến mãi, `0` quay lại. Admin và Quản lý có đầy đủ menu nghiệp vụ; riêng Admin quản trị mọi tài khoản và quyết định sa thải. Xem [phân quyền Admin](PHAN_QUYEN_ADMIN.md) để biết menu và giới hạn từng vai trò.
 
 ## 3. Sản phẩm và khách hàng tiêu biểu
 
@@ -56,9 +56,9 @@ Menu nhân viên: `1` kho, `2` thu ngân, `3` đăng xuất. Menu thu ngân: `1`
 | TA008, DU008 | Tồn 0 | Từ chối bán |
 | TA009, DU009 | Tồn đúng 10 | Xuất hiện trong báo cáo sắp hết (<=10) |
 | TA010 | Giá 100.000đ, VAT 0%, không khuyến mãi | Dễ kiểm tra tích điểm và đổi điểm |
-| TA041 … TA045, DU041 … DU045 | 10 sản phẩm chờ duyệt | Không được bán |
+| TA041 … TA045, DU041 … DU045 | 10 mặt hàng trước đây có cờ chờ duyệt | Nay kiểm tra bán theo tồn kho, hạn sử dụng và cờ xóa |
 | TA046 … TA048, DU046 … DU047 | 5 sản phẩm đã xóa | Không được bán; dữ liệu lịch sử vẫn đọc được |
-| TA049, TA050, DU048 … DU050 | 5 sản phẩm đã hết hạn | Kiểm tra trả false và chuyển tồn hết hạn |
+| TA049, TA050, DU048 … DU050 | 5 sản phẩm đã hết hạn | Kiểm tra trả false và loại tồn hết hạn về 0 |
 | KH001, KH005 | 0 điểm | Không đề nghị sử dụng điểm |
 | KH002 | 5 điểm | Thử dùng 2 điểm hoặc nhập vượt 5 |
 | KH003 | 300 điểm còn lại sau lịch sử mua | Thử dùng điểm đủ một phần/toàn bộ hóa đơn |
@@ -111,7 +111,7 @@ Giao diện hiện tại không có nút tiếp tục thanh toán mọi hóa đ�
 
 Đặt lại bộ test trước khi lặp chuỗi này để điểm và tồn khớp đúng con số ban đầu.
 
-## 5. Hóa đơn nhập và duyệt sản phẩm mới
+## 5. Hóa đơn nhập và cập nhật tồn kho
 
 | Mã | Tình huống |
 |---|---|
@@ -123,16 +123,16 @@ Giao diện hiện tại không có nút tiếp tục thanh toán mọi hóa đ�
 | HDN019 | Phiếu hàng có sẵn đã hủy, không được duyệt |
 | HDN020 | Phiếu đã hủy có hồ sơ mới TA053, không được thêm vào kho |
 
-Đăng nhập quản lý/giám đốc → menu duyệt nhập → nhập mã phiếu → xác nhận duyệt. Với sản phẩm mới còn có bước chọn duyệt từng hồ sơ. Sau khi duyệt HDN016, danh mục tăng từ 100 lên 101 và TA051 có tồn 30; duyệt lại phải bị từ chối. Từ chối HDN017 giữ danh mục 100 nếu thử trên bộ gốc. Duyệt HDN018 trên bộ gốc tăng lên 102.
+Đăng nhập quản lý/Admin → menu duyệt nhập → chọn phiếu theo STT → xác nhận duyệt. Chỉ duyệt một lần cho cả phiếu, không duyệt riêng từng sản phẩm. Hồ sơ mới nằm trong file hóa đơn cũ vẫn được đọc và đưa vào danh mục tồn 0 trước khi cộng lượng nhập trên phiếu. Sau khi duyệt HDN016, danh mục tăng từ 100 lên 101 và TA051 có tồn 30; duyệt lại phải bị từ chối. Hủy xác nhận duyệt HDN017 giữ danh mục 100 nếu thử trên bộ gốc. Duyệt HDN018 trên bộ gốc tăng lên 102.
 
-Mã sản phẩm tự sinh tiếp theo là TA051/DU051, đang được hồ sơ phiếu chờ duyệt sử dụng. Nếu thử thêm sản phẩm thủ công trước khi duyệt, nên chọn TA060/DU060 để không tạo trùng với các hồ sơ này. Mã tự sinh khác: NV011, KH061, NCC011, HDB121, HDN021, KM019.
+Mã sản phẩm tự sinh tiếp theo là TA051/DU051. Khi tạo danh mục mới, tồn ban đầu luôn là 0; sau đó nhân viên nhập hàng bằng mã đã có. Nếu mã đã được tạo trong danh mục, phiếu cũ sẽ dùng mặt hàng hiện có thay vì tạo trùng. Mã tự sinh khác: NV011, KH061, NCC011, HDB121, HDN021, KM019.
 
 ## 6. Khuyến mãi, nhân sự và báo cáo
 
 - KM001 … KM006: mua tặng. KM007 … KM012: giảm phần trăm. KM013 … KM018: giảm trực tiếp.
 - Mỗi nhóm có chương trình đang hiệu lực, hết hạn, bắt đầu ngày mai và chỉ có hiệu lực trong ngày tạo dữ liệu. KM004/KM010/KM016 hết hạn; KM005/KM011/KM017 chưa bắt đầu; KM003/KM009/KM015 có hiệu lực đúng ngày tạo dữ liệu.
 - Có sản phẩm gắn nhiều chương trình để kiểm tra chọn ưu đãi có giá trị lớn nhất. TA010 không gắn chương trình để thử giá gốc.
-- NV007, NV008 có đề xuất sa thải. Dùng `giamdoc` để thử phê duyệt/từ chối; khôi phục bộ gốc giữa hai nhánh nếu cần.
+- NV007, NV008 có đề xuất sa thải. Dùng `admin` để thử phê duyệt/từ chối; khôi phục bộ gốc giữa hai nhánh nếu cần.
 - Ngày vào làm và lương khác nhau phục vụ thử bảng lương/thâm niên; NV006 có lương cơ bản 0, NV009/NV010 đã nghỉ để kiểm tra báo cáo có lọc trạng thái hay không.
 - Hóa đơn trải các mốc 29/02/2024, cuối năm 2025, đầu năm 2026, ranh giới quý I/II/III/IV, đầu/cuối tháng và ngày tạo dữ liệu.
 
@@ -174,7 +174,7 @@ Tồn kho trong file là ảnh chụp **đã phản ánh** các giao dịch hoà
 
 - Biên dịch toàn bộ 39 file Java hiện có thành công; mã nguồn không sửa.
 - **19 nhóm kiểm tra, 2.192 điều kiện, 0 thất bại** khi nạp/thử trên bản sao: số lượng, liên kết, nhân viên vào làm trước ngày lập, tổng tiền toàn bộ 140 hóa đơn, 25 dòng, thanh toán/điểm/quà tặng, duyệt/từ chối nhập, đề xuất sa thải, hiển thị và các báo cáo.
-- Qua `giaodien.Main`: đăng nhập/đăng xuất đủ `nhanvien`, `quanly`, `giamdoc`; nạp đủ 100 sản phẩm và 140 hóa đơn, không có thông báo lỗi/cảnh báo nạp.
+- Qua `giaodien.Main`: đăng nhập/đăng xuất đủ `nhanvien`, `quanly`, `admin`; nạp đủ 100 sản phẩm và 140 hóa đơn, không có thông báo lỗi/cảnh báo nạp.
 - Các lần thử làm thay đổi kho/điểm/trạng thái chỉ chạy trên bản sao tạm, không áp dụng vào bộ `data/` bàn giao.
 
 **Lỗi chương trình đã biết, không phải lỗi bộ dữ liệu:** `DSHoadon.ghiFile()` hiện ghi ra `hoadon.txt.tmp` nhưng thiếu bước thay file chính. Vì vậy dữ liệu ban đầu nạp đúng, nhưng hóa đơn mới sau thao tác UI có thể chưa xuất hiện khi mở lại. Loader cũng chưa phục hồi các cột ngân hàng/tiền khách đưa mở rộng. Hai điểm này cần được tính đến khi kiểm tra hàm lưu/khôi phục; tác vụ tạo dữ liệu không sửa mã nghiệp vụ.
@@ -200,3 +200,21 @@ Expand-Archive -LiteralPath 'docs/SAO_LUU_DATA_TRUOC_BO_TEST_20261115_173521.zip
 ```
 
 Không cần giữ thư mục biên dịch hoặc script sinh dữ liệu để chạy đồ án; chỉ cần `src/`, các file `data/` và cấu hình IntelliJ đang có. Các công cụ tạm đã được dọn sau khi kiểm tra.
+
+
+Quy trình mới đã bỏ bộ đếm khởi tạo, số lượng hết hạn tích lũy và trạng thái duyệt sản phẩm. Chi tiết định dạng file và kiểm tra: [SAN_PHAM_VA_TON_KHO.md](SAN_PHAM_VA_TON_KHO.md).
+
+
+## Cập nhật nhập hàng theo NCC
+
+Sản phẩm có thêm `maNCC` và cột hiển thị NCC. Dữ liệu cũ thiếu NCC được chọn một NCC đang hợp tác khi nhập thêm hàng lần đầu. Menu Kho → `1` nay mở nhập hàng theo đề xuất/thêm mới/sửa danh sách rồi gom thành từng phiếu theo NCC; không phải nhập mã phiếu và chọn NCC trước như luồng cũ. Từng phiếu phải thanh toán thành công mới in/lưu hóa đơn, sau đó chờ duyệt để cộng kho. Menu chỉnh sửa có `6` thanh toán và `7` xem danh sách mặt hàng. Xem [NHAP_HANG_THEO_NHA_CUNG_CAP.md](NHAP_HANG_THEO_NHA_CUNG_CAP.md) để dùng luồng hiện tại.
+
+
+## Cập nhật nhập bổ sung không theo lô
+
+Luồng mới chỉ hỏi số lượng và giá nhập. Cùng mã sản phẩm được cộng dồn một dòng, lấy đơn giá/VAT lần nhập cuối. Khi duyệt phiếu, NSX mới bằng ngày duyệt; HSD mới bằng NSX mới cộng số ngày sử dụng đã có (`HSD cũ - NSX cũ`). Ngày áp dụng chung cho sản phẩm; không giữ hạn sớm nhất giữa các lô. Lịch sử hóa đơn cũ vẫn được đọc nguyên các dòng để bảo toàn tiền hàng. Danh sách sản phẩm bổ sung NSX và HSD. Xem [SAN_PHAM_VA_TON_KHO.md](SAN_PHAM_VA_TON_KHO.md).
+
+
+## Thống kê và xử lý hạn sử dụng tại kho
+
+Menu Kho bổ sung `9` thống kê hết hạn, `10` thống kê sắp hết hạn (0-30 ngày), `11` áp dụng giảm giá cận hạn (Admin/Quản lý), `12` loại bỏ lượng tồn hết hạn sau xác nhận. Xem báo cáo hoặc tồn kho không tự loại hàng. Khi duyệt nhập bổ sung: hàng cũ hết hạn thì bỏ lượng cũ, chỉ nhận lượng mới; còn hạn thì cộng cả hai. Xem [QUAN_LY_HAN_SU_DUNG_KHO.md](QUAN_LY_HAN_SU_DUNG_KHO.md).

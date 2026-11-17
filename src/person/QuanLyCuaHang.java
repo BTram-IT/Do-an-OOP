@@ -1,5 +1,7 @@
 package person;
 
+import util.BangConsole;
+
 import java.time.DateTimeException;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
@@ -48,7 +50,11 @@ public class QuanLyCuaHang extends Nguoidung implements Thongke {
 
     @Override
     public String[] getQuyenHan() {
-        return new String[] { "QUAN_LY_KHO", "DUYET_HOA_DON", "DUYET_SAN_PHAM", "TINH_LUONG_NHAN_VIEN", "XEM_THONG_KE_DOANH_THU" };
+        return new String[]{"QUYEN_NHAP_KHO", "QUYEN_BAN_HANG", "QUYEN_KIEM_KE_KHO", "QUYEN_TRA_CUU",
+                "QUAN_LY_KHO", "QUAN_LY_SAN_PHAM", "QUAN_LY_KHUYEN_MAI", "QUAN_LY_NHA_CUNG_CAP",
+                "QUAN_LY_KHACH_HANG", "QUAN_LY_NHAN_VIEN", "DE_XUAT_SA_THAI",
+                "DUYET_HOA_DON", "SUA_HOA_DON", "HUY_HOA_DON",
+                "TINH_LUONG_NHAN_VIEN", "XEM_THONG_KE_DOANH_THU"};
     }
 
     @Override
@@ -66,6 +72,10 @@ public class QuanLyCuaHang extends Nguoidung implements Thongke {
     }
 
     public double tinhLuongNhanVien(NhanVien nv) {
+        return tinhLuongNhanVien(nv, true);
+    }
+
+    private double tinhLuongNhanVien(NhanVien nv, boolean hienThi) {
         if (nv == null) { throw new IllegalArgumentException("[Lỗi] Nhân viên không được để trống khi tính lương!"); }
         double luongCoBan = nv.getLuongCoBan();
         long soThangLamViec = (nv.getNgayVaoLam() != null) ? ChronoUnit.MONTHS.between(nv.getNgayVaoLam(), LocalDate.now()) : 0;
@@ -73,28 +83,23 @@ public class QuanLyCuaHang extends Nguoidung implements Thongke {
         long soLanTangLuong = soThangLamViec / 6;
         double tienThuongThamNien = soLanTangLuong * 500000.0;
         double tongLuong = luongCoBan + tienThuongThamNien;
-        System.out.println("\n--------------------------------------------------");
-        System.out.println("[BẢNG TÍNH LƯƠNG NHÂN VIÊN] " + nv.getTenND() + " [" + nv.getMaND() + "]");
-        System.out.println("- Ngày vào làm: " + nv.getNgayVaoLam() + " (" + soThangLamViec + " tháng cống hiến)");
-        System.out.printf("- Lương cơ bản: %,.0f VND\n", luongCoBan);
-        System.out.println("- Số lần tăng thâm niên (mỗi 6 tháng): " + soLanTangLuong + " lần (+ " + String.format("%,.0f", tienThuongThamNien) + " VND)");
-        System.out.println("[Tổng lĩnh] " + String.format("%,.0f VND", tongLuong));
-        System.out.println("--------------------------------------------------");
+        if (hienThi) {
+            System.out.println("\n===== BẢNG TÍNH LƯƠNG NHÂN VIÊN =====");
+            System.out.println(BangConsole.thongTin(
+                    new String[]{"Mã nhân viên", "Họ tên", "Ngày vào làm", "Tháng cống hiến", "Lương cơ bản",
+                            "Số lần tăng thâm niên (mỗi 6 tháng)", "Thưởng thâm niên", "Tổng lĩnh"},
+                    nv.getMaND(), nv.getTenND(), Ktradulieu.dinhDangNgay(nv.getNgayVaoLam()), soThangLamViec,
+                    Ktradulieu.dinhDangTien(luongCoBan), soLanTangLuong,
+                    Ktradulieu.dinhDangTien(tienThuongThamNien), Ktradulieu.dinhDangTien(tongLuong)));
+        }
         return tongLuong;
     }
 
     public boolean saThaiNhanVien(DSNhanVien dsNV, String maNV) {
-        System.out.println("[Lỗi] BẠN KHÔNG CÓ QUYỀN! Quản lý không có quyền sa thải nhân viên. Quyền hạn thuộc về GIÁM ĐỐC.");
+        System.out.println("[Lỗi] BẠN KHÔNG CÓ QUYỀN! Quản lý không có quyền sa thải nhân viên. Quyền hạn thuộc về Admin.");
         return false;
     }
 
-    public void duyetSanPhamMoi(DSSanPham dsSP, SanPham spMoi) {
-        if (this.isDaXoa()) { throw new IllegalStateException("[TỪ CHỐI TRUY CẬP] Tài khoản quản lý đã bị vô hiệu hóa!"); }
-        if (dsSP == null || spMoi == null) { throw new IllegalArgumentException("[Lỗi] Dữ liệu sản phẩm duyệt không được null!"); }
-        spMoi.setTrangThaiDuyet("Đã duyệt");
-        dsSP.themSP(spMoi);
-        System.out.println("[Thành công] Quản lý [" + this.tenND + "] đã xem xét và duyệt thêm sản phẩm mới vào danh mục: " + spMoi.getTenSP() + " [" + spMoi.getMaSP() + "].");
-    }
 
     public boolean duyetHoaDon(Scanner sc, DSHoadon dsHD, DSSanPham dsSP) {
         if (this.isDaXoa()) { System.out.println("[TỪ CHỐI TRUY CẬP] Tài khoản quản lý đã bị vô hiệu hóa!"); return false; }
@@ -188,8 +193,7 @@ public class QuanLyCuaHang extends Nguoidung implements Thongke {
 
         System.out.println("\n========== BÁO CÁO SẢN PHẨM BÁN ĐƯỢC ==========");
         if (soLuongBan.isEmpty()) { System.out.println("[Thông báo] Chưa có sản phẩm nào được bán thành công."); return; }
-        System.out.printf("%-5s | %-12s | %-25s | %-12s | %-12s%n", "STT", "MÃ SP", "TÊN SẢN PHẨM", "SL BÁN", "SL TẶNG");
-        System.out.println("--------------------------------------------------------------------------");
+        BangConsole bang = new BangConsole("STT", "MÃ SP", "TÊN SẢN PHẨM", "SL BÁN", "SL TẶNG");
 
         int stt = 1, tongSoLuongBan = 0, tongSoLuongTang = 0;
         for (String maSP : soLuongBan.keySet()) {
@@ -197,9 +201,9 @@ public class QuanLyCuaHang extends Nguoidung implements Thongke {
             int slTang = soLuongTang.getOrDefault(maSP, 0);
             tongSoLuongBan += slBan;
             tongSoLuongTang += slTang;
-            System.out.printf("%-5d | %-12s | %-25s | %-12d | %-12d%n", stt++, maSP, tenSanPham.get(maSP), slBan, slTang);
+            bang.themDong(stt++, maSP, tenSanPham.get(maSP), slBan, slTang);
         }
-        System.out.println("--------------------------------------------------------------------------");
+        System.out.println(bang);
         System.out.println("- Số hóa đơn bán thành công: " + tongSoHoaDon);
         System.out.println("- Tổng số lượng sản phẩm bán: " + tongSoLuongBan);
         System.out.println("- Tổng số lượng sản phẩm tặng: " + tongSoLuongTang);
@@ -295,6 +299,7 @@ public class QuanLyCuaHang extends Nguoidung implements Thongke {
         int tongNhanVien = 0;
 
         System.out.println("\n========== BÁO CÁO NHÂN VIÊN ==========");
+        BangConsole bang = new BangConsole("STT", "MÃ NV", "HỌ TÊN", "NGÀY VÀO LÀM", "LƯƠNG CƠ BẢN").canPhai(4);
 
         for (int i = 0; i < dsNV.getSoLuong(); i++) {
 
@@ -310,14 +315,11 @@ public class QuanLyCuaHang extends Nguoidung implements Thongke {
 
             tongNhanVien++;
 
-            System.out.println("--------------------------------------");
-            System.out.println("Mã nhân viên: " + nv.getMaND());
-            System.out.println("Họ tên: " + nv.getTenND());
-            System.out.println("Ngày vào làm: " + nv.getNgayVaoLam());
-            System.out.printf("Lương cơ bản: %,.0f VND%n", nv.getLuongCoBan());
+            bang.themDong(tongNhanVien, nv.getMaND(), nv.getTenND(),
+                    Ktradulieu.dinhDangNgay(nv.getNgayVaoLam()), Ktradulieu.dinhDangTien(nv.getLuongCoBan()));
         }
 
-        System.out.println("--------------------------------------");
+        System.out.println(bang);
         System.out.println("Tổng số nhân viên: " + tongNhanVien);
         System.out.println("======================================");
     }
@@ -332,6 +334,8 @@ public class QuanLyCuaHang extends Nguoidung implements Thongke {
         int soNhanVien = 0;
 
         System.out.println("\n========== BÁO CÁO BẢNG LƯƠNG ==========");
+        BangConsole bang = new BangConsole("STT", "MÃ NV", "HỌ TÊN", "LƯƠNG CƠ BẢN", "THƯỞNG THÂM NIÊN", "TỔNG LĨNH")
+                .canPhai(3, 4, 5);
 
         for (int i = 0; i < dsNV.getSoLuong(); i++) {
 
@@ -346,9 +350,13 @@ public class QuanLyCuaHang extends Nguoidung implements Thongke {
             if (nv == null) continue;
 
             soNhanVien++;
-            tongQuyLuong += tinhLuongNhanVien(nv);
+            double tongLuong = tinhLuongNhanVien(nv, false);
+            tongQuyLuong += tongLuong;
+            bang.themDong(soNhanVien, nv.getMaND(), nv.getTenND(), Ktradulieu.dinhDangTien(nv.getLuongCoBan()),
+                    Ktradulieu.dinhDangTien(tongLuong - nv.getLuongCoBan()), Ktradulieu.dinhDangTien(tongLuong));
         }
 
+        System.out.println(bang);
         System.out.println("\n========== TỔNG KẾT BẢNG LƯƠNG ==========");
         System.out.println("Số nhân viên tính lương: " + soNhanVien);
         System.out.printf("Tổng quỹ lương: %,.0f VND%n", tongQuyLuong);
@@ -432,10 +440,7 @@ public class QuanLyCuaHang extends Nguoidung implements Thongke {
 
         // 1. Danh sách sản phẩm an toàn
         System.out.println("\n========== DANH SÁCH SẢN PHẨM AN TOÀN ==========");
-        System.out.printf("%-5s | %-12s | %-25s | %-12s | %-12s%n",
-                "STT", "MÃ SP", "TÊN SẢN PHẨM", "TỒN KHO", "ĐƠN VỊ");
-
-        System.out.println("--------------------------------------------------------------------------");
+        BangConsole bangAnToan = new BangConsole("STT", "MÃ SP", "TÊN SẢN PHẨM", "TỒN KHO", "ĐƠN VỊ");
 
         for (int i = 0; i < dsSP.getSoLuong(); i++) {
             SanPham sp = dsSP.get(i);
@@ -448,25 +453,18 @@ public class QuanLyCuaHang extends Nguoidung implements Thongke {
                 anToan++;
                 tongMatHang++;
 
-                System.out.printf("%-5d | %-12s | %-25s | %-12d | %-12s%n",
-                        anToan,
-                        sp.getMaSP(),
-                        sp.getTenSP(),
-                        sp.getSoLuongTon(),
-                        sp.getDonViTinh());
+                bangAnToan.themDong(anToan, sp.getMaSP(), sp.getTenSP(), sp.getSoLuongTon(), sp.getDonViTinh());
             }
         }
 
+        System.out.println(bangAnToan);
         if (anToan == 0) {
             System.out.println("Không có sản phẩm nào đang ở mức tồn kho an toàn.");
         }
 
         // 2. Danh sách sản phẩm cần nhập bổ sung
         System.out.println("\n========== DANH SÁCH SẢN PHẨM CẦN NHẬP BỔ SUNG ==========");
-        System.out.printf("%-5s | %-12s | %-25s | %-12s | %-12s%n",
-                "STT", "MÃ SP", "TÊN SẢN PHẨM", "TỒN KHO", "ĐƠN VỊ");
-
-        System.out.println("--------------------------------------------------------------------------");
+        BangConsole bangCanNhap = new BangConsole("STT", "MÃ SP", "TÊN SẢN PHẨM", "TỒN KHO", "ĐƠN VỊ");
 
         for (int i = 0; i < dsSP.getSoLuong(); i++) {
             SanPham sp = dsSP.get(i);
@@ -479,15 +477,11 @@ public class QuanLyCuaHang extends Nguoidung implements Thongke {
                 sapHet++;
                 tongMatHang++;
 
-                System.out.printf("%-5d | %-12s | %-25s | %-12d | %-12s%n",
-                        sapHet,
-                        sp.getMaSP(),
-                        sp.getTenSP(),
-                        sp.getSoLuongTon(),
-                        sp.getDonViTinh());
+                bangCanNhap.themDong(sapHet, sp.getMaSP(), sp.getTenSP(), sp.getSoLuongTon(), sp.getDonViTinh());
             }
         }
 
+        System.out.println(bangCanNhap);
         if (sapHet == 0) {
             System.out.println("Không có sản phẩm nào cần nhập bổ sung.");
         }
@@ -541,8 +535,12 @@ public class QuanLyCuaHang extends Nguoidung implements Thongke {
     }
 
     public void xuatThongTin() {
-        System.out.printf("%-10s | %-22s | %-12s | %-15s | Khu vực: %s | Hệ số: %.2f | Trạng thái: %s\n",
-                getMaND(), getTenND(), getSoDienThoai(), getVaiTro(), khuVucQuanLy, heSoTrachNhiem, (daXoa ? "ĐÃ NGHỈ VIỆC" : "HOẠT ĐỘNG"));
+        System.out.println(this);
+    }
+
+    @Override
+    protected String layChiTietBang() {
+        return BangConsole.thongTin(new String[]{"Khu vực", "Hệ số trách nhiệm"}, khuVucQuanLy, heSoTrachNhiem);
     }
 
     public String toFileString() {

@@ -1,8 +1,11 @@
 package hoadon;
 
+import util.BangConsole;
+import util.HienThiBang;
+
 import util.Ktradulieu;
 
-public abstract class CTHoaDon {
+public abstract class CTHoaDon implements HienThiBang {
 
     protected String maHD;
     protected String maSP;
@@ -86,5 +89,23 @@ public abstract class CTHoaDon {
             throw new IllegalArgumentException("[Lỗi] Đơn giá phải > 0! Nhận: " + donGia);
         }
         this.donGia = donGia;
+    }
+
+    public void kiemTraDuLieuFile() {
+        for (String truong : new String[]{maHD, maSP, tenSP}) {
+            if (truong == null || truong.isBlank() || truong.contains(";")
+                    || truong.contains("\n") || truong.contains("\r")) {
+                throw new IllegalArgumentException("Thông tin chi tiết hóa đơn không hợp lệ để lưu file!");
+            }
+        }
+        if (soLuong <= 0 || !Double.isFinite(donGia) || donGia <= 0
+                || !Double.isFinite(tinhThanhTien()) || tinhThanhTien() < 0) {
+            throw new IllegalArgumentException("Số lượng, đơn giá hoặc thành tiền không hợp lệ!");
+        }
+    }
+
+    @Override
+    public String toString() {
+        return BangConsole.tuDoiTuong(this);
     }
 }

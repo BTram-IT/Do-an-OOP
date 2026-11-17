@@ -1,16 +1,21 @@
 package khuyenmai;
 
+import util.BangConsole;
+import util.HienThiBang;
+
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.time.format.ResolverStyle;
 import java.util.Scanner;
 import util.Ktradulieu;
 
-public abstract class Khuyenmai {
+public abstract class Khuyenmai implements HienThiBang {
 
     protected String maKM;
     protected String loaiKM;
     protected LocalDate ngayBatDau;
     protected LocalDate ngayKetThuc;
+    protected long mucChiToiThieu;
 
     private static final DateTimeFormatter DINH_DANG_NGAY = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
@@ -139,6 +144,35 @@ public abstract class Khuyenmai {
         return !ngayKiemTra.isBefore(ngayBatDau) && !ngayKiemTra.isAfter(ngayKetThuc);
     }
 
+    public boolean kiemTraHetHan(LocalDate ngayKiemTra) {
+        return ngayKiemTra != null && ngayKetThuc != null && ngayKiemTra.isAfter(ngayKetThuc);
+    }
+
+    public boolean chuaBatDau(LocalDate ngayKiemTra) {
+        return ngayKiemTra != null && ngayBatDau != null && ngayKiemTra.isBefore(ngayBatDau);
+    }
+
+    public long getMucChiToiThieu() {
+        return mucChiToiThieu;
+    }
+
+    public void setMucChiToiThieu(long mucChiToiThieu) {
+        if (mucChiToiThieu < 0) {
+            throw new IllegalArgumentException("[Lỗi] Mức chi tối thiểu không được âm!");
+        }
+        this.mucChiToiThieu = mucChiToiThieu;
+    }
+
+    // Xét tiền hàng của một dòng trước giảm giá và thuế, không cộng giá trị quà tặng.
+    public boolean duMucChiToiThieu(long giaBan, int soLuong) {
+        if (giaBan <= 0 || soLuong <= 0) return false;
+        try {
+            return Math.multiplyExact(giaBan, (long) soLuong) >= mucChiToiThieu;
+        } catch (ArithmeticException e) {
+            throw new IllegalArgumentException("[Lỗi] Tiền hàng vượt giới hạn tính khuyến mãi!", e);
+        }
+    }
+
     // Kiểm tra điều kiện áp dụng khuyến mãi cho sản phẩm
     public boolean kiemTraApDung(String maSP, DSSanPhamKhuyenMai dsSPKM) {
         if (maSP == null || maSP.trim().isEmpty()) {
@@ -161,7 +195,7 @@ public abstract class Khuyenmai {
 
     // Tính tổng tiền giảm của một dòng sản phẩm
     public long tinhTongTienGiam(long giaBan, int soLuong) {
-        if (giaBan <= 0 || soLuong <= 0) {
+        if (!duMucChiToiThieu(giaBan, soLuong)) {
             return 0;
         }
 
@@ -196,7 +230,7 @@ public abstract class Khuyenmai {
      * Dùng để so sánh các khuyến mãi cùng áp dụng cho một sản phẩm và chọn cái có lợi nhất cho khách.
      */
     public long tinhGiaTriUuDai(long giaBan, int soLuong) {
-        if (giaBan <= 0 || soLuong <= 0) {
+        if (!duMucChiToiThieu(giaBan, soLuong)) {
             return 0;
         }
 
@@ -273,6 +307,10 @@ public abstract class Khuyenmai {
         }
 
         kiemTraKhoangNgay(ngayBatDau, ngayKetThuc);
+        chuanHoaMaKM(maKM);
+        if (loaiKM.contains(";") || loaiKM.contains("\n") || loaiKM.contains("\r")) {
+            throw new IllegalStateException("[Lỗi] Loại khuyến mãi không được chứa dấu ';' hoặc xuống dòng!");
+        }
     }
 
     // Chuyển thành một dòng dữ liệu để ghi file
@@ -286,16 +324,62 @@ public abstract class Khuyenmai {
                 ngayKetThuc.format(DINH_DANG_NGAY));
     }
 
+    /** Đọc cả định dạng cũ và các cột điều kiện bổ sung ở cuối dòng. */
+    public static Khuyenmai tuDongFile(String dong) {
+        if (dong == null || dong.trim().isEmpty()) {
+            throw new IllegalArgumentException("Dòng khuyến mãi không được rỗng!");
+        }
+        String[] p = dong.split(";", -1);
+        if (p.length < 6) throw new IllegalArgumentException("Không đủ trường khuyến mãi!");
+        DateTimeFormatter dinhDang = DateTimeFormatter.ofPattern("dd/MM/uuuu")
+                .withResolverStyle(ResolverStyle.STRICT);
+        LocalDate batDau = LocalDate.parse(p[3].trim(), dinhDang);
+        LocalDate ketThuc = LocalDate.parse(p[4].trim(), dinhDang);
+        Khuyenmai km;
+        if ("MUATANG".equalsIgnoreCase(p[0].trim()) && (p.length == 7 || p.length == 8)) {
+            km = new KhuyenmaiMuatang(p[1], p[2], batDau, ketThuc,
+                    Integer.parseInt(p[5].trim()), Integer.parseInt(p[6].trim()));
+            if (p.length == 8) km.setMucChiToiThieu(Long.parseLong(p[7].trim()));
+        } else if ("PHANTRAM".equalsIgnoreCase(p[0].trim()) && (p.length == 6 || p.length == 8)) {
+            KhuyenmaiPhantram kmPT = new KhuyenmaiPhantram(p[1], p[2], batDau, ketThuc,
+                    Double.parseDouble(p[5].trim()));
+            if (p.length == 8) {
+                kmPT.setMucChiToiThieu(Long.parseLong(p[6].trim()));
+                kmPT.setMucGiamToiDa(Long.parseLong(p[7].trim()));
+            }
+            km = kmPT;
+        } else if ("TRUCTIEP".equalsIgnoreCase(p[0].trim()) && (p.length == 6 || p.length == 7)) {
+            km = new KhuyenmaiTructiep(p[1], p[2], batDau, ketThuc, Long.parseLong(p[5].trim()));
+            if (p.length == 7) km.setMucChiToiThieu(Long.parseLong(p[6].trim()));
+        } else {
+            throw new IllegalArgumentException("Loại hoặc số trường khuyến mãi không hợp lệ!");
+        }
+        // Giữ tên đã lưu, kể cả tên riêng của chương trình giảm cận hạn.
+        km.setLoaiKM(p[2]);
+        km.toDongFile();
+        return km;
+    }
+
+    @Override
+    public String[] layTieuDeBang() {
+        return new String[]{"MÃ KM", "LOẠI KHUYẾN MÃI", "NGÀY BẮT ĐẦU", "NGÀY KẾT THÚC", "CHI TIẾT"};
+    }
+
+    @Override
+    public Object[] layDongBang() {
+        return new Object[]{maKM, loaiKM,
+                ngayBatDau == null ? "Chưa thiết lập" : ngayBatDau.format(DINH_DANG_NGAY),
+                ngayKetThuc == null ? "Chưa thiết lập" : ngayKetThuc.format(DINH_DANG_NGAY),
+                layChiTietBang() + (mucChiToiThieu > 0
+                        ? System.lineSeparator() + "Chi tối thiểu: " + Ktradulieu.dinhDangTien(mucChiToiThieu) : "")};
+    }
+
+    protected String layChiTietBang() {
+        return "-";
+    }
+
     @Override
     public String toString() {
-        String thoiGian;
-
-        if (ngayBatDau == null || ngayKetThuc == null) {
-            thoiGian = "Chưa thiết lập thời hạn";
-        } else {
-            thoiGian = ngayBatDau.format(DINH_DANG_NGAY) + " -> " + ngayKetThuc.format(DINH_DANG_NGAY);
-        }
-
-        return "[" + maKM + "] " + loaiKM + " | Thời gian: " + thoiGian;
+        return BangConsole.tuDoiTuong(this);
     }
 }

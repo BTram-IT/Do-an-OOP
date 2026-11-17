@@ -1,12 +1,16 @@
 package thanhtoan;
 
+import util.BangConsole;
+import util.HienThiBang;
+
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Scanner;
-import person.NhanVien;
+import java.util.NoSuchElementException;
+import person.Nguoidung;
 import util.Ktradulieu;
 
-public abstract class ThanhToan {
+public abstract class ThanhToan implements HienThiBang {
 
     public static final String CHO_THANH_TOAN = "Cho thanh toan";
     public static final String THANH_CONG = "Thanh cong";
@@ -18,6 +22,7 @@ public abstract class ThanhToan {
     protected String maNV;          // Lấy tự động từ nhân viên đang đăng nhập
     protected String trangThai;
     protected LocalDateTime ngayThanhToan;
+    protected boolean chiTien;
 
 
     public ThanhToan() {
@@ -30,7 +35,7 @@ public abstract class ThanhToan {
     }
 
 
-    public ThanhToan(String maHD, String loaiThanhToan, double soTien, NhanVien nvDangDangNhap) {
+    public ThanhToan(String maHD, String loaiThanhToan, double soTien, Nguoidung nvDangDangNhap) {
         setMaGD("TT_" + ((maHD != null && !maHD.isEmpty()) ? maHD : "GD001"));
         setLoaiThanhToan(loaiThanhToan);
         setSoTien(soTien);
@@ -48,10 +53,34 @@ public abstract class ThanhToan {
 
     public abstract boolean qTrinhThanhToan();
 
+    public void setChiTien(boolean chiTien) {
+        this.chiTien = chiTien;
+    }
+
+    /** Một lần thử thanh toán có thể thành công, bị hủy hoặc kết thúc do hết đầu vào. */
+    public boolean thucHienThanhToan(Scanner sc) {
+        if (sc == null) return false;
+        try {
+            nhap(sc);
+            return isThanhCong();
+        } catch (NoSuchElementException | IllegalStateException e) {
+            ketThuc(false);
+            System.out.println("[Thông báo] Đã dừng thanh toán, hóa đơn chưa được hoàn tất.");
+            return false;
+        }
+    }
+
+    protected void batDauThanhToan() {
+        this.trangThai = CHO_THANH_TOAN;
+        this.ngayThanhToan = null;
+    }
+
     protected boolean ketThuc(boolean thanhCong) {
         this.trangThai = thanhCong ? THANH_CONG : THAT_BAI;
         if (thanhCong) {
             this.ngayThanhToan = LocalDateTime.now();
+        } else {
+            this.ngayThanhToan = null;
         }
         return thanhCong;
     }
@@ -118,9 +147,22 @@ public abstract class ThanhToan {
     }
 
     @Override
-    public String toString() {
+    public String[] layTieuDeBang() {
+        return new String[]{"MÃ GIAO DỊCH", "PHƯƠNG THỨC", "SỐ TIỀN", "TRẠNG THÁI", "THU NGÂN", "THỜI GIAN", "CHI TIẾT"};
+    }
+
+    @Override
+    public Object[] layDongBang() {
         String ngay = (ngayThanhToan == null) ? "Chưa thanh toán" : ngayThanhToan.format(DINH_DANG_NGAY_GIO);
-        return String.format("[%s] Mã GD: %s | Số tiền: %s | Trạng thái: %s | Thu ngân: %s | Lúc: %s",
-                loaiThanhToan, maGD, Ktradulieu.dinhDangTien(soTien), trangThai, maNV, ngay);
+        return new Object[]{maGD, loaiThanhToan, Ktradulieu.dinhDangTien(soTien), trangThai, maNV, ngay, layChiTietBang()};
+    }
+
+    protected String layChiTietBang() {
+        return "-";
+    }
+
+    @Override
+    public String toString() {
+        return BangConsole.tuDoiTuong(this);
     }
 }
