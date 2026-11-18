@@ -129,6 +129,7 @@ public class QuanLyHanSuDungKhoTest {
         HoadonNhap hd = new HoadonNhap("HDN001", nhanVien(), HOM_NAY, "DangXuLy", "", "NCC001");
         hd.themCTHD(new CTHDonNhap("HDN001", kho.get(0), 3, 5000, HOM_NAY.plusDays(1)));
         hd.themCTHD(new CTHDonNhap("HDN001", kho.get(1), 1, 5000, HOM_NAY.plusDays(1)));
+        hd.khoiPhucThanhToanTuFile(hd.tinhThanhTien(), "TienMat");
         dung(!hd.duyetNhapKho(new Scanner(""), kho, new QuanLyCuaHang()) && kho.get(0).getSoLuongTon() == 7,
                 "Phiếu có dòng sai không loại tồn hết hạn của dòng trước");
     }

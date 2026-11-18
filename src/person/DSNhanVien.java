@@ -94,9 +94,8 @@ public class DSNhanVien {
     /** Thêm qua nghiệp vụ: Quản lý chỉ được tạo nhân viên thường. */
     public boolean them(Nguoidung nguoiThucHien, Nguoidung taiKhoanMoi) {
         if (nguoiThucHien == null || taiKhoanMoi == null
-                || !(nguoiThucHien.coQuyen("QUAN_TRI_TAI_KHOAN")
-                || (nguoiThucHien.coQuyen("QUAN_LY_NHAN_VIEN") && taiKhoanMoi instanceof NhanVien))) {
-            System.out.println("[Từ chối] Chỉ Admin được tạo tài khoản Quản lý hoặc Admin!");
+                || !nguoiThucHien.coQuyen("QUAN_TRI_TAI_KHOAN")) {
+            System.out.println("[Từ chối] Chỉ Admin được thêm nhân sự!");
             return false;
         }
         return them(taiKhoanMoi);
@@ -189,7 +188,7 @@ public class DSNhanVien {
             System.out.println("[TỪ CHỐI TRUY CẬP] Tài khoản không hợp lệ hoặc đã bị vô hiệu hóa!");
             return false;
         }
-        if (!laQuanLyHoacAdmin(nguoiThucHien)) {
+        if (!nguoiThucHien.coQuyen("QUAN_TRI_TAI_KHOAN")) {
             System.out.println("[TỪ CHỐI TRUY CẬP] Bạn không có quyền hạn đối với tác vụ này!");
             return false;
         }
@@ -208,35 +207,20 @@ public class DSNhanVien {
             return false;
         }
 
-        if (nguoiThucHien instanceof Admin) {
-            nv.setDaXoa(true);
-            nv.setYeuCauSaThai(null);
-            ghiFile("data/nhanvien.txt");
-
-            System.out.println("[Admin PHÊ DUYỆT] Đã sa thải nhân viên [" + maNV + "] " + nv.getTenND() + ". (Dữ liệu cũ vẫn được bảo lưu).");
-            return true;
-        }
-
-        // Quản lý: chỉ được gửi đề xuất
-        System.out.println("QUẢN LÝ KHÔNG CÓ QUYỀN SA THẢI! Bạn chỉ có thể gửi đề xuất lên Admin.");
-        if (sc == null) {
-            System.out.println("[Lỗi] Không có nguồn nhập liệu để ghi lý do đề xuất!");
-            return false;
-        }
-        String lyDo = Ktradulieu.nhapChuoiKhongRong(sc, "Nhập lý do đề xuất sa thải: ");
-        nv.setYeuCauSaThai(lyDo);
+        nv.setDaXoa(true);
+        nv.setYeuCauSaThai(null);
         ghiFile("data/nhanvien.txt");
-
-        System.out.println(" Đã gửi đề xuất sa thải nhân viên [" + maNV + "] lên Admin phê duyệt.");
-        return false;
+        System.out.println("[Thành công] Đã xóa nhân viên [" + maNV + "] " + nv.getTenND()
+                + ". Lịch sử hóa đơn vẫn được giữ lại.");
+        return true;
     }
 
     // =========================================================
     // SỬA
     // =========================================================
     public void sua(Scanner sc, Nguoidung nguoiThucHien, String maNV) {
-        if (!taiKhoanConHoatDong(nguoiThucHien) || !laQuanLyHoacAdmin(nguoiThucHien)) {
-            System.out.println("[Từ chối] Chỉ Quản lý hoặc Admin đang hoạt động được cập nhật nhân sự!");
+        if (!taiKhoanConHoatDong(nguoiThucHien) || !nguoiThucHien.coQuyen("QUAN_TRI_TAI_KHOAN")) {
+            System.out.println("[Từ chối] Chỉ Admin đang hoạt động được cập nhật nhân sự!");
             return;
         }
         Nguoidung nd = timKiemTheoMa(maNV);

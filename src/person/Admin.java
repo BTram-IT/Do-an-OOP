@@ -20,7 +20,10 @@ public class Admin extends QuanLyCuaHang {
 
     @Override
     public String[] getQuyenHan() {
-        return new String[]{"TOAN_QUYEN"};
+        return new String[]{"QUAN_TRI_TAI_KHOAN", "QUAN_LY_NHAN_VIEN", "SA_THAI_NHAN_VIEN",
+                "QUAN_LY_KHO", "QUAN_LY_SAN_PHAM", "QUAN_LY_KHUYEN_MAI", "QUAN_LY_NHA_CUNG_CAP",
+                "QUAN_LY_KHACH_HANG", "QUYEN_TRA_CUU", "QUYEN_KIEM_KE_KHO",
+                "TINH_LUONG_NHAN_VIEN", "XEM_THONG_KE_DOANH_THU"};
     }
 
     @Override

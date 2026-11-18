@@ -5,9 +5,9 @@
 ## Quy trình hiện tại
 
 1. Admin/Quản lý thêm thức ăn hoặc đồ uống vào danh mục và chọn NCC đang hợp tác. Nhân viên cũng có thể thêm mới từ luồng nhập hàng. Tồn ban đầu luôn bằng 0; màn hình tạo danh mục không hỏi số lượng.
-2. Nhân viên chọn hàng cần bổ sung hoặc tạo mặt hàng mới, nhập số lượng và giá. Hệ thống gom thành từng phiếu theo NCC của sản phẩm.
-3. Lập hoặc thanh toán hóa đơn nhập chưa làm tăng tồn kho.
-4. Admin/Quản lý xác nhận duyệt hóa đơn nhập. Chương trình kiểm tra toàn bộ phiếu trước khi cộng hàng, chống tràn số lượng và chống duyệt hai lần.
+2. Nhân viên chọn hàng cần bổ sung hoặc tạo mặt hàng mới, nhập số lượng và giá. Chọn hàng có sẵn lấy NCC từ dữ liệu. Mục `3` xem/sửa danh sách hiện tại; mục `0` gom thành từng phiếu theo NCC và yêu cầu nhập mã `HDN...` cho từng phiếu, không tự sinh mã.
+3. Người lập hoàn tất và lưu hóa đơn nhập chưa thanh toán để chờ duyệt; chưa làm tăng tồn kho.
+4. Admin/Quản lý xác nhận phiếu tại chức năng duyệt, thanh toán thành công rồi mới nhập kho và in hóa đơn. Chương trình kiểm tra toàn bộ phiếu trước khi chi tiền/cộng hàng, chống tràn số lượng, chống thanh toán và duyệt hai lần. Hủy thanh toán giữ phiếu chờ duyệt.
 5. Khi thanh toán hóa đơn bán thành công, kho giảm theo số hàng bán và hàng tặng.
 
 Không còn quyền hoặc thao tác duyệt riêng từng sản phẩm. Luồng nhập thêm hàng cho phép tạo danh mục mới tồn 0 và chọn NCC ngay; không tạo hồ sơ sản phẩm chờ duyệt riêng. Menu sửa thông tin sản phẩm không cho nhập trực tiếp số lượng tồn kho.
@@ -35,7 +35,7 @@ THUCAN;ma;ten;giaNhap;giaBan;ton;donVi;nsx;hsd;thue;thanhPhan;baoQuan;xuatXu;laD
 DOUONG;ma;ten;giaNhap;giaBan;ton;donVi;nsx;hsd;thue;dungTich;thuongHieu;huongVi;loaiDoUong;maNCC;daXoa
 ```
 
-`SanPham.tuDongFile(...)` dùng chung cho danh mục và hồ sơ đi kèm hóa đơn cũ. Bộ đọc hỗ trợ cả file 15 cột chưa có NCC, file 16 cột cũ có cột duyệt và file 16 cột mới có mã NCC. Dữ liệu mẫu giữ nguyên lượng tồn; mã NCC cũ chưa biết được để trống cho người dùng chọn khi nhập hàng, không tự đoán đối tác. Xem [luồng nhập theo NCC](NHAP_HANG_THEO_NHA_CUNG_CAP.md).
+`SanPham.tuDongFile(...)` dùng chung cho danh mục và hồ sơ đi kèm hóa đơn cũ. Bộ đọc hỗ trợ cả file 15 cột chưa có NCC, file 16 cột cũ có cột duyệt và file 16 cột mới có mã NCC. Dữ liệu mẫu đã được bổ sung NCC và các thuộc tính trống, giữ nguyên lượng tồn. Khi chạy, sản phẩm thiếu NCC hoặc có NCC không còn hợp tác phải được cập nhật ở danh mục; luồng chọn hàng không hỏi hoặc tự gán NCC. Xem [luồng nhập theo NCC và cách bổ sung dữ liệu mẫu](NHAP_HANG_THEO_NHA_CUNG_CAP.md).
 
 Hồ sơ `SPMOI` trong hóa đơn cũ vẫn được đọc/lưu để bảo toàn dữ liệu. Nếu duyệt phiếu cũ mà mặt hàng chưa có danh mục, chương trình lấy hồ sơ đó tạo danh mục với tồn 0 rồi cộng đúng lượng nhập trên phiếu. Không hỏi duyệt riêng hồ sơ. Hóa đơn đã hoàn tất hoặc đã hủy không được cộng kho lại.
 

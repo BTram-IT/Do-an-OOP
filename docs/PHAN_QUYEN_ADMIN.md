@@ -4,23 +4,23 @@ Lớp `Giamdoc` được thay bằng `Admin`. Admin kế thừa `QuanLyCuaHang` 
 
 | Chức năng | Admin | Quản lý | Nhân viên |
 | --- | --- | --- | --- |
-| Lập hóa đơn nhập, bán và thanh toán | Có | Có | Có |
+| Xem danh sách/chi tiết hóa đơn | Có | Có | Có |
+| Lập hóa đơn nhập chờ duyệt; lập và thanh toán hóa đơn bán | Không | Có | Có |
+| Thanh toán hóa đơn nhập tại bước duyệt | Không | Có | Không |
 | Tiếp nhận, thêm, sửa, tra cứu khách hàng | Có | Có | Có |
 | Xóa khách hàng | Có | Có | Không |
 | Quản lý sản phẩm | Có | Có | Tra cứu; tạo mới trong luồng nhập hàng |
 | Quản lý khuyến mãi | Có | Có | Chỉ tra cứu |
-| Nhà cung cấp | Toàn bộ | Toàn bộ | Thêm, xem, tìm kiếm |
-| Duyệt hóa đơn nhập kho | Có | Có | Không |
-| Sửa/hủy hóa đơn chưa hoàn tất | Có | Có | Không |
+| Nhà cung cấp | Toàn bộ | Toàn bộ | Không có menu quản lý NCC |
+| Duyệt hóa đơn nhập kho | Không | Có | Không |
+| Sửa/hủy hóa đơn chưa hoàn tất | Không | Có | Sửa phiếu nhập chưa thanh toán do mình lập |
 | Báo cáo kinh doanh, thuế, tồn kho, bảng lương | Có | Có | Chỉ thống kê sản phẩm bán chạy |
-| Thêm nhân viên, sửa hồ sơ/lương nhân viên thường | Có | Có | Không |
-| Đề xuất sa thải nhân viên | Có thể sa thải trực tiếp | Có | Không |
-| Chấp nhận/từ chối đề xuất sa thải | Có | Không | Không |
+| Thêm/sửa/xóa nhân viên | Có | Không | Không |
 | Thêm Admin/Quản lý, sửa thông tin Quản lý | Có | Không | Không |
 | Đặt lại mật khẩu, đổi tên đăng nhập các tài khoản | Có | Không | Không |
 | Khóa/mở khóa tài khoản, khôi phục nhân sự | Có | Không | Không |
 
-Admin có quyền `TOAN_QUYEN`; phương thức `Nguoidung.coQuyen(...)` chấp nhận mọi quyền nghiệp vụ khi tài khoản Admin đang hoạt động. Quản lý có các quyền vận hành được liệt kê trong `getQuyenHan()`. Tài khoản bị khóa không có quyền thao tác. Các menu kiểm tra quyền trước khi nhận lựa chọn; các hàm sửa/xóa/duyệt và quản trị tài khoản kiểm tra quyền người thực hiện.
+Admin dùng danh sách quyền cụ thể, không còn `TOAN_QUYEN`. Đối với hóa đơn, Admin chỉ xem: không lập, sửa, hủy, thanh toán hoặc duyệt nhập kho. Chỉ Admin được thêm/sửa/xóa nhân viên; Quản lý không có menu hoặc quyền thao tác nhân sự. Tài khoản bị khóa không có quyền. Các hàm nghiệp vụ kiểm tra quyền độc lập với menu.
 
 Toàn quyền vẫn tuân theo tính hợp lệ của nghiệp vụ: hóa đơn đã hoàn tất không được sửa/hủy; Admin không thể tự khóa tài khoản đang đăng nhập. Khi khóa/sa thải, dữ liệu tài khoản vẫn được giữ để bảo toàn lịch sử hóa đơn.
 
@@ -44,7 +44,7 @@ ADMIN;maND;tenND;taiKhoan;matKhau;soDienThoai;Admin;daXoa
 
 Tài khoản Admin mới dùng tiền tố mã `AD`. Bộ đọc vẫn hỗ trợ dòng cũ `GIAMDOC;...` và dòng bắt đầu bằng mã `GD...`: nạp thành đối tượng Admin, giữ nguyên mã, tên đăng nhập, mật khẩu và trạng thái khóa. Khi lưu lại, dòng được ghi bằng định dạng `ADMIN`. Hai trường phụ cấp/cổ phần cũ không còn được sử dụng. Tài khoản cũ mang tên `giamdoc` vẫn đăng nhập bằng tên đó khi người dùng nạp file cũ; dữ liệu mẫu hiện tại đã chuyển sang `admin`.
 
-Người lập hóa đơn và người thực hiện thanh toán dùng kiểu `Nguoidung`, vì cả ba vai trò đều có thể thực hiện nghiệp vụ. Hóa đơn ghi đúng mã tài khoản đăng nhập và khôi phục đúng vai trò khi đọc file, không tạo tài khoản nhân viên thay thế cho Admin/Quản lý.
+Người lập hóa đơn và người thực hiện thanh toán dùng kiểu `Nguoidung`. Cả ba vai trò lập phiếu nhập chờ duyệt và thanh toán bán hàng được; riêng thanh toán nhập chỉ dành cho Admin/Quản lý có quyền `DUYET_HOA_DON`. Hóa đơn nhập giữ mã người lập và lưu riêng mã người thanh toán ở cột 18 để đọc lại đúng tài khoản chi tiền. Các vai trò được khôi phục từ danh sách tài khoản, không tạo nhân viên thay thế cho Admin/Quản lý.
 
 ## Kiểm tra
 

@@ -6,6 +6,7 @@ import java.time.DateTimeException;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.Scanner;
+import doitac.DSNhaCungCap;
 import hoadon.DSHoadon;
 import hoadon.HoaDon;
 import hoadon.Hoadonban;
@@ -52,7 +53,7 @@ public class QuanLyCuaHang extends Nguoidung implements Thongke {
     public String[] getQuyenHan() {
         return new String[]{"QUYEN_NHAP_KHO", "QUYEN_BAN_HANG", "QUYEN_KIEM_KE_KHO", "QUYEN_TRA_CUU",
                 "QUAN_LY_KHO", "QUAN_LY_SAN_PHAM", "QUAN_LY_KHUYEN_MAI", "QUAN_LY_NHA_CUNG_CAP",
-                "QUAN_LY_KHACH_HANG", "QUAN_LY_NHAN_VIEN", "DE_XUAT_SA_THAI",
+                "QUAN_LY_KHACH_HANG",
                 "DUYET_HOA_DON", "SUA_HOA_DON", "HUY_HOA_DON",
                 "TINH_LUONG_NHAN_VIEN", "XEM_THONG_KE_DOANH_THU"};
     }
@@ -96,15 +97,14 @@ public class QuanLyCuaHang extends Nguoidung implements Thongke {
     }
 
     public boolean saThaiNhanVien(DSNhanVien dsNV, String maNV) {
-        System.out.println("[Lỗi] BẠN KHÔNG CÓ QUYỀN! Quản lý không có quyền sa thải nhân viên. Quyền hạn thuộc về Admin.");
-        return false;
+        return dsNV != null && dsNV.xoa(null, this, maNV);
     }
 
 
-    public boolean duyetHoaDon(Scanner sc, DSHoadon dsHD, DSSanPham dsSP) {
+    public boolean duyetHoaDon(Scanner sc, DSHoadon dsHD, DSSanPham dsSP, DSNhaCungCap dsNCC) {
         if (this.isDaXoa()) { System.out.println("[TỪ CHỐI TRUY CẬP] Tài khoản quản lý đã bị vô hiệu hóa!"); return false; }
         if (dsHD == null) { System.out.println("[Lỗi] Danh sách hóa đơn không hợp lệ!"); return false; }
-        return dsHD.duyetHoaDon(sc, this, dsSP);
+        return dsHD.duyetHoaDon(sc, this, dsSP, dsNCC);
     }
 
     public void thongKeDoanhThuLoiNhuan(DSHoadon dsHD, LocalDate tuNgay, LocalDate denNgay) {

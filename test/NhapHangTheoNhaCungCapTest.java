@@ -88,7 +88,8 @@ public class NhapHangTheoNhaCungCapTest {
         ArrayList<HoadonNhap> cacPhieu = d.phieu.tachPhieuTheoNhaCungCap(tam, d.nv, d.kho, d.ncc);
         dung(cacPhieu.size() == 2 && cacPhieu.get(0).getSoLuongCT() == 2 && cacPhieu.get(1).getSoLuongCT() == 1,
                 "Ba mặt hàng, hai NCC thành hai phiếu đúng nhóm");
-        dung(!cacPhieu.get(0).getMaHD().equals(cacPhieu.get(1).getMaHD()), "Các phiếu mới có mã riêng");
+        dung(cacPhieu.stream().allMatch(hd -> hd.getMaHD().equals("HDN_TAM")),
+                "Tách danh sách chưa tự sinh mã hóa đơn chính thức");
         for (HoadonNhap hd : cacPhieu) {
             for (CTHDonNhap ct : hd.getDsChiTiet()) {
                 dung(ct.getMaHD().equals(hd.getMaHD()) && d.kho.timKiem(ct.getMaSP()).getMaNCC().equals(hd.getMaNCC()),
@@ -97,7 +98,8 @@ public class NhapHangTheoNhaCungCapTest {
         }
         HoadonNhap sai = new HoadonNhap("HDN099", d.nv, HOM_NAY, "DangXuLy", "", "NCC001");
         sai.themCTHD(new CTHDonNhap("HDN099", d.kho.timKiem("TA003"), 1, 5000, HOM_NAY.plusDays(90)));
-        dung(!sai.thanhToanHoaDon(phim(), d.nv, d.kho, d.ncc) && !sai.isDaThanhToan(), "Chặn chi tiền cho mặt hàng khác NCC");
+        dung(!sai.thanhToanHoaDon(phim(), new QuanLyCuaHang(), d.kho, d.ncc) && !sai.isDaThanhToan(), "Chặn chi tiền cho mặt hàng khác NCC");
+        sai.khoiPhucThanhToanTuFile(sai.tinhThanhTien(), "TienMat");
         dung(!sai.duyetNhapKho(phim(), d.kho, new QuanLyCuaHang()) && d.kho.timKiem("TA003").getSoLuongTon() == 20,
                 "Chặn cộng kho nếu phiếu sai NCC");
         CTHDonNhap ct = new CTHDonNhap();
@@ -111,34 +113,43 @@ public class NhapHangTheoNhaCungCapTest {
 
     private static void nhapNhieuNCC(boolean huyPhieuHai) {
         DuLieu d = new DuLieu();
-        String[] dau = {"5", "1", "TA001", "2", "", "1", "TA003", "3", "",
-                "1", "TA002", "1", "", "0", "0", "", "6", "1", "15000", ""};
-        String[] cuoi = huyPhieuHai ? new String[]{"0"} : new String[]{"6", "1", "15000"};
+        String[] dau = {"3", "1", "TA001", "2", "", "1", "TA003", "3", "",
+                "1", "TA002", "1", "", "0", "0", "hdn101", "", "6", "HDN202", ""};
+        String[] cuoi = huyPhieuHai ? new String[]{"0"} : new String[]{"6"};
         String[] keys = java.util.Arrays.copyOf(dau, dau.length + cuoi.length);
         System.arraycopy(cuoi, 0, keys, dau.length, cuoi.length);
         NHAT_KY.reset();
         int so = d.phieu.nhapThemHang(phim(keys), d.nv, d.ncc, d.kho);
-        dung(so == (huyPhieuHai ? 1 : 2) && d.phieu.getSoLuong() == so && d.phieu.soLanLuu == so, "Chỉ lưu từng phiếu thanh toán thành công");
+        dung(so == (huyPhieuHai ? 1 : 2) && d.phieu.getSoLuong() == so && d.phieu.soLanLuu == so, "Lưu từng phiếu đã hoàn tất để chờ duyệt");
+        dung(d.phieu.get(0).getMaHD().equals("HDN101") && (huyPhieuHai || d.phieu.get(1).getMaHD().equals("HDN202")),
+                "Giữ đúng mã tự nhập cho từng NCC, không sinh mã kế tiếp");
+        for (var hd : d.phieu.getDanhSach()) {
+            for (CTHDonNhap ct : ((HoadonNhap) hd).getDsChiTiet()) {
+                dung(ct.getMaHD().equals(hd.getMaHD()), "Chi tiết được chuyển sang mã hóa đơn người dùng nhập");
+            }
+        }
         dung(d.kho.timKiem("TA001").getSoLuongTon() == 0 && d.kho.timKiem("TA003").getSoLuongTon() == 20,
-                "Tạo và trả tiền cho phiếu nhập chưa cộng tồn");
-        dung(dem("===== HÓA ĐƠN NHẬP HÀNG =====") == so, "Chỉ in hóa đơn cho các phiếu đã trả tiền");
+                "Hoàn tất phiếu nhập chưa cộng tồn");
+        dung(dem("===== HÓA ĐƠN NHẬP HÀNG =====") == 0, "Chưa in hóa đơn thanh toán khi chỉ gửi duyệt");
         String log = NHAT_KY.toString(StandardCharsets.UTF_8);
-        dung(log.indexOf("===== HÓA ĐƠN NHẬP HÀNG =====") > log.indexOf("ĐÃ HOÀN TẤT THANH TOÁN TIỀN MẶT THÀNH CÔNG."),
-                "Bước thanh toán xuất hiện trước hóa đơn đầu tiên");
+        dung(d.phieu.getDanhSach().stream().noneMatch(hd -> hd.isDaThanhToan() || hd.isDaXuLyThanhCong())
+                && !log.contains("Chọn thanh toán"), "Người lập chỉ gửi duyệt, không trả tiền hoặc nhập kho");
         dung(!log.contains("NCC_TAM") && !log.contains("HDN_TAM"), "Không hiển thị mã tạm của danh sách nháp");
+        dung(dem("Nhập mã hóa đơn nhập (") == 2 && !log.contains("Chọn nhà cung cấp theo STT"),
+                "Hỏi mã riêng cho mỗi NCC, không hỏi NCC khi chọn hàng có sẵn");
     }
 
     private static void deXuatVaSuaDanhSach() {
         DuLieu d = new DuLieu();
         dung(d.kho.locHangCanNhap(1).length == 1, "Đề xuất hàng hết chỉ có mặt hàng tồn 0");
         NHAT_KY.reset();
-        // Chọn hết hàng theo đề xuất; sau đó thay TA001 bằng TA003 và thanh toán cho NCC002.
+        // Chọn hết hàng theo đề xuất; sau đó thay TA001 bằng TA003 và gửi phiếu NCC002.
         int so = d.phieu.nhapThemHang(phim("1", "1", "1", "2", "", "0",
-                "5", "3", "1", "TA003", "4", "", "0", "0", "", "6", "1", "20000"), d.nv, d.ncc, d.kho);
+                "3", "3", "1", "TA003", "4", "", "0", "0", "HDN045", "", "6"), d.nv, d.ncc, d.kho);
         dung(so == 1 && ((HoadonNhap) d.phieu.get(0)).getMaNCC().equals("NCC002"), "Thay sản phẩm cập nhật nhóm NCC cuối cùng");
         dung(((HoadonNhap) d.phieu.get(0)).getDsChiTiet()[0].getSoLuongNhap() == 4, "Giữ số lượng vừa sửa");
         DuLieu xoa = new DuLieu();
-        dung(xoa.phieu.nhapThemHang(phim("5", "1", "TA001", "2", "", "2", "1", "0", "4"),
+        dung(xoa.phieu.nhapThemHang(phim("3", "1", "TA001", "2", "", "2", "1", "0", "4"),
                 xoa.nv, xoa.ncc, xoa.kho) == 0 && xoa.phieu.getSoLuong() == 0, "Xóa dòng rồi hủy không tạo phiếu hoặc cộng kho");
     }
 
@@ -146,13 +157,60 @@ public class NhapHangTheoNhaCungCapTest {
         DuLieu d = new DuLieu();
         String nsx = Ktradulieu.dinhDangNgay(HOM_NAY);
         int so = d.phieu.nhapThemHang(phim("2", "1", "/", "Bánh mới", "5000", "10000", "gói", "0", nsx, HSD,
-                "Việt Nam", "Khô", "Bột", "n", "2", "4", "", "0", "", "6", "1", "20000"), d.nv, d.ncc, d.kho);
+                "Việt Nam", "Khô", "Bột", "n", "2", "4", "", "0", "HDN500", "", "6"), d.nv, d.ncc, d.kho);
         dung(so == 1 && d.kho.timKiem("TA004").getMaNCC().equals("NCC002"), "Nhân viên thêm sản phẩm mới và chọn đúng NCC");
-        dung(d.kho.timKiem("TA004").getSoLuongTon() == 0, "Sản phẩm mới tồn 0 sau khi tạo/thanh toán phiếu");
+        dung(d.kho.timKiem("TA004").getSoLuongTon() == 0, "Sản phẩm mới tồn 0 sau khi hoàn tất phiếu");
         HoadonNhap hd = (HoadonNhap) d.phieu.get(0);
-        dung(hd.duyetNhapKho(phim(), d.kho, new QuanLyCuaHang()) && d.kho.timKiem("TA004").getSoLuongTon() == 4,
-                "Duyệt mới cộng lượng nhập cho sản phẩm mới");
+        QuanLyCuaHang ql = new QuanLyCuaHang();
+        ql.setMaND("QL001");
+        dung(d.phieu.duyetHoaDon(phim("1", "1", "1", "20000"), ql, d.kho, d.ncc)
+                && d.kho.timKiem("TA004").getSoLuongTon() == 4 && hd.isDaThanhToan(),
+                "Quản lý thanh toán lúc duyệt rồi mới cộng lượng nhập cho sản phẩm mới");
         dung(!hd.duyetNhapKho(phim(), d.kho, new QuanLyCuaHang()), "Không duyệt hai lần");
+    }
+
+    private static void kiemTraMaTuNhap() {
+        DuLieu d = new DuLieu();
+        d.phieu.themHD(new HoadonNhap("HDN007", d.nv, HOM_NAY, "DangXuLy", "Phiếu cũ", "NCC001"));
+        NHAT_KY.reset();
+        int so = d.phieu.nhapThemHang(phim("3", "1", "TA001", "1", "", "0", "0",
+                "", "/", "HDB008", "HDN", "HDN12A", "HDN007", " hdn078 ", "Mã tự nhập",
+                "7", "6"), d.nv, d.ncc, d.kho);
+        dung(so == 1 && d.phieu.getSoLuong() == 2 && d.phieu.timKiem("HDN078") != null,
+                "Yêu cầu nhập lại mã trống, sai loại, sai định dạng và trùng; giữ mã hợp lệ");
+        HoadonNhap hd = (HoadonNhap) d.phieu.timKiem("HDN078");
+        dung(hd.getDsChiTiet()[0].getMaHD().equals("HDN078") && hd.getGhiChu().equals("Mã tự nhập"),
+                "Mã nhập được chuẩn hóa và gắn đúng với dòng hàng, ghi chú");
+        String log = NHAT_KY.toString(StandardCharsets.UTF_8);
+        dung(log.contains("Mã hóa đơn đã tồn tại: HDN007") && !log.contains("Mã tự tạo"),
+                "Không tự sinh mã ngay cả khi nhập dấu gạch chéo");
+        dung(log.indexOf("Nhập mã hóa đơn nhập (") > log.indexOf("Đã cập nhật danh sách cần nhập."),
+                "Chỉ hỏi mã khi hoàn tất, sau khi đã chọn hàng");
+        dung(log.contains("Mã hóa đơn nhập: HDN078") && !log.contains("Nhập mã hóa đơn nhập cần chỉnh sửa"),
+                "Mục 3 sửa danh sách hiện tại, không mở phiếu cũ cùng lúc");
+
+        DuLieu huy = new DuLieu();
+        NHAT_KY.reset();
+        dung(huy.phieu.nhapThemHang(phim("3", "1", "TA001", "1", "", "0", "0", "0"),
+                huy.nv, huy.ncc, huy.kho) == 0 && huy.phieu.getSoLuong() == 0 && huy.phieu.soLanLuu == 0,
+                "Hủy tại bước nhập mã không tạo hoặc lưu hóa đơn");
+    }
+
+    private static void khongHoiNCCKhiChonHang() {
+        DuLieu d = new DuLieu();
+        d.kho.themSP(sp("TA099", "", 3));
+        d.kho.themSP(sp("TA004", "NCC009", 3));
+        d.kho.themSP(sp("TA005", "NCC999", 3));
+        NHAT_KY.reset();
+        int so = d.phieu.nhapThemHang(phim("3", "1", "TA099", "1", "TA004", "1", "TA005",
+                "1", "TA001", "2", "", "0", "4"), d.nv, d.ncc, d.kho);
+        String log = NHAT_KY.toString(StandardCharsets.UTF_8);
+        dung(so == 0 && !log.contains("Chọn nhà cung cấp theo STT") && !log.contains("Chọn nhà cung cấp cho"),
+                "Hàng thiếu NCC, NCC ngừng hợp tác hoặc không tồn tại không mở bước chọn NCC");
+        dung(d.kho.timKiem("TA099").getMaNCC().isEmpty() && d.kho.timKiem("TA099").getSoLuongTon() == 3,
+                "Không tự đoán NCC hoặc thay tồn của dữ liệu thiếu");
+        dung(dem("Hãy cập nhật NCC trong danh mục sản phẩm.") == 3 && log.contains("Đã cập nhật danh sách cần nhập."),
+                "Báo dữ liệu cần sửa rồi vẫn cho chọn mặt hàng hợp lệ khác");
     }
 
     public static void main(String[] args) throws Exception {
@@ -165,6 +223,8 @@ public class NhapHangTheoNhaCungCapTest {
             nhapNhieuNCC(true);
             deXuatVaSuaDanhSach();
             sanPhamMoi();
+            kiemTraMaTuNhap();
+            khongHoiNCCKhiChonHang();
         } catch (Throwable e) {
             manHinh.println(NHAT_KY.toString(StandardCharsets.UTF_8));
             throw e;

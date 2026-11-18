@@ -55,6 +55,14 @@ public class HoadonNhap extends HoaDon implements IHoaDon {
         this.dsChiTiet = mangMoi;
     }
 
+    @Override
+    public void setMaHD(String maHD) {
+        super.setMaHD(maHD);
+        for (int i = 0; i < soLuongCT; i++) {
+            dsChiTiet[i].setMaHD(this.maHD);
+        }
+    }
+
     public boolean themCTHD(CTHDonNhap ct) {
         if (!coTheChinhSua() || ct == null || !maHD.equalsIgnoreCase(ct.getMaHD())
                 || ct.getSoLuongNhap() <= 0 || !Double.isFinite(ct.getDonGiaNhap()) || ct.getDonGiaNhap() <= 0) {
@@ -339,16 +347,16 @@ public class HoadonNhap extends HoaDon implements IHoaDon {
         if (sc == null || nv == null || !coTheChinhSua()) return false;
         try {
             return nhapThongTin(sc, nv, dsHD, dsNCC, dsSP, nguoiDung)
-                    && chinhSuaVaThanhToan(sc, nv, dsNCC, dsSP, nguoiDung);
+                    && chinhSuaVaHoanTat(sc, nv, dsNCC, dsSP, nguoiDung);
         } catch (NoSuchElementException | IllegalStateException e) {
             System.out.println("[Thông báo] Đã dừng lập hóa đơn nhập, chưa lưu hóa đơn.");
             return false;
         }
     }
 
-    public boolean chinhSuaVaThanhToan(Scanner sc, Nguoidung nv, DSNhaCungCap dsNCC,
+    public boolean chinhSuaVaHoanTat(Scanner sc, Nguoidung nv, DSNhaCungCap dsNCC,
                                       DSSanPham dsSP, Nguoidung nguoiDung) {
-        if (sc == null || !coTheChinhSua()) return false;
+        if (sc == null || nv == null || !nv.coQuyen("QUYEN_NHAP_KHO") || !coTheChinhSua()) return false;
         try {
             while (coTheChinhSua()) {
                 System.out.println("\nSố dòng hàng: " + soLuongCT + " | Tạm tính: " + Ktradulieu.dinhDangTien(tinhThanhTien()));
@@ -357,7 +365,7 @@ public class HoadonNhap extends HoaDon implements IHoaDon {
                 System.out.println("3. Xóa mặt hàng");
                 System.out.println("4. Đổi nhà cung cấp");
                 System.out.println("5. Sửa ghi chú");
-                System.out.println("6. Thanh toán và in hóa đơn");
+                System.out.println("6. Hoàn tất hóa đơn và gửi duyệt");
                 System.out.println("7. Xem danh sách mặt hàng");
                 System.out.println("0. Hủy lập hóa đơn");
                 switch (Ktradulieu.luaChon(sc, "Chọn thao tác (0-7): ", 0, 7)) {
@@ -367,7 +375,7 @@ public class HoadonNhap extends HoaDon implements IHoaDon {
                     case 4: chonNhaCungCap(sc, dsNCC, dsSP); break;
                     case 5: suaGhiChu(sc); break;
                     case 6:
-                        if (thanhToanHoaDon(sc, nv, dsSP, dsNCC)) return true;
+                        if (hoanTatHoaDon(dsSP, dsNCC)) return true;
                         break;
                     case 7: kiemTraHoaDon(); break;
                     case 0:
@@ -377,13 +385,19 @@ public class HoadonNhap extends HoaDon implements IHoaDon {
                 }
             }
         } catch (NoSuchElementException | IllegalStateException e) {
-            System.out.println("[Thông báo] Đã dừng chỉnh sửa, hóa đơn chưa được thanh toán.");
+            System.out.println("[Thông báo] Đã dừng chỉnh sửa, hóa đơn chưa hoàn tất để gửi duyệt.");
         }
         return false;
     }
 
-    public boolean thanhToanHoaDon(Scanner sc, Nguoidung nv, DSSanPham dsSP, DSNhaCungCap dsNCC) {
-        if (sc == null || !coTheChinhSua() || nv == null || !nv.coQuyen("QUYEN_NHAP_KHO")) return false;
+    public boolean hoanTatHoaDon(DSSanPham dsSP, DSNhaCungCap dsNCC) {
+        if (!coTheChinhSua() || !kiemTraDuLieuNhap(dsSP, dsNCC)) return false;
+        System.out.println("[Thành công] Đã hoàn tất hóa đơn nhập [" + maHD
+                + "]. Chờ Admin/Quản lý thanh toán và duyệt nhập kho.");
+        return true;
+    }
+
+    private boolean kiemTraDuLieuNhap(DSSanPham dsSP, DSNhaCungCap dsNCC) {
         if (soLuongCT == 0) {
             System.out.println("[Lỗi] Hóa đơn nhập phải có ít nhất một mặt hàng!");
             return false;
@@ -398,7 +412,7 @@ public class HoadonNhap extends HoaDon implements IHoaDon {
             SanPham sp = dsSP.timKiem(ct.getMaSP());
             if (sp == null) sp = ct.getSanPhamMoi();
             if (sp == null || sp.isDaXoa() || sp.getNsx() == null || sp.getHsd() == null) {
-                System.out.println("[Lỗi] Mặt hàng " + ct.getMaSP() + " không hợp lệ. Hãy sửa trước khi thanh toán.");
+                System.out.println("[Lỗi] Mặt hàng " + ct.getMaSP() + " không hợp lệ. Hãy sửa trước khi hoàn tất hoặc duyệt.");
                 return false;
             }
             try { sp.tinhHsdKhiNhapHang(LocalDate.now()); }
@@ -416,17 +430,25 @@ public class HoadonNhap extends HoaDon implements IHoaDon {
             kiemTraDuLieuFile();
             for (int i = 0; i < soLuongCT; i++) dsChiTiet[i].kiemTraDuLieuFile();
         } catch (IllegalArgumentException e) {
-            System.out.println("[Lỗi] Hãy sửa hóa đơn trước khi thanh toán: " + e.getMessage());
+            System.out.println("[Lỗi] Hãy sửa hóa đơn trước khi hoàn tất hoặc duyệt: " + e.getMessage());
             return false;
         }
-        ThanhToan tt = chonVaThanhToan(sc, nv, true);
+        return true;
+    }
+
+    public boolean thanhToanHoaDon(Scanner sc, Nguoidung nguoiDuyet, DSSanPham dsSP, DSNhaCungCap dsNCC) {
+        if (sc == null || nguoiDuyet == null || !nguoiDuyet.coQuyen("DUYET_HOA_DON")) {
+            System.out.println("[Từ chối] Chỉ Quản lý được thanh toán hóa đơn nhập khi duyệt.");
+            return false;
+        }
+        if (!coTheChinhSua() || !kiemTraDuLieuNhap(dsSP, dsNCC)) return false;
+        ThanhToan tt = chonVaThanhToan(sc, nguoiDuyet, true);
         if (tt == null) {
-            System.out.println("[Thông báo] Chưa thanh toán. Bạn có thể tiếp tục sửa hóa đơn.");
+            System.out.println("[Thông báo] Thanh toán chưa thành công, hóa đơn vẫn chờ duyệt.");
             return false;
         }
         phuongThucThanhToan = tt;
-        System.out.println("[Thành công] Đã thanh toán hóa đơn nhập [" + maHD + "]. Chờ người có quyền duyệt nhập kho.");
-        System.out.println(inHoaDon());
+        System.out.println("[Thành công] Đã thanh toán hóa đơn nhập [" + maHD + "].");
         return true;
     }
 
@@ -451,7 +473,7 @@ public class HoadonNhap extends HoaDon implements IHoaDon {
             return false;
         }
         if (nguoiDuyet == null || !nguoiDuyet.coQuyen("DUYET_HOA_DON")) {
-            System.out.println("[Lỗi] Chỉ Quản lý hoặc Admin mới được duyệt hóa đơn nhập!");
+            System.out.println("[Lỗi] Chỉ Quản lý được duyệt hóa đơn nhập!");
             return false;
         }
         if (maNCC == null || !maNCC.matches("NCC\\d+")) {
@@ -460,6 +482,10 @@ public class HoadonNhap extends HoaDon implements IHoaDon {
         }
         if (isDaXuLyThanhCong() || isDaHuy()) {
             System.out.println("[Thông báo] Hóa đơn nhập đã được duyệt hoặc đã hủy!");
+            return false;
+        }
+        if (!isDaThanhToan()) {
+            System.out.println("[Thông báo] Hóa đơn chưa thanh toán. Admin/Quản lý phải thanh toán tại bước duyệt trước khi nhập kho.");
             return false;
         }
         if (!kiemTraNhaCungCap(dsSP, maNCC)) return false;
@@ -596,11 +622,12 @@ public class HoadonNhap extends HoaDon implements IHoaDon {
         kiemTraDuLieuFile();
         String pt = (this.phuongThucThanhToan != null) ? this.phuongThucThanhToan.getLoaiThanhToan() : "CHUA_TT";
         String trangThaiTT = phuongThucThanhToan == null ? ThanhToan.CHO_THANH_TOAN : phuongThucThanhToan.getTrangThai();
-        // Giữ 11 cột cũ, nối trạng thái thanh toán và 5 cột chi tiết ở cuối.
+        // Giữ các cột cũ, nối mã người thanh toán riêng với nhân viên lập phiếu.
         return String.format(java.util.Locale.US, "HDNHAP;%s;%s;%s;%s;%s;%.0f;%.0f;%.0f;%s;%s;%s",
                 this.maHD, Ktradulieu.dinhDangNgay(this.ngayLap), this.getMaNV(), this.maNCC, this.trangThai,
                 this.tinhTongTien(), this.tinhTienThue(), this.tinhThanhTien(), pt,
-                (this.ghiChu != null ? this.ghiChu : ""), trangThaiTT) + chiTietThanhToanToFile();
+                (this.ghiChu != null ? this.ghiChu : ""), trangThaiTT) + chiTietThanhToanToFile()
+                + ";" + (phuongThucThanhToan == null ? "" : phuongThucThanhToan.getMaNV());
     }
 
     @Override
@@ -621,6 +648,7 @@ public class HoadonNhap extends HoaDon implements IHoaDon {
                 .themDong("Tiền thuế VAT", Ktradulieu.dinhDangTien(this.tinhTienThue()))
                 .themDong("TỔNG THANH TOÁN", Ktradulieu.dinhDangTien(this.tinhThanhTien()))).append(xuongDong);
         if (this.phuongThucThanhToan != null) {
+            sb.append("Người thanh toán: ").append(this.phuongThucThanhToan.getMaNV()).append(xuongDong);
             sb.append("Hình thức TT: ").append(this.phuongThucThanhToan.getLoaiThanhToan())
                     .append(" (").append(this.phuongThucThanhToan.getTrangThai()).append(')').append(xuongDong);
             if (phuongThucThanhToan instanceof TienMat) {

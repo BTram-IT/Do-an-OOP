@@ -787,7 +787,7 @@ Bán hàng: đăng nhập nhân viên → Thu ngân → Lập hóa đơn bán �
 
 Tại thanh toán: xác định điểm muốn dùng nếu khách có điểm; chọn tiền mặt hoặc chuyển khoản. Tiền mặt nhập đủ tiền khách đưa; chuyển khoản nhập ngân hàng, số tài khoản, tên người chuyển và mã giao dịch. Thành công thì trừ số mua cộng quà tặng, cập nhật điểm, xác nhận trạng thái và in hóa đơn ra console. “In hóa đơn” trong code không gọi máy in giấy.
 
-Nhập kho: tạo phiếu nhập và chọn nhà cung cấp, thêm mặt hàng. Hàng mới tạo hồ sơ chờ duyệt; quản lý/giám đốc mở luồng duyệt, kiểm tra chi tiết và chấp nhận sản phẩm mới. Duyệt thành công mới cộng kho, đổi giá nhập và cập nhật trạng thái. Nhập kho hiện vẫn có bước ghi nhận thanh toán trước phê duyệt, cần trình bày đúng đây là hành vi hiện tại của đồ án.
+Nhập kho: chọn sản phẩm có sẵn hoặc tạo danh mục mới tồn 0, nhập số lượng/giá rồi gom phiếu theo NCC. Người lập nhập mã cho từng phiếu và hoàn tất để lưu chưa thanh toán/chờ duyệt. Admin/Quản lý mở chức năng duyệt, kiểm tra chi tiết, xác nhận và thanh toán; thành công mới cộng kho, đổi giá nhập, cập nhật trạng thái và in hóa đơn. Không duyệt riêng từng sản phẩm. Hủy thanh toán giữ phiếu chờ duyệt; phiếu cũ đã trả tiền không phải chi lại.
 
 Khuyến mãi: tạo chương trình còn hiệu lực, đặt điều kiện và liên kết mã sản phẩm với mã khuyến mãi. Khi thêm/sửa số lượng dòng bán, CTHDBan xét ưu đãi và chọn chương trình có giá trị lớn nhất trong các ứng viên hợp lệ. Quà tặng bị giới hạn bởi tồn còn lại; ứng viên tràn số bị bỏ qua.
 
@@ -860,7 +860,7 @@ Bỏ `tongSoSanPhamKhoiTao`, `soLuongHetHan`, `trangThaiDuyet` cùng các getter
 
 ## Cập nhật nhập hàng theo NCC
 
-Sản phẩm có thêm `maNCC` và cột hiển thị NCC. Dữ liệu cũ thiếu NCC được chọn một NCC đang hợp tác khi nhập thêm hàng lần đầu. Menu Kho → `1` nay mở nhập hàng theo đề xuất/thêm mới/sửa danh sách rồi gom thành từng phiếu theo NCC; không phải nhập mã phiếu và chọn NCC trước như luồng cũ. Từng phiếu phải thanh toán thành công mới in/lưu hóa đơn, sau đó chờ duyệt để cộng kho. Menu chỉnh sửa có `6` thanh toán và `7` xem danh sách mặt hàng. Xem [NHAP_HANG_THEO_NHA_CUNG_CAP.md](NHAP_HANG_THEO_NHA_CUNG_CAP.md) để dùng luồng hiện tại.
+Sản phẩm có `maNCC` và cột hiển thị NCC. Bộ dữ liệu mẫu đã được bổ sung NCC và các thuộc tính còn trống. Menu Kho → `1` mở nhập hàng; chọn sản phẩm có sẵn không hỏi NCC, mục `3` xem/sửa danh sách hiện tại không hỏi mã hóa đơn. Mục `0` gom hàng theo NCC rồi yêu cầu nhập mã `HDN...` chưa tồn tại cho từng phiếu, không tự sinh mã. Từng phiếu chọn `6` hoàn tất để lưu chưa thanh toán và chờ duyệt, `7` xem mặt hàng; sửa phiếu cũ qua Kho → `13` cũng không có thao tác chi tiền. Admin/Quản lý vào Quản lý nhập kho → `2` để xác nhận, thanh toán rồi nhập kho và in hóa đơn. Hủy thanh toán giữ phiếu chờ duyệt; phiếu cũ đã trả tiền không bị thanh toán lại. Mã người lập và người thanh toán được lưu riêng. Xem [NHAP_HANG_THEO_NHA_CUNG_CAP.md](NHAP_HANG_THEO_NHA_CUNG_CAP.md) để dùng luồng hiện tại.
 
 
 ## Cập nhật nhập bổ sung không theo lô

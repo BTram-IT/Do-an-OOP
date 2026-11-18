@@ -43,24 +43,25 @@ Sau khi nhập thông tin và các mặt hàng, chương trình hiển thị b�
 | Phím | Thao tác |
 | --- | --- |
 | 1 | Thêm mặt hàng. |
-| 2 | Sửa số lượng bán; với hóa đơn nhập có thể sửa cả đơn giá, VAT và hạn sử dụng. |
+| 2 | Sửa số lượng bán; với hóa đơn nhập có thể sửa cả đơn giá và VAT. |
 | 3 | Xóa mặt hàng. |
 | 4 | Đổi khách hàng hoặc nhà cung cấp. |
 | 5 | Sửa ghi chú. |
-| 6 | Thanh toán và in hóa đơn. |
+| 6 | Hóa đơn bán: thanh toán và in; hóa đơn nhập: hoàn tất và lưu phiếu chưa thanh toán chờ duyệt. |
+| 7 | Với hóa đơn nhập: xem danh sách mặt hàng. |
 | 0 | Hủy lập hóa đơn. |
 
-Có thể chỉnh sửa nhiều lần; tổng tiền, VAT và ưu đãi bán được tính theo dữ liệu sau cùng. Hóa đơn nhập chọn lô bằng STT để phân biệt các dòng cùng mã sản phẩm nhưng khác giá/VAT/hạn sử dụng. Bản nháp đã hủy không được thêm vào danh sách hóa đơn.
+Có thể chỉnh sửa nhiều lần; tổng tiền, VAT và ưu đãi bán được tính theo dữ liệu sau cùng. Hóa đơn nhập mới gộp mỗi mã sản phẩm thành một dòng, dùng STT để chọn dòng sửa; không nhập theo lô. Bản nháp đã hủy không được thêm vào danh sách hóa đơn.
 
 Khi chọn thanh toán:
 
-- Chọn **0** ở menu phương thức để quay lại sửa.
+- Chọn **0** ở menu phương thức để quay lại sửa hóa đơn bán hoặc hủy lần thanh toán khi duyệt hóa đơn nhập.
 - **Tiền mặt**: nhập tổng tiền khách đưa (bán) hoặc cửa hàng chi (nhập); thiếu tiền thì nhập lại, nhập 0 để hủy lần thanh toán. Hóa đơn 0 đồng cần xác nhận riêng. Chương trình tính tiền thối/tiền nhà cung cấp trả lại.
 - **Chuyển khoản**: nhập ngân hàng, tài khoản, người chuyển/người nhận và mã giao dịch, sau đó xác nhận đã nhận/đã chuyển tiền. Chưa xác nhận thì quay về bước sửa. Đây là xác nhận thủ công tại console, không kết nối kiểm tra giao dịch ngân hàng thực tế.
-- Khi thanh toán thành công, chương trình **in ngay hóa đơn** và khóa thêm/xóa/sửa/thanh toán lại. Hóa đơn bán cập nhật tồn kho và điểm đúng một lần.
-- Hóa đơn nhập lưu trạng thái **đã thanh toán** độc lập với **chờ duyệt nhập kho**. Chỉ người có quyền duyệt mới cập nhật hàng vào kho; trả tiền không tự cộng tồn. Trạng thái thanh toán và chi tiết tiền mặt/chuyển khoản được giữ sau khi lưu và mở lại chương trình.
+- Hóa đơn bán thanh toán thành công thì in ngay, khóa chỉnh sửa và cập nhật tồn kho/điểm đúng một lần.
+- Hóa đơn nhập được người lập lưu trước ở trạng thái chưa thanh toán/chờ duyệt. Chỉ Admin/Quản lý được thanh toán nhập tại bước duyệt; thanh toán thành công rồi cộng kho và in hóa đơn hoàn tất. Hủy hoặc thất bại giữ nguyên phiếu chờ duyệt. Phiếu cũ đã trả tiền không bị chi lại. Trạng thái, chi tiết tiền mặt/chuyển khoản và mã người thanh toán riêng được giữ sau khi lưu/mở lại.
 
-Quy trình dùng chung trong `Hoadonban.lapHoaDon` và `HoadonNhap.lapHoaDon`, được gọi từ cả giao diện và `DSHoadon.lapHoaDonMoi`.
+`Hoadonban.lapHoaDon` dùng bước chỉnh sửa/thanh toán; `HoadonNhap.lapHoaDon` dùng `chinhSuaVaHoanTat` để gửi duyệt. `DSHoadon.duyetHoaDon` điều phối thanh toán và nhập kho cho người có quyền duyệt.
 
 ## Tương thích file và bảo vệ dữ liệu
 
@@ -72,7 +73,7 @@ TRUCTIEP;ma;loai;batDau;ketThuc;soTienGiam[;mucChiToiThieu]
 PHANTRAM;ma;loai;batDau;ketThuc;phanTram[;mucChiToiThieu;mucGiamToiDa]
 ```
 
-Hóa đơn bán chấp nhận 13 cột cũ hoặc 18 cột có thanh toán mở rộng. Hóa đơn nhập đọc được 11 cột cũ hoặc 17 cột mới; giữ 11 cột đầu và nối thêm `trangThaiThanhToan;tienDaChi;maGD;tenNguoiNhan;soTK;tenNganHang`. Hồ sơ `SPMOI` giữ định dạng hiện có. Với dòng nhập 11 cột cũ có phương thức thanh toán, xem là đã trả tiền vì quy trình cũ thanh toán trước khi chờ duyệt kho.
+Hóa đơn bán chấp nhận 13 cột cũ hoặc 18 cột có thanh toán mở rộng. Hóa đơn nhập đọc được 11/17 cột cũ hoặc 18 cột hiện tại; giữ 11 cột đầu và nối thêm `trangThaiThanhToan;tienDaChi;maGD;tenNguoiNhan;soTK;tenNganHang;maNguoiThanhToan`. Mã người lập được giữ riêng, không đổi thành mã người duyệt. Hồ sơ `SPMOI` giữ định dạng hiện có. Với dòng nhập cũ có phương thức thanh toán, xem là đã trả tiền và không thanh toán lại khi duyệt; nếu thiếu mã người thanh toán riêng, giữ thông tin người lập đã có từ định dạng cũ.
 Đọc lỗi giữ danh sách cũ; file lỗi được bảo vệ, dữ liệu mới ghi vào `.moi` theo cơ chế hiện tại.
 
 Ghi hóa đơn đóng file tạm trước khi thay file chính. Mỗi lần dùng một file tạm riêng để giữ nguyên `.tmp` còn sót từ phiên trước. File `data/hoadon.txt.tmp` đã có từ trước lần tích hợp được giữ nguyên, không tự nhập vào danh sách chính.
@@ -99,7 +100,7 @@ Sản phẩm mới trong danh mục hiện được tạo với tồn 0, không 
 
 ## Cập nhật nhập hàng theo NCC
 
-Sản phẩm có thêm `maNCC` và cột hiển thị NCC. Dữ liệu cũ thiếu NCC được chọn một NCC đang hợp tác khi nhập thêm hàng lần đầu. Menu Kho → `1` nay mở nhập hàng theo đề xuất/thêm mới/sửa danh sách rồi gom thành từng phiếu theo NCC; không phải nhập mã phiếu và chọn NCC trước như luồng cũ. Từng phiếu phải thanh toán thành công mới in/lưu hóa đơn, sau đó chờ duyệt để cộng kho. Menu chỉnh sửa có `6` thanh toán và `7` xem danh sách mặt hàng. Xem [NHAP_HANG_THEO_NHA_CUNG_CAP.md](NHAP_HANG_THEO_NHA_CUNG_CAP.md) để dùng luồng hiện tại.
+Sản phẩm có `maNCC` và cột hiển thị NCC. Bộ dữ liệu mẫu đã được bổ sung NCC và các thuộc tính còn trống. Menu Kho → `1` mở nhập hàng; chọn sản phẩm có sẵn không hỏi NCC, mục `3` xem/sửa danh sách hiện tại không hỏi mã hóa đơn. Mục `0` gom hàng theo NCC rồi yêu cầu nhập mã `HDN...` chưa tồn tại cho từng phiếu, không tự sinh mã. Từng phiếu chọn `6` hoàn tất để lưu chưa thanh toán và chờ duyệt, `7` xem mặt hàng; sửa phiếu cũ qua Kho → `13` cũng không có thao tác chi tiền. Admin/Quản lý vào Quản lý nhập kho → `2` để xác nhận, thanh toán rồi nhập kho và in hóa đơn. Hủy thanh toán giữ phiếu chờ duyệt; phiếu cũ đã trả tiền không bị thanh toán lại. Mã người lập và người thanh toán được lưu riêng. Xem [NHAP_HANG_THEO_NHA_CUNG_CAP.md](NHAP_HANG_THEO_NHA_CUNG_CAP.md) để dùng luồng hiện tại.
 
 
 ## Cập nhật nhập bổ sung không theo lô
