@@ -178,7 +178,6 @@ public class Hoadonban extends HoaDon implements IHoaDon {
     public void suaSoLuongSanPham(Scanner sc, DSSanPham dsSP,
                                   DSKhuyenMai dsKM, DSSanPhamKhuyenMai dsSPKM) {
         if (sc == null) { return; }
-        try { sc.hasNextLine(); } catch (IllegalStateException e) { return; }
 
         if (!coTheChinhSua()) {
             System.out.println("[Lỗi] Hóa đơn đã hoàn tất, không thể chỉnh sửa!");
@@ -253,7 +252,6 @@ public class Hoadonban extends HoaDon implements IHoaDon {
 
     public void xoaSanPham(Scanner sc) {
         if (sc == null) { return; }
-        try { sc.hasNextLine(); } catch (IllegalStateException e) { return; }
 
         if (!coTheChinhSua()) {
             System.out.println("[Lỗi] Hóa đơn đã hoàn tất, không thể chỉnh sửa!");

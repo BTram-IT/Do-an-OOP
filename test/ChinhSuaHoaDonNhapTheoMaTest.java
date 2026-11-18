@@ -72,13 +72,14 @@ public class ChinhSuaHoaDonNhapTheoMaTest {
         return d.phieu.chinhSuaHoaDonNhapTheoMa(phim(dong), nguoi, d.ncc, d.kho);
     }
 
-    private static void nhapMaTruocKhiHienChiTiet() {
+    private static void xemDanhSachDangNhapVaTraCuuTheoMa() {
         DuLieu d = new DuLieu();
         NHAT_KY.reset();
         d.phieu.nhapThemHang(phim("3", "0", "4"), d.nv, d.ncc, d.kho);
-        dung(log().contains("Nhập mã hóa đơn nhập cần chỉnh sửa"), "Mục 3 yêu cầu mã hóa đơn");
-        dung(!log().contains("DANH SÁCH HÀNG CẦN NHẬP") && !log().contains("Tổng tiền hàng:"),
-                "Không in hóa đơn trống trước khi chọn mã");
+        dung(log().contains("Chưa có mặt hàng.") && !log().contains("Nhập mã hóa đơn"),
+                "Mục 3 mở danh sách đang nhập, không hỏi mã hóa đơn cũ");
+        dung(!log().contains("===== HÓA ĐƠN NHẬP HÀNG =====") && !log().contains("Tổng tiền hàng:"),
+                "Danh sách rỗng không in hóa đơn hoặc tổng tiền 0");
         dung(!sua(d, d.nv, "KHONG_CO", "0"), "Mã không tồn tại không mở chỉnh sửa");
         dung(!log().contains("1. Thêm mặt hàng") && d.phieu.soLanLuu == 0, "Mã sai không hiện thao tác hoặc ghi file");
         d.phieu.themHD(new Hoadonban("HDB001", d.nv, HOM_NAY, "DangXuLy", "", ""));
@@ -88,9 +89,9 @@ public class ChinhSuaHoaDonNhapTheoMaTest {
                 "Hiện đúng phiếu đã chọn trước danh sách thao tác");
         dung(d.phieu.getSoLuong() == 2, "Tra cứu không tạo thêm hóa đơn tạm");
         NHAT_KY.reset();
-        d.phieu.nhapThemHang(phim("5", "0", "4"), d.nv, d.ncc, d.kho);
-        dung(log().contains("Chưa có mặt hàng.") && !log().contains("Tổng tiền hàng:"),
-                "Danh sách đang nhập rỗng có thông báo ngắn, không in bảng và tổng 0");
+        d.phieu.nhapThemHang(phim("0", "3", "0", "4"), d.nv, d.ncc, d.kho);
+        dung(log().contains("Chưa có mặt hàng để tạo phiếu nhập.") && !log().contains("Nhập mã hóa đơn"),
+                "Hoàn tất danh sách rỗng không yêu cầu mã hoặc tạo hóa đơn");
     }
 
     private static void kiemTraTrangThaiVaQuyen() {
@@ -132,14 +133,14 @@ public class ChinhSuaHoaDonNhapTheoMaTest {
         dung(!log().contains("===== HÓA ĐƠN NHẬP HÀNG ====="), "Chỉ hiện chi tiết, chưa in biên nhận thanh toán");
     }
 
-    private static void thanhToanVaHuy() {
+    private static void hoanTatVaHuy() {
         DuLieu d = new DuLieu();
-        dung(sua(d, d.nv, "HDN001", "6", "1", "10000"), "Thanh toán từ phiếu đã chọn");
-        dung(d.hd.isDaThanhToan() && !d.hd.isDaXuLyThanhCong(), "Đã trả tiền nhưng vẫn chờ duyệt kho");
-        dung(log().indexOf("===== HÓA ĐƠN NHẬP HÀNG =====") > log().indexOf("ĐÃ HOÀN TẤT THANH TOÁN"),
-                "In hóa đơn sau thanh toán thành công");
-        dung(d.kho.get(0).getSoLuongTon() == 20, "Thanh toán không tự ý duyệt nhập kho");
-        dung(!sua(d, d.nv, "HDN001", "0"), "Không sửa tiếp hóa đơn đã trả tiền");
+        dung(sua(d, d.nv, "HDN001", "6"), "Hoàn tất chỉnh sửa phiếu đã chọn để chờ duyệt");
+        dung(!d.hd.isDaThanhToan() && !d.hd.isDaXuLyThanhCong(), "Nhân viên không trả tiền hoặc nhập kho khi hoàn tất");
+        dung(!log().contains("Chọn thanh toán") && !log().contains("===== HÓA ĐƠN NHẬP HÀNG ====="),
+                "Màn hình sửa không mở thanh toán hoặc in biên nhận");
+        dung(d.kho.get(0).getSoLuongTon() == 20, "Hoàn tất chỉnh sửa không đổi tồn kho");
+        dung(sua(d, d.nv, "HDN001", "0"), "Vẫn sửa được phiếu chưa thanh toán và chưa duyệt");
         DuLieu huy = new DuLieu();
         dung(sua(huy, huy.nv, "HDN001", "7", "n", "0") && !huy.hd.isDaHuy(), "Từ chối xác nhận hủy giữ nguyên phiếu");
         dung(sua(huy, huy.nv, "HDN001", "7", "y") && huy.hd.isDaHuy(), "Xác nhận hủy mới chuyển trạng thái");
@@ -150,10 +151,10 @@ public class ChinhSuaHoaDonNhapTheoMaTest {
         PrintStream manHinh = System.out;
         try (PrintStream tam = new PrintStream(NHAT_KY, true, StandardCharsets.UTF_8)) {
             System.setOut(tam);
-            nhapMaTruocKhiHienChiTiet();
+            xemDanhSachDangNhapVaTraCuuTheoMa();
             kiemTraTrangThaiVaQuyen();
             themSuaXoaVaLuu();
-            thanhToanVaHuy();
+            hoanTatVaHuy();
         } catch (Throwable e) {
             manHinh.println(log());
             throw e;

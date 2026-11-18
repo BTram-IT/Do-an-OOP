@@ -86,6 +86,10 @@ public class QuyTrinhThanhToanHoaDonTest {
     }
 
     private static Scanner phim(String... dong) { return new Scanner(String.join("\n", dong) + "\n"); }
+    private static QuanLyCuaHang quanLy() {
+        return new QuanLyCuaHang("QL001", "Quản lý thử", "ql", "123456", "0912345678",
+                "Quản lý", false, "Cửa hàng", 1.5);
+    }
     private static String manHinh() { return NHAT_KY.toString(StandardCharsets.UTF_8); }
     private static int soLan(String chuoi, String mau) { return chuoi.split(java.util.regex.Pattern.quote(mau), -1).length - 1; }
 
@@ -150,17 +154,25 @@ public class QuyTrinhThanhToanHoaDonTest {
         boolean xong = hd.lapHoaDon(phim("/", "Ghi chú đầu", "NCC001", "TA001", "2", "", "0",
                 "2", "1", "4", "6000", "5",
                 "1", "TA002", "2", "", "3", "2", "1", "4", "NCC002", "5", "Nhập hàng sửa",
-                "6", "1", "0", // Hủy tiền mặt và tiếp tục sửa.
                 "2", "1", "5", "", "",
-                "6", "2", "Ngân hàng thử", "0123456789", "Nhà cung cấp hai", "GD0020", "0",
-                "5", "Đã kiểm tra", "6", "1", "40000"), d.nv, d.hoaDon, d.ncc, d.kho, d.nv);
-        dung(xong && hd.isDaThanhToan() && !hd.isDaXuLyThanhCong(), "Hóa đơn nhập đã trả tiền, đang chờ duyệt kho");
+                "5", "Đã kiểm tra", "7", "6"), d.nv, d.hoaDon, d.ncc, d.kho, d.nv);
+        dung(xong && !hd.isDaThanhToan() && !hd.isDaXuLyThanhCong(), "Lập hóa đơn nhập chỉ hoàn tất để chờ duyệt");
+        dung(!manHinh().contains("Chọn thanh toán") && d.kho.timKiem("TA001").getSoLuongTon() == 50,
+                "Không hỏi tiền hoặc cộng kho ở bước lập phiếu");
         dung(hd.getSoLuongCT() == 1 && hd.getDsChiTiet()[0].getSoLuongNhap() == 5, "Thêm, sửa, xóa đúng sản phẩm nhập");
         dung(hd.getMaNCC().equals("NCC002") && hd.getGhiChu().equals("Đã kiểm tra"), "Đổi nhà cung cấp, ghi chú trước khi chi tiền");
         dung(hd.tinhTongTien() == 30000 && hd.tinhTienThue() == 1500 && hd.tinhThanhTien() == 31500, "Tính lại giá nhập và VAT");
+        dung(!hd.thanhToanHoaDon(phim(), d.nv, d.kho, d.ncc), "Nhân viên không được thanh toán hóa đơn nhập");
+        dung(!hd.thanhToanHoaDon(phim("1", "0"), quanLy(), d.kho, d.ncc) && hd.coTheChinhSua(),
+                "Quản lý hủy thanh toán giữ phiếu chưa thanh toán");
+        dung(!hd.thanhToanHoaDon(phim("2", "Ngân hàng thử", "0123456789", "Nhà cung cấp hai", "GD0020", "0"),
+                quanLy(), d.kho, d.ncc), "Chưa xác nhận chuyển khoản không ghi đã trả tiền");
+        dung(hd.thanhToanHoaDon(phim("1", "40000"), quanLy(), d.kho, d.ncc), "Quản lý thực hiện thanh toán nhập");
+        dung(hd.getMaNV().equals("NV001") && hd.getPhuongThucThanhToan().getMaNV().equals("QL001"),
+                "Giữ người lập phiếu và ghi người duyệt thanh toán riêng");
         dung(((TienMat) hd.getPhuongThucThanhToan()).getTienThoi() == 8500, "Ghi tiền cửa hàng chi và tiền NCC trả lại");
         dung(d.kho.timKiem("TA001").getSoLuongTon() == 50 && d.kho.timKiem("TA001").getDonGiaNhap() == 5000, "Thanh toán nhập chưa tự ý cập nhật kho/giá");
-        dung(soLan(manHinh(), "===== HÓA ĐƠN NHẬP HÀNG =====") == 1 && manHinh().contains("Đã thanh toán"), "In ngay hóa đơn nhập đã thanh toán đúng một lần");
+        dung(soLan(manHinh(), "===== HÓA ĐƠN NHẬP HÀNG =====") == 0, "Chưa in hóa đơn nhập hoàn tất trước bước cộng kho");
         dung(hd.inHoaDon().contains("Chờ duyệt nhập kho") && hd.inHoaDon().contains("NCC002"), "Tách trạng thái kho với thanh toán trên hóa đơn");
         dung(!hd.coTheChinhSua() && !hd.capNhatChiTiet(0, 1, 7000, 10) && !hd.xoaChiTiet(0), "Khóa sửa và xóa khi đã trả tiền nhưng chưa nhập kho");
         dung(!hd.themCTHD(new CTHDonNhap(hd.getMaHD(), "TA002", "Bánh", 1, 10000, 0, HOM_NAY.plusDays(90))), "Khóa thêm lô sau chi tiền");
@@ -168,7 +180,7 @@ public class QuyTrinhThanhToanHoaDonTest {
         biChan(hd::huyHoaDon, "Không hủy hóa đơn nhập đã chi tiền");
         dung(!hd.thanhToanHoaDon(phim(), d.nv, d.kho, d.ncc), "Không thanh toán nhập hai lần");
 
-        dung(hd.toFileString().split(";", -1).length == 17, "Ghi đủ trạng thái và chi tiết thanh toán nhập");
+        dung(hd.toFileString().split(";", -1).length == 18, "Ghi đủ trạng thái, chi tiết và người thanh toán nhập");
         d.hoaDon.themHD(hd);
         Path tep = thuMuc.resolve("hoa-don-nhap-da-tra.txt");
         d.hoaDon.ghiFile(tep.toString());
@@ -177,6 +189,8 @@ public class QuyTrinhThanhToanHoaDonTest {
         HoadonNhap lai = (HoadonNhap) doc.timKiem(hd.getMaHD());
         dung(lai != null && lai.isDaThanhToan() && !lai.isDaXuLyThanhCong() && !lai.coTheChinhSua(), "Mở lại vẫn khóa hóa đơn nhập đã trả tiền");
         dung(lai.toFileString().equals(hd.toFileString()), "Không mất số tiền, tiền thối, trạng thái khi lưu/đọc");
+        dung(lai.getMaNV().equals("NV001") && lai.getPhuongThucThanhToan().getMaNV().equals("QL001"),
+                "Đọc lại vẫn phân biệt người lập với người thanh toán");
         TienMat tm = (TienMat) lai.getPhuongThucThanhToan();
         dung(tm.getTienKhachDua() == 40000 && tm.getTienThoi() == 8500, "Khôi phục đúng chi tiết chi tiền mặt");
         dung(lai.duyetNhapKho(phim(), d.kho, new QuanLyCuaHang()), "Người có quyền vẫn duyệt được hóa đơn đã trả tiền");
@@ -192,13 +206,13 @@ public class QuyTrinhThanhToanHoaDonTest {
         dung(d.kho.timKiem("TA001").getSoLuongTon() == 50 && d.khach.timKiem("KH001").getDiemTichLuy() == 10, "Hủy không động tới tồn kho và điểm");
         dung(!manHinh().contains("===== PHIẾU THANH TOÁN ====="), "Không in biên lai thành công cho hóa đơn hủy");
         HoadonNhap nhap = d.nhap("HDN020");
-        dung(!nhap.chinhSuaVaThanhToan(phim("3", "1", "1", "6", "0"), d.nv, d.ncc, d.kho, d.nv) && nhap.isDaHuy(), "Không thể thanh toán hóa đơn trống, vẫn hủy được");
+        dung(!nhap.chinhSuaVaHoanTat(phim("3", "1", "1", "6", "0"), d.nv, d.ncc, d.kho, d.nv) && nhap.isDaHuy(), "Không thể gửi duyệt hóa đơn trống, vẫn hủy được");
         dung(d.hoaDon.getSoLuong() == 0, "Không tự lưu bản nháp/hóa đơn đã hủy");
         Hoadonban banEOF = d.ban("HDB021");
         dung(!banEOF.chinhSuaVaThanhToan(phim("6", "1"), d.nv, d.khach, d.kho, d.km, d.lienKet), "Hết đầu vào lúc thanh toán không làm chương trình văng lỗi");
         dung(!banEOF.isDaThanhToan() && d.kho.timKiem("TA001").getSoLuongTon() == 50, "Hết đầu vào không hoàn tất giao dịch");
         HoadonNhap nhapEOF = d.nhap("HDN021");
-        dung(!nhapEOF.chinhSuaVaThanhToan(new Scanner(""), d.nv, d.ncc, d.kho, d.nv) && !nhapEOF.isDaThanhToan(), "Hết đầu vào lúc xem lại hóa đơn nhập");
+        dung(!nhapEOF.chinhSuaVaHoanTat(new Scanner(""), d.nv, d.ncc, d.kho, d.nv) && !nhapEOF.isDaThanhToan(), "Hết đầu vào lúc xem lại hóa đơn nhập");
     }
 
     private static void loNhapVaHoSoMoi(DuLieu d) {
@@ -226,7 +240,7 @@ public class QuyTrinhThanhToanHoaDonTest {
         dung(sao.getSanPhamMoi().getDonGiaNhap() == 6000 && sao.getSanPhamMoi().getPhanTramThue() == 5 && sao.getSanPhamMoi().getHsd().equals(HOM_NAY.plusDays(120)), "Sửa giá/VAT không nhập lại HSD của hồ sơ sản phẩm");
         sao.getSanPhamMoi().setDonGiaNhap(1000);
         dung(moi.getDsChiTiet()[0].getSanPhamMoi().getDonGiaNhap() == 6000, "Không sửa ngược hóa đơn qua getter bản sao");
-        dung(moi.thanhToanHoaDon(phim("2", "Ngân hàng thử", "0123456789", "NCC một", "GD0031", "1"), d.nv, d.kho, d.ncc), "Thanh toán hồ sơ mới bằng chuyển khoản");
+        dung(moi.thanhToanHoaDon(phim("2", "Ngân hàng thử", "0123456789", "NCC một", "GD0031", "1"), quanLy(), d.kho, d.ncc), "Quản lý thanh toán hồ sơ mới bằng chuyển khoản");
         dung(d.kho.timKiem("TA999") == null, "Hồ sơ từ file cũ chưa làm tăng kho trước khi duyệt phiếu");
         dung(moi.duyetNhapKho(phim("1"), d.kho, new QuanLyCuaHang()), "Duyệt một phiếu nhập có hồ sơ cũ, không duyệt riêng từng sản phẩm");
         dung(d.kho.timKiem("TA999").getSoLuongTon() == 4 && d.kho.timKiem("TA999").getDonGiaNhap() == 6000, "Kho nhận đúng số lượng/giá đã chỉnh");
@@ -273,11 +287,11 @@ public class QuyTrinhThanhToanHoaDonTest {
                 "Chặn thu tiền nếu hóa đơn bán chưa hợp lệ để lưu");
         HoadonNhap nhap = d.nhap("HDN050");
         dung(nhap.capNhatChiTiet(0, Integer.MAX_VALUE, 5000, 10), "Nhập số lượng lớn hợp lệ ở bản nháp");
-        dung(!nhap.thanhToanHoaDon(phim("1", "99999999999999"), d.nv, d.kho, d.ncc) && !nhap.isDaThanhToan(),
+        dung(!nhap.thanhToanHoaDon(phim("1", "99999999999999"), quanLy(), d.kho, d.ncc) && !nhap.isDaThanhToan(),
                 "Chặn chi tiền trước khi biết hóa đơn không thể nhập kho vì tràn số lượng");
         dung(nhap.capNhatChiTiet(0, 2, 5000, 10), "Vẫn sửa được sau khi kiểm tra không đạt");
         nhap.setGhiChu("Ghi chú;sai định dạng");
-        dung(!nhap.thanhToanHoaDon(phim("1", "20000"), d.nv, d.kho, d.ncc) && !nhap.isDaThanhToan(),
+        dung(!nhap.thanhToanHoaDon(phim("1", "20000"), quanLy(), d.kho, d.ncc) && !nhap.isDaThanhToan(),
                 "Chặn chi tiền nếu hóa đơn nhập chưa hợp lệ để lưu");
     }
 

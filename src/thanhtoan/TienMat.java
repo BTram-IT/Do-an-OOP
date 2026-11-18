@@ -33,7 +33,7 @@ public class TienMat extends ThanhToan {
 
         System.out.println("\n========== THANH TOÁN TIỀN MẶT ==========");
         System.out.println("• Mã giao dịch       : [" + this.maGD + "]");
-        System.out.println("• Thu ngân phụ trách : [" + this.maNV + "]");
+        System.out.println((chiTien ? "• Người chi tiền     : [" : "• Thu ngân phụ trách : [") + this.maNV + "]");
         System.out.println((chiTien ? "• Tổng tiền cần chi  : " : "• Tổng tiền cần thu  : ") + Ktradulieu.dinhDangTien(this.soTien));
 
         if (this.soTien == 0) {

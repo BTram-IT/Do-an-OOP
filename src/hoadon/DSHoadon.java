@@ -59,11 +59,10 @@ public class DSHoadon {
                 System.out.println("\n========== NHẬP THÊM HÀNG ==========");
                 System.out.println("1. Chọn hàng cần nhập theo đề xuất");
                 System.out.println("2. Thêm sản phẩm mới và nhập hàng");
-                System.out.println("3. Nhập mã hóa đơn nhập để xem / chỉnh sửa");
-                System.out.println("0. Hoàn tất danh sách và thanh toán");
+                System.out.println("3. Xem / chỉnh danh sách hàng đang nhập");
+                System.out.println("0. Hoàn tất, nhập mã hóa đơn và gửi duyệt");
                 System.out.println("4. Hủy nhập hàng");
-                System.out.println("5. Soạn / chỉnh danh sách hàng đang nhập");
-                int chon = Ktradulieu.luaChon(sc, "Chọn (0-5): ", 0, 5);
+                int chon = Ktradulieu.luaChon(sc, "Chọn (0-4): ", 0, 4);
                 switch (chon) {
                     case 1: chonHangDeXuat(sc, danhSachNhap, dsSP, dsNCC); break;
                     case 2: {
@@ -71,8 +70,7 @@ public class DSHoadon {
                         if (sp != null) nhapMatHang(sc, danhSachNhap, sp, dsSP, dsNCC, -1);
                         break;
                     }
-                    case 3: chinhSuaHoaDonNhapTheoMa(sc, nguoiLap, dsNCC, dsSP); break;
-                    case 5: suaDanhSachNhap(sc, danhSachNhap, dsSP, dsNCC); break;
+                    case 3: suaDanhSachNhap(sc, danhSachNhap, dsSP, dsNCC); break;
                     case 0:
                         if (danhSachNhap.getSoLuongCT() == 0) {
                             System.out.println("[Thông báo] Chưa có mặt hàng để tạo phiếu nhập.");
@@ -87,19 +85,23 @@ public class DSHoadon {
             ArrayList<HoadonNhap> cacPhieu = tachPhieuTheoNhaCungCap(danhSachNhap, nguoiLap, dsSP, dsNCC);
             for (HoadonNhap phieu : cacPhieu) {
                 NhaCungCap ncc = dsNCC.timKiemTheoMa(phieu.getMaNCC());
-                System.out.println("\nThanh toán phiếu nhập cho [" + ncc.getMaNCC() + "] " + ncc.getTenNCC());
+                System.out.println("\nTạo hóa đơn nhập cho [" + ncc.getMaNCC() + "] " + ncc.getTenNCC());
+                if (!nhapMaHoaDonNhap(sc, phieu)) {
+                    System.out.println("[Thông báo] Đã hủy tạo hóa đơn của " + ncc.getMaNCC() + ".");
+                    continue;
+                }
                 phieu.setGhiChu(Ktradulieu.nhapChuoiTuyChon(sc, "Ghi chú (Enter để bỏ qua): ", ".*", ""));
-                if (phieu.chinhSuaVaThanhToan(sc, nguoiLap, dsNCC, dsSP, nguoiLap) && themHD(phieu)) {
+                if (phieu.chinhSuaVaHoanTat(sc, nguoiLap, dsNCC, dsSP, nguoiLap) && themHD(phieu)) {
                     ghiFile("data/hoadon.txt");
                     soDaLuu++;
                 } else {
-                    System.out.println("[Thông báo] Phiếu của " + ncc.getMaNCC() + " chưa thanh toán, không lưu hóa đơn.");
+                    System.out.println("[Thông báo] Phiếu của " + ncc.getMaNCC() + " chưa hoàn tất, không lưu hóa đơn.");
                 }
             }
         } catch (java.util.NoSuchElementException e) {
-            System.out.println("[Thông báo] Đã dừng nhập hàng. Các phiếu đã thanh toán trước đó được giữ lại.");
+            System.out.println("[Thông báo] Đã dừng nhập hàng. Các phiếu đã hoàn tất trước đó được giữ lại.");
         }
-        System.out.println("Đã lưu " + soDaLuu + " phiếu nhập đã thanh toán, chờ Admin/Quản lý duyệt nhập kho.");
+        System.out.println("Đã lưu " + soDaLuu + " phiếu nhập chờ Admin/Quản lý thanh toán và duyệt nhập kho.");
         return soDaLuu;
     }
 
@@ -161,7 +163,7 @@ public class DSHoadon {
                         + " | Người lập: " + phieu.getMaNV());
                 phieu.kiemTraHoaDon();
                 System.out.println("1. Thêm mặt hàng\n2. Sửa số lượng / đơn giá / VAT\n3. Xóa mặt hàng");
-                System.out.println("4. Đổi nhà cung cấp\n5. Sửa ghi chú\n6. Thanh toán và in hóa đơn\n7. Hủy hóa đơn nhập\n0. Lưu và quay lại");
+                System.out.println("4. Đổi nhà cung cấp\n5. Sửa ghi chú\n6. Hoàn tất chỉnh sửa và chờ duyệt\n7. Hủy hóa đơn nhập\n0. Lưu và quay lại");
                 int chon = Ktradulieu.luaChon(sc, "Chọn (0-7): ", 0, 7);
                 switch (chon) {
                     case 1: phieu.themSanPham(sc, dsSP, nguoiThucHien); break;
@@ -170,7 +172,7 @@ public class DSHoadon {
                     case 4: phieu.chonNhaCungCap(sc, dsNCC, dsSP); break;
                     case 5: phieu.suaGhiChu(sc); break;
                     case 6:
-                        if (phieu.thanhToanHoaDon(sc, nguoiThucHien, dsSP, dsNCC)) {
+                        if (phieu.hoanTatHoaDon(dsSP, dsNCC)) {
                             ghiFile("data/hoadon.txt");
                             return true;
                         }
@@ -199,8 +201,14 @@ public class DSHoadon {
             if (ma.equals("0")) return false;
             sp = dsSP.timKiem(ma);
         }
-        if (!dsSP.boSungNhaCungCap(sc, sp, dsNCC)) {
-            System.out.println("[Thông báo] Chưa chọn được mặt hàng có nhà cung cấp đang hợp tác.");
+        if (sp == null || sp.isDaXoa()) {
+            System.out.println("[Thông báo] Sản phẩm không tồn tại hoặc đã bị xóa.");
+            return false;
+        }
+        NhaCungCap ncc = dsNCC.timKiemTheoMa(sp.getMaNCC());
+        if (ncc == null || ncc.isDaXoa()) {
+            System.out.println("[Thông báo] Mặt hàng " + sp.getMaSP()
+                    + " chưa có nhà cung cấp đang hợp tác. Hãy cập nhật NCC trong danh mục sản phẩm.");
             return false;
         }
         System.out.println("Nhập hàng cho [" + sp.getMaSP() + "] " + sp.getTenSP() + " - " + sp.getMaNCC());
@@ -226,6 +234,26 @@ public class DSHoadon {
         }
     }
 
+    private boolean nhapMaHoaDonNhap(Scanner sc, HoadonNhap phieu) {
+        while (true) {
+            String ma = Ktradulieu.chuanHoaMa(Ktradulieu.nhapChuoiKhongRong(sc,
+                    "Nhập mã hóa đơn nhập (VD: HDN027, 0: Hủy phiếu): "));
+            if (ma.equals("0")) return false;
+            if (!ma.matches("HDN[0-9]+")) {
+                System.out.println("[Lỗi] Mã hóa đơn nhập phải có dạng HDN và các chữ số, ví dụ HDN027.");
+                continue;
+            }
+            if (timKiem(ma) != null) {
+                System.out.println("[Lỗi] Mã hóa đơn đã tồn tại: " + ma);
+                continue;
+            }
+            phieu.setMaHD(ma);
+            System.out.println("Mã hóa đơn nhập: " + phieu.getMaHD());
+            return true;
+        }
+    }
+
+    // Chỉ gom các dòng tạm; người dùng nhập mã chính thức cho từng phiếu khi hoàn tất.
     public ArrayList<HoadonNhap> tachPhieuTheoNhaCungCap(HoadonNhap danhSachNhap, Nguoidung nguoiLap,
                                                       DSSanPham dsSP, DSNhaCungCap dsNCC) {
         if (danhSachNhap == null || nguoiLap == null || !nguoiLap.coQuyen("QUYEN_NHAP_KHO")
@@ -233,7 +261,6 @@ public class DSHoadon {
             throw new IllegalArgumentException("Dữ liệu tách phiếu nhập không hợp lệ!");
         }
         ArrayList<HoadonNhap> cacPhieu = new ArrayList<>();
-        long maDau = Ktradulieu.laySoTuMa(sinhMaTuDong("HDN"), "HDN");
         for (CTHDonNhap ct : danhSachNhap.getDsChiTiet()) {
             SanPham sp = dsSP.timKiem(ct.getMaSP());
             NhaCungCap ncc = sp == null ? null : dsNCC.timKiemTheoMa(sp.getMaNCC());
@@ -243,9 +270,7 @@ public class DSHoadon {
             HoadonNhap phieu = null;
             for (HoadonNhap p : cacPhieu) if (p.getMaNCC().equalsIgnoreCase(sp.getMaNCC())) { phieu = p; break; }
             if (phieu == null) {
-                long soMa = maDau + cacPhieu.size();
-                if (soMa > Integer.MAX_VALUE) throw new IllegalStateException("Không thể sinh thêm mã phiếu nhập!");
-                phieu = new HoadonNhap(Ktradulieu.taoMa("HDN%03d", (int) soMa), nguoiLap,
+                phieu = new HoadonNhap("HDN_TAM", nguoiLap,
                         LocalDate.now(), "DangXuLy", "", ncc.getMaNCC());
                 cacPhieu.add(phieu);
             }
@@ -541,10 +566,10 @@ public class DSHoadon {
         return nguoiDuyet != null && nguoiDuyet.coQuyen("DUYET_HOA_DON");
     }
 
-    public boolean duyetHoaDon(Scanner sc, Nguoidung nguoiDuyet, DSSanPham dsSP) {
+    public boolean duyetHoaDon(Scanner sc, Nguoidung nguoiDuyet, DSSanPham dsSP, DSNhaCungCap dsNCC) {
         // 1. Kiểm tra dữ liệu đầu vào
-        if (sc == null || dsSP == null) {
-            System.out.println("[Lỗi] Scanner hoặc danh sách sản phẩm không hợp lệ!");
+        if (sc == null || dsSP == null || dsNCC == null) {
+            System.out.println("[Lỗi] Scanner, danh sách sản phẩm hoặc nhà cung cấp không hợp lệ!");
             return false;
         }
 
@@ -599,13 +624,16 @@ public class DSHoadon {
         HoadonNhap hdNhap = (HoadonNhap) hd;
 
         System.out.println("\n========== THÔNG TIN HÓA ĐƠN NHẬP ==========");
-        System.out.println(hd.inHoaDon());
+        System.out.println("Ngày lập: " + Ktradulieu.dinhDangNgay(hdNhap.getNgayLap())
+                + " | Người lập: " + hdNhap.getMaNV());
+        hdNhap.kiemTraHoaDon();
+        System.out.println("Thanh toán: " + (hdNhap.isDaThanhToan() ? "Đã thanh toán" : "Chưa thanh toán"));
 
         System.out.println("\n========== CHI TIẾT DUYỆT HÓA ĐƠN ==========");
 
         System.out.println("\n============================================");
         System.out.println("Bạn có chắc chắn muốn duyệt hóa đơn này không?");
-        System.out.println("1. Có, xác nhận duyệt");
+        System.out.println("1. Có, thanh toán và duyệt nhập kho");
         System.out.println("0. Không, hủy thao tác");
 
         int xacNhan;
@@ -626,10 +654,21 @@ public class DSHoadon {
             return false;
         }
 
-        boolean ketQua = hdNhap.duyetNhapKho(sc, dsSP, nguoiDuyet);
+        NhaCungCap ncc = dsNCC.timKiemTheoMa(hdNhap.getMaNCC());
+        if (ncc == null || ncc.isDaXoa()) {
+            System.out.println("[Lỗi] Nhà cung cấp không còn hợp lệ để duyệt nhập kho!");
+            return false;
+        }
+        if (!hdNhap.isDaThanhToan() && !hdNhap.thanhToanHoaDon(sc, nguoiDuyet, dsSP, dsNCC)) {
+            System.out.println("[Thông báo] Chưa thanh toán thành công. Hóa đơn vẫn chờ duyệt, chưa nhập kho.");
+            return false;
+        }
 
+        boolean ketQua = hdNhap.duyetNhapKho(sc, dsSP, nguoiDuyet);
+        // Giữ thông tin đã chi tiền cả khi nhập kho chưa hoàn tất, tránh thanh toán lại khi thử duyệt tiếp.
+        ghiFile("data/hoadon.txt");
         if (ketQua) {
-            ghiFile("data/hoadon.txt");
+            System.out.println(hdNhap.inHoaDon());
         }
 
         return ketQua;
@@ -637,7 +676,7 @@ public class DSHoadon {
 
     public boolean suaHD(Scanner sc, Nguoidung nguoiThucHien) {
         if (nguoiThucHien == null || !nguoiThucHien.coQuyen("SUA_HOA_DON")) {
-            System.out.println("[Lỗi] BẠN KHÔNG CÓ QUYỀN! Chỉ Quản lý hoặc Admin mới được sửa hóa đơn.");
+            System.out.println("[Từ chối] Chỉ Quản lý được sửa hóa đơn.");
             return false;
         }
 
@@ -685,7 +724,7 @@ public class DSHoadon {
     public boolean xoaHD(Scanner sc, Nguoidung nguoiThucHien) {
         if (nguoiThucHien == null || !nguoiThucHien.coQuyen("HUY_HOA_DON")) {
             System.out.println(
-                    "[Lỗi] BẠN KHÔNG CÓ QUYỀN! Chỉ Quản lý hoặc Admin mới được hủy hóa đơn.");
+                    "[Từ chối] Chỉ Quản lý được hủy hóa đơn.");
             return false;
         }
 

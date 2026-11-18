@@ -32,6 +32,8 @@ public class NhapHangKhongTheoLoTest {
         @Override public void ghiFile(String duongDan) { }
     }
     private static final NhanVien NV = new NhanVien("NV001", "Nhân viên thử", "nv", "123456", "0912345678", HOM_NAY, false);
+    private static final QuanLyCuaHang QL = new QuanLyCuaHang("QL001", "Quản lý thử", "ql", "123456",
+            "0912345678", "Quản lý", false, "Cửa hàng", 1.5);
 
     private static ThucAn sp(String ma, int ton, LocalDate nsx, LocalDate hsd) {
         return new ThucAn(ma, "Bánh thử", 5000, 10000, ton, "gói", nsx, hsd,
@@ -63,9 +65,9 @@ public class NhapHangKhongTheoLoTest {
         dung(!hd.capNhatChiTiet(0, 0, 6000, 5) && hd.getDsChiTiet()[0].getSoLuongNhap() == 5, "Sửa không hợp lệ giữ nguyên chi tiết");
         dung(sp.getNsx().equals(HOM_NAY.minusDays(5)) && sp.getHsd().equals(HOM_NAY.plusDays(25))
                 && sp.getSoLuongTon() == 10, "Tạo phiếu chưa sửa ngày hoặc tồn kho");
-        dung(!hd.thanhToanHoaDon(phim("0"), NV, kho, ncc), "Hủy thanh toán được phép quay lại sửa");
+        dung(!hd.thanhToanHoaDon(phim("0"), QL, kho, ncc), "Hủy thanh toán được phép quay lại sửa");
         dung(sp.getNsx().equals(HOM_NAY.minusDays(5)) && sp.getHsd().equals(HOM_NAY.plusDays(25)), "Hủy thanh toán không đổi ngày");
-        dung(hd.thanhToanHoaDon(phim("1", "40000"), NV, kho, ncc), "Thanh toán phiếu nhập");
+        dung(hd.thanhToanHoaDon(phim("1", "40000"), QL, kho, ncc), "Quản lý thanh toán phiếu nhập");
         dung(sp.getNsx().equals(HOM_NAY.minusDays(5)) && sp.getSoLuongTon() == 10, "Đã trả tiền nhưng chưa duyệt vẫn giữ ngày/tồn cũ");
         dung(hd.duyetNhapKho(phim(), kho, new QuanLyCuaHang()), "Duyệt nhập thành công");
         dung(sp.getNsx().equals(HOM_NAY) && sp.getHsd().equals(HOM_NAY.plusDays(30)), "NSX bằng ngày nhập, HSD giữ thời hạn 30 ngày");
@@ -96,6 +98,7 @@ public class NhapHangKhongTheoLoTest {
         dung(ct.nhapThongTin(phim("4", ""), "HDN002", cu), "Nhập lại sản phẩm cũ hết hạn không phải gõ ngày mới");
         HoadonNhap hd = new HoadonNhap("HDN002", NV, HOM_NAY, "DangXuLy", "", "NCC001");
         hd.themCTHD(ct);
+        hd.khoiPhucThanhToanTuFile(hd.tinhThanhTien(), "TienMat");
         dung(hd.duyetNhapKho(phim(), kho, new QuanLyCuaHang()) && cu.getSoLuongTon() == 4, "Loại tồn hết hạn trước khi nhận hàng mới");
         dung(cu.getNsx().equals(HOM_NAY) && cu.getHsd().equals(HOM_NAY.plusDays(20)), "Giữ thời hạn riêng 20 ngày của mặt hàng");
         ThucAn day = sp("TA002", Integer.MAX_VALUE, HOM_NAY.minusDays(2), HOM_NAY.plusDays(8));
@@ -103,6 +106,7 @@ public class NhapHangKhongTheoLoTest {
         HoadonNhap sai = new HoadonNhap("HDN003", NV, HOM_NAY, "DangXuLy", "", "NCC001");
         sai.themCTHD(new CTHDonNhap("HDN003", cu, 1, 8000, HOM_NAY.plusDays(1)));
         sai.themCTHD(new CTHDonNhap("HDN003", day, 1, 5000, HOM_NAY.plusDays(1)));
+        sai.khoiPhucThanhToanTuFile(sai.tinhThanhTien(), "TienMat");
         dung(!sai.duyetNhapKho(phim(), kho, new QuanLyCuaHang()), "Một dòng tràn tồn chặn cả phiếu");
         dung(cu.getSoLuongTon() == 4 && cu.getDonGiaNhap() == 5000 && day.getNsx().equals(HOM_NAY.minusDays(2))
                 && day.getHsd().equals(HOM_NAY.plusDays(8)), "Phiếu sai không sửa một phần số lượng, giá hoặc ngày");

@@ -42,7 +42,7 @@ public class ChuyenKhoan extends ThanhToan {
 
         System.out.println("\n========== THANH TOÁN CHUYỂN KHOẢN ==========");
         System.out.println("• Mã giao dịch       : [" + this.maGD + "]");
-        System.out.println("• Thu ngân phụ trách : [" + this.maNV + "]");
+        System.out.println((chiTien ? "• Người chi tiền     : [" : "• Thu ngân phụ trách : [") + this.maNV + "]");
         System.out.println("• Số tiền cần chuyển : " + Ktradulieu.dinhDangTien(this.soTien));
 
         while (true) {

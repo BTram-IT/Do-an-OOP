@@ -257,7 +257,8 @@ public abstract class HoaDon implements IHoaDon, HienThiBang {
     }
 
     protected ThanhToan chonVaThanhToan(Scanner sc, Nguoidung nv, boolean chiTien) {
-        int chon = Ktradulieu.luaChon(sc, "Chọn thanh toán (1. Tiền mặt | 2. Chuyển khoản | 0. Quay lại sửa): ", 0, 2);
+        int chon = Ktradulieu.luaChon(sc, "Chọn thanh toán (1. Tiền mặt | 2. Chuyển khoản | 0. "
+                + (chiTien ? "Hủy thanh toán" : "Quay lại sửa") + "): ", 0, 2);
         if (chon == 0) return null;
         ThanhToan tt = chon == 1 ? new TienMat(maHD, tinhThanhTien(), nv)
                 : new ChuyenKhoan(maHD, tinhThanhTien(), nv);
@@ -362,7 +363,7 @@ public abstract class HoaDon implements IHoaDon, HienThiBang {
         boolean laBan = "HDBAN".equalsIgnoreCase(p[0].trim());
         boolean laNhap = "HDNHAP".equalsIgnoreCase(p[0].trim());
         if ((!laBan && !laNhap) || (laBan && p.length != 13 && p.length != 18)
-                || (laNhap && p.length != 11 && p.length != 17)) {
+                || (laNhap && p.length != 11 && p.length != 17 && p.length != 18)) {
             throw new IllegalArgumentException("Loại hoặc số trường hóa đơn không hợp lệ!");
         }
         DateTimeFormatter dinhDang = DateTimeFormatter.ofPattern("dd/MM/uuuu")
@@ -392,7 +393,7 @@ public abstract class HoaDon implements IHoaDon, HienThiBang {
         } else {
             HoadonNhap hdn = new HoadonNhap(p[1], nv, ngay, p[5], p[10], p[4]);
             hdn.khoiPhucThanhToanTuFile(Double.parseDouble(p[8]), p[9]);
-            if (p.length == 17) {
+            if (p.length >= 17) {
                 String trangThaiTT = p[11].trim();
                 if (!ThanhToan.THANH_CONG.equals(trangThaiTT) && !ThanhToan.CHO_THANH_TOAN.equals(trangThaiTT)
                         && !ThanhToan.THAT_BAI.equals(trangThaiTT)) {
@@ -404,6 +405,14 @@ public abstract class HoaDon implements IHoaDon, HienThiBang {
                 }
                 if (tt != null) tt.setTrangThai(trangThaiTT);
                 hdn.khoiPhucChiTietThanhToanTuFile(Double.parseDouble(p[12]), p[13], p[14], p[15], p[16]);
+                if (p.length == 18) {
+                    if (tt != null) {
+                        if (p[17].isBlank()) throw new IllegalArgumentException("Thiếu mã người thanh toán hóa đơn nhập!");
+                        tt.setMaNV(p[17]);
+                    } else if (!p[17].isBlank()) {
+                        throw new IllegalArgumentException("Hóa đơn chưa có thanh toán không được có mã người thanh toán!");
+                    }
+                }
             }
             hd = hdn;
         }

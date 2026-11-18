@@ -168,7 +168,7 @@ public class PhanQuyenAdminTest {
             dung(!ncc.xoa(nd, "NCC001") && !ncc.sua(phim(), nd, "NCC001"), "Tài khoản bị khóa không được sửa/xóa NCC");
             DSHoadon hd = new DSHoadon();
             dung(!hd.suaHD(phim(), nd) && !hd.xoaHD(phim(), nd), "Tài khoản bị khóa không được sửa/hủy hóa đơn");
-            dung(!hd.duyetHoaDon(phim(), nd, kho), "Tài khoản bị khóa không được duyệt hóa đơn");
+            dung(!hd.duyetHoaDon(phim(), nd, kho, ncc), "Tài khoản bị khóa không được duyệt hóa đơn");
         }
         Admin ad = admin();
         ad.thongKeTonKho(kho);

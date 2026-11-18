@@ -21,19 +21,19 @@ Các bản ghi bổ sung là dữ liệu giả lập để thử chương trình
 
 ## Sửa hóa đơn nhập theo mã
 
-Trong **Quản lý kho hàng → 1. Nhập thêm hàng → 3. Nhập mã hóa đơn nhập để xem / chỉnh sửa**:
+Trong **Quản lý kho hàng → 13. Nhập mã hóa đơn nhập để chỉnh sửa**:
 
 1. Nhập mã hóa đơn; nhập `0` để quay lại.
 2. Chương trình kiểm tra mã tồn tại, đúng loại hóa đơn nhập, chưa thanh toán/chưa duyệt/chưa hủy và quyền người sửa. Mã sai hoặc phiếu bị khóa sẽ yêu cầu nhập lại.
 3. Sau khi kiểm tra thành công mới hiện ngày lập, người lập, mã nhà cung cấp, ghi chú và các dòng hàng của phiếu đã chọn.
-4. Chọn thêm, sửa số lượng/đơn giá/VAT, xóa mặt hàng, đổi nhà cung cấp, sửa ghi chú, thanh toán hoặc hủy phiếu. Đổi nhà cung cấp phải khớp toàn bộ mặt hàng hiện có.
-5. `0` lưu và quay lại. Thanh toán thành công mới in hóa đơn chính thức; phiếu vẫn chờ Admin/Quản lý duyệt trước khi cập nhật kho.
+4. Chọn thêm, sửa số lượng/đơn giá/VAT, xóa mặt hàng, đổi nhà cung cấp, sửa ghi chú, hoàn tất hoặc hủy phiếu. Đổi nhà cung cấp phải khớp toàn bộ mặt hàng hiện có; không có thao tác thanh toán trong màn hình sửa.
+5. `0` lưu và quay lại; `6` hoàn tất chỉnh sửa và chờ duyệt. Admin/Quản lý thanh toán tại bước duyệt, thành công mới cộng kho và in hóa đơn hoàn tất.
 
-Có thể mở trực tiếp bằng **Quản lý kho hàng → 13. Nhập mã hóa đơn nhập để chỉnh sửa**.
+Luồng này dành cho hóa đơn đã có trong hệ thống, tách khỏi việc soạn danh sách nhập mới.
 
 Nhân viên chỉ sửa phiếu chưa thanh toán do mình lập. Admin/Quản lý sửa được phiếu nháp của nhân viên khác. Hóa đơn đã trả tiền, đã nhập kho hoặc đã hủy đều khóa chỉnh sửa.
 
-**Mục 5. Xem / chỉnh danh sách hàng đang nhập** dành cho danh sách hàng chưa tách thành phiếu. Khi chưa có hàng, chương trình thông báo ngắn và cho thêm mặt hàng; không in bảng hóa đơn rỗng với tổng tiền 0. Các thao tác tạo danh sách, tách phiếu theo NCC và thanh toán từng phiếu vẫn dùng được.
+Trong **Quản lý kho hàng → 1. Nhập thêm hàng**, **mục 3. Xem / chỉnh danh sách hàng đang nhập** mở danh sách hiện tại, không yêu cầu mã hóa đơn. Khi chưa có hàng, chương trình thông báo ngắn và cho thêm mặt hàng; không in bảng hóa đơn rỗng với tổng tiền 0. Mục `0` gom hàng theo NCC, yêu cầu nhập mã `HDN...` chưa tồn tại cho từng phiếu rồi chuyển sang chỉnh sửa/hoàn tất để lưu phiếu chưa thanh toán chờ duyệt; không tự sinh mã. Chọn sản phẩm có sẵn lấy NCC từ dữ liệu, không hỏi lại NCC. Xem [quy trình nhập hiện tại và dữ liệu đã bổ sung](NHAP_HANG_THEO_NHA_CUNG_CAP.md).
 
 | Mã để thử | Trạng thái / kết quả |
 |---|---|

@@ -92,15 +92,17 @@ public class QuanLySanPhamTonKhoTest {
         dung(nhap.themCTHD(ct) && sp.getSoLuongTon() == 0, "Tạo chi tiết nhập chưa làm tăng kho");
         NccThu ncc = new NccThu();
         ncc.them(new NhaCungCap("NCC001", "Nhà cung cấp thử", "0912345678", "TP HCM", "thu@example.com", false));
-        dung(nhap.thanhToanHoaDon(phim("1", "15000"), nv, kho, ncc) && sp.getSoLuongTon() == 0,
-                "Thanh toán phiếu nhập vẫn giữ tồn 0 đến khi duyệt");
+        dung(nhap.hoanTatHoaDon(kho, ncc) && !nhap.isDaThanhToan() && sp.getSoLuongTon() == 0,
+                "Nhân viên hoàn tất phiếu chờ duyệt, chưa trả tiền hoặc cộng kho");
         HoaDonThu ds = new HoaDonThu();
         dung(ds.themHD(nhap), "Lưu phiếu nhập chờ duyệt");
-        dung(!ds.duyetHoaDon(phim(), nv, kho) && sp.getSoLuongTon() == 0, "Nhân viên không được tự duyệt phiếu");
-        dung(!ds.duyetHoaDon(phim("1", "0"), new QuanLyCuaHang(), kho) && sp.getSoLuongTon() == 0,
+        dung(!ds.duyetHoaDon(phim(), nv, kho, ncc) && sp.getSoLuongTon() == 0, "Nhân viên không được tự duyệt phiếu");
+        QuanLyCuaHang ql = new QuanLyCuaHang();
+        ql.setMaND("QL001");
+        dung(!ds.duyetHoaDon(phim("1", "0"), ql, kho, ncc) && sp.getSoLuongTon() == 0,
                 "Hủy duyệt phiếu không làm tăng kho");
-        // Chỉ hai lựa chọn: chọn phiếu và xác nhận; không hỏi duyệt sản phẩm.
-        dung(ds.duyetHoaDon(phim("1", "1"), new QuanLyCuaHang(), kho) && sp.getSoLuongTon() == 3,
+        // Chọn phiếu, xác nhận và thanh toán; không có bước duyệt riêng sản phẩm.
+        dung(ds.duyetHoaDon(phim("1", "1", "1", "15000"), ql, kho, ncc) && sp.getSoLuongTon() == 3,
                 "Một lần duyệt phiếu cộng đúng số lượng thực nhập");
         dung(!nhap.duyetNhapKho(phim(), kho, new QuanLyCuaHang()) && sp.getSoLuongTon() == 3, "Không cộng kho lần hai");
         dung(ban.themCTHD(ctBan, kho, km, lienKet), "Có tồn kho là bán được, không cần trạng thái duyệt sản phẩm");
@@ -118,6 +120,7 @@ public class QuanLySanPhamTonKhoTest {
         NhanVien nv = new NhanVien("NV001", "Nhân viên thử", "nv", "123456", "0912345678", HOM_NAY, false);
         HoadonNhap moi = new HoadonNhap("HDN002", nv, HOM_NAY, "DangXuLy", "", "NCC001");
         moi.themCTHD(new CTHDonNhap("HDN002", "TA001", "Bánh thử", 4, 5000, 0, HOM_NAY.plusDays(30)));
+        moi.khoiPhucThanhToanTuFile(moi.tinhThanhTien(), "TienMat");
         dung(moi.duyetNhapKho(phim(), kho, new QuanLyCuaHang()) && hetHan.getSoLuongTon() == 4
                 && hetHan.getNsx().equals(HOM_NAY) && hetHan.getHsd().equals(HOM_NAY.plusDays(9)), "Nhập bổ sung loại tồn hết hạn, tự cập nhật NSX/HSD theo thời hạn 9 ngày");
 
@@ -126,11 +129,13 @@ public class QuanLySanPhamTonKhoTest {
         HoadonNhap loi = new HoadonNhap("HDN003", nv, HOM_NAY, "DangXuLy", "", "NCC001");
         loi.themCTHD(new CTHDonNhap("HDN003", "TA001", "Bánh thử", 1, 6000, 0, HOM_NAY.plusDays(20)));
         loi.themCTHD(new CTHDonNhap("HDN003", "TA002", "Bánh thử", 1, 5000, 0, HOM_NAY.plusDays(20)));
+        loi.khoiPhucThanhToanTuFile(loi.tinhThanhTien(), "TienMat");
         dung(!loi.duyetNhapKho(phim(), kho, new QuanLyCuaHang()) && hetHan.getSoLuongTon() == 4
                 && hetHan.getDonGiaNhap() == 5000 && ganDay.getSoLuongTon() == Integer.MAX_VALUE,
                 "Một dòng tràn tồn phải chặn cả phiếu trước khi sửa kho hoặc giá");
         HoadonNhap thieu = new HoadonNhap("HDN004", nv, HOM_NAY, "DangXuLy", "", "NCC001");
         thieu.themCTHD(new CTHDonNhap("HDN004", "TA999", "Chưa có", 1, 5000, 0, HOM_NAY.plusDays(20)));
+        thieu.khoiPhucThanhToanTuFile(thieu.tinhThanhTien(), "TienMat");
         dung(!thieu.duyetNhapKho(phim(), kho, new QuanLyCuaHang()) && kho.getSoLuong() == 2,
                 "Không duyệt phiếu tham chiếu mặt hàng chưa có danh mục");
     }
@@ -162,8 +167,10 @@ public class QuanLySanPhamTonKhoTest {
         String ctCu = "HDN005;TA001;Bánh thử;3;5000;0;" + Ktradulieu.dinhDangNgay(HOM_NAY.plusDays(30)) + ";SPMOI;" + hoSoCu;
         CTHDonNhap ct = CTHDonNhap.tuDongFile(ctCu);
         dung(ct != null && ct.getSanPhamMoi().getMaSP().equals("TA001"), "Giữ khả năng đọc hồ sơ kèm hóa đơn cũ");
-        HoadonNhap nhap = new HoadonNhap("HDN005", new NhanVien(), HOM_NAY, "DangXuLy", "", "NCC001");
+        NhanVien nv = new NhanVien("NV001", "Nhân viên thử", "nv", "123456", "0912345678", HOM_NAY, false);
+        HoadonNhap nhap = new HoadonNhap("HDN005", nv, HOM_NAY, "DangXuLy", "", "NCC001");
         nhap.themCTHD(ct);
+        nhap.khoiPhucThanhToanTuFile(nhap.tinhThanhTien(), "TienMat");
         KhoThu kho = new KhoThu();
         dung(nhap.duyetNhapKho(phim(), kho, new QuanLyCuaHang()) && kho.timKiem("TA001").getSoLuongTon() == 3,
                 "Hồ sơ cũ vào danh mục tồn 0 rồi cộng đúng lượng nhập, không dùng tồn có sẵn trong hồ sơ");

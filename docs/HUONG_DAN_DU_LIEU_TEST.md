@@ -207,7 +207,7 @@ Quy trình mới đã bỏ bộ đếm khởi tạo, số lượng hết hạn t
 
 ## Cập nhật nhập hàng theo NCC
 
-Sản phẩm có thêm `maNCC` và cột hiển thị NCC. Dữ liệu cũ thiếu NCC được chọn một NCC đang hợp tác khi nhập thêm hàng lần đầu. Menu Kho → `1` nay mở nhập hàng theo đề xuất/thêm mới/sửa danh sách rồi gom thành từng phiếu theo NCC; không phải nhập mã phiếu và chọn NCC trước như luồng cũ. Từng phiếu phải thanh toán thành công mới in/lưu hóa đơn, sau đó chờ duyệt để cộng kho. Menu chỉnh sửa có `6` thanh toán và `7` xem danh sách mặt hàng. Xem [NHAP_HANG_THEO_NHA_CUNG_CAP.md](NHAP_HANG_THEO_NHA_CUNG_CAP.md) để dùng luồng hiện tại.
+Sản phẩm có `maNCC` và cột hiển thị NCC. Bộ dữ liệu mẫu đã được bổ sung NCC và các thuộc tính còn trống. Menu Kho → `1` mở nhập hàng; chọn sản phẩm có sẵn không hỏi NCC, mục `3` xem/sửa danh sách hiện tại không hỏi mã hóa đơn. Mục `0` gom hàng theo NCC rồi yêu cầu nhập mã `HDN...` chưa tồn tại cho từng phiếu, không tự sinh mã. Từng phiếu chọn `6` hoàn tất để lưu chưa thanh toán và chờ duyệt, `7` xem mặt hàng; sửa phiếu cũ qua Kho → `13` cũng không có thao tác chi tiền. Admin/Quản lý vào Quản lý nhập kho → `2` để xác nhận, thanh toán rồi nhập kho và in hóa đơn. Hủy thanh toán giữ phiếu chờ duyệt; phiếu cũ đã trả tiền không bị thanh toán lại. Mã người lập và người thanh toán được lưu riêng. Xem [NHAP_HANG_THEO_NHA_CUNG_CAP.md](NHAP_HANG_THEO_NHA_CUNG_CAP.md) để dùng luồng hiện tại.
 
 
 ## Cập nhật nhập bổ sung không theo lô
