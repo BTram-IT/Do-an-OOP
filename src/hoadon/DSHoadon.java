@@ -53,6 +53,7 @@ public class DSHoadon {
         }
         HoadonNhap danhSachNhap = new HoadonNhap("HDN_TAM", nguoiLap, LocalDate.now(), "DangXuLy", "", "NCC_TAM");
         int soDaLuu = 0;
+        ArrayList<HoadonNhap> phieuDaHoanTat = new ArrayList<>();
         try {
             boolean hoanTat = false;
             while (!hoanTat) {
@@ -60,7 +61,7 @@ public class DSHoadon {
                 System.out.println("1. Chọn hàng cần nhập theo đề xuất");
                 System.out.println("2. Thêm sản phẩm mới và nhập hàng");
                 System.out.println("3. Xem / chỉnh danh sách hàng đang nhập");
-                System.out.println("0. Hoàn tất, nhập mã hóa đơn và gửi duyệt");
+                System.out.println("0. Hoàn tất hóa đơn nhập và gửi duyệt");
                 System.out.println("4. Hủy nhập hàng");
                 int chon = Ktradulieu.luaChon(sc, "Chọn (0-4): ", 0, 4);
                 switch (chon) {
@@ -84,24 +85,23 @@ public class DSHoadon {
 
             ArrayList<HoadonNhap> cacPhieu = tachPhieuTheoNhaCungCap(danhSachNhap, nguoiLap, dsSP, dsNCC);
             for (HoadonNhap phieu : cacPhieu) {
-                NhaCungCap ncc = dsNCC.timKiemTheoMa(phieu.getMaNCC());
-                System.out.println("\nTạo hóa đơn nhập cho [" + ncc.getMaNCC() + "] " + ncc.getTenNCC());
-                if (!nhapMaHoaDonNhap(sc, phieu)) {
-                    System.out.println("[Thông báo] Đã hủy tạo hóa đơn của " + ncc.getMaNCC() + ".");
-                    continue;
-                }
-                phieu.setGhiChu(Ktradulieu.nhapChuoiTuyChon(sc, "Ghi chú (Enter để bỏ qua): ", ".*", ""));
-                if (phieu.chinhSuaVaHoanTat(sc, nguoiLap, dsNCC, dsSP, nguoiLap) && themHD(phieu)) {
-                    ghiFile("data/hoadon.txt");
+                phieu.setMaHD(sinhMaTuDong("HDN"));
+                if (phieu.kiemTraDuLieuNhap(dsSP, dsNCC)) {
+                    danhSach.add(phieu);
+                    ghiFile("data/hoadon.txt", false);
                     soDaLuu++;
-                } else {
-                    System.out.println("[Thông báo] Phiếu của " + ncc.getMaNCC() + " chưa hoàn tất, không lưu hóa đơn.");
+                    phieuDaHoanTat.add(phieu);
                 }
             }
         } catch (java.util.NoSuchElementException e) {
             System.out.println("[Thông báo] Đã dừng nhập hàng. Các phiếu đã hoàn tất trước đó được giữ lại.");
         }
-        System.out.println("Đã lưu " + soDaLuu + " phiếu nhập chờ Admin/Quản lý thanh toán và duyệt nhập kho.");
+        if (soDaLuu > 0) {
+            System.out.println("Đã hoàn tất hóa đơn nhập và chờ duyệt.");
+            for (HoadonNhap phieu : phieuDaHoanTat) {
+                System.out.println(phieu.inHoaDon());
+            }
+        }
         return soDaLuu;
     }
 
@@ -234,26 +234,7 @@ public class DSHoadon {
         }
     }
 
-    private boolean nhapMaHoaDonNhap(Scanner sc, HoadonNhap phieu) {
-        while (true) {
-            String ma = Ktradulieu.chuanHoaMa(Ktradulieu.nhapChuoiKhongRong(sc,
-                    "Nhập mã hóa đơn nhập (VD: HDN027, 0: Hủy phiếu): "));
-            if (ma.equals("0")) return false;
-            if (!ma.matches("HDN[0-9]+")) {
-                System.out.println("[Lỗi] Mã hóa đơn nhập phải có dạng HDN và các chữ số, ví dụ HDN027.");
-                continue;
-            }
-            if (timKiem(ma) != null) {
-                System.out.println("[Lỗi] Mã hóa đơn đã tồn tại: " + ma);
-                continue;
-            }
-            phieu.setMaHD(ma);
-            System.out.println("Mã hóa đơn nhập: " + phieu.getMaHD());
-            return true;
-        }
-    }
-
-    // Chỉ gom các dòng tạm; người dùng nhập mã chính thức cho từng phiếu khi hoàn tất.
+    // Gom dòng theo NCC; mã chính thức được sinh tự động khi lưu từng phiếu.
     public ArrayList<HoadonNhap> tachPhieuTheoNhaCungCap(HoadonNhap danhSachNhap, Nguoidung nguoiLap,
                                                       DSSanPham dsSP, DSNhaCungCap dsNCC) {
         if (danhSachNhap == null || nguoiLap == null || !nguoiLap.coQuyen("QUYEN_NHAP_KHO")
@@ -788,6 +769,10 @@ public class DSHoadon {
     }
 
     public void ghiFile(String filePath) {
+        ghiFile(filePath, true);
+    }
+
+    protected void ghiFile(String filePath, boolean hienThongBao) {
         if (filePath == null || filePath.isBlank()) {
             System.out.println("[Lỗi] Đường dẫn file không hợp lệ!");
             return;
@@ -828,7 +813,7 @@ public class DSHoadon {
                 }
             }
             Ktradulieu.hoanTatGhi(tam, dich);
-            System.out.println("[Thành công] Đã lưu " + this.danhSach.size() + " hóa đơn vào file: " + dich);
+            if (hienThongBao) System.out.println("[Thành công] Đã lưu " + this.danhSach.size() + " hóa đơn vào file: " + dich);
         } catch (IOException | RuntimeException e) {
             Ktradulieu.huyFileTam(tam);
             System.out.println("[Lỗi] Ghi file hóa đơn: " + e.getMessage());

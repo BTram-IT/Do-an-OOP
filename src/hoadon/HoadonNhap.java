@@ -397,7 +397,7 @@ public class HoadonNhap extends HoaDon implements IHoaDon {
         return true;
     }
 
-    private boolean kiemTraDuLieuNhap(DSSanPham dsSP, DSNhaCungCap dsNCC) {
+    boolean kiemTraDuLieuNhap(DSSanPham dsSP, DSNhaCungCap dsNCC) {
         if (soLuongCT == 0) {
             System.out.println("[Lỗi] Hóa đơn nhập phải có ít nhất một mặt hàng!");
             return false;
